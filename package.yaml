@@ -1,0 +1,72 @@
+name:                doc-browser
+version:             0.1.0.0
+github:              "qwfy/doc-browser"
+license:             BSD3
+author:              "Incomplete"
+maintainer:          "incomplete@aixon.co"
+copyright:           "Incomplete"
+
+extra-source-files:
+- README.md
+- ChangeLog.md
+
+# Metadata used when publishing your package
+# synopsis:            Short description of your package
+# category:            Web
+
+# To avoid duplicated efforts in documentation and dealing with the
+# complications of embedding Haddock markup inside cabal files, it is
+# common to point users to the README.md file.
+description:         Please see the README on Github at <https://github.com/qwfy/doc-browser#readme>
+
+dependencies:
+- base >= 4.7 && < 5
+- dbus
+- hdaemonize
+- containers
+- filepath
+- hsqml
+- text
+- aeson
+- bytestring
+- edit-distance
+- warp
+- wai
+- wai-routing
+- wai-predicates
+- wai-extra
+- binary
+- http-types
+- network-uri
+- stm
+- wreq
+- lens
+- zlib
+- tar
+- temporary
+- directory
+- clock
+
+library:
+  source-dirs: src
+  ghc-options:
+  - -Wall
+  - -fno-warn-type-defaults
+  - -fno-warn-missing-signatures
+  - -Werror
+
+executables:
+  doc-browser:
+    main:                Main.hs
+    source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -dynamic
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    - -fno-warn-type-defaults
+    - -fno-warn-missing-signatures
+    - -Werror
+    dependencies:
+    - doc-browser

@@ -1,0 +1,15 @@
+[Desktop Entry]
+Name=Krunner plugin for Devdocs.io
+Comment=Krunner plugin for Devdocs.io
+X-KDE-ServiceTypes=Plasma/Runner
+Type=Service
+Icon=internet-web-browser
+X-KDE-PluginInfo-Author=Incomplete
+X-KDE-PluginInfo-Email=incomplete@aixon.co
+X-KDE-PluginInfo-Name=/home/incomplete/project/doc-browser/.stack-work/install/x86_64-linux-tinfo6-nopie/lts-10.4/8.2.2/bin/doc-browser
+X-KDE-PluginInfo-Version=1.0
+X-KDE-PluginInfo-License=BSD3
+X-KDE-PluginInfo-EnabledByDefault=true
+X-Plasma-API=DBus
+X-Plasma-DBusRunner-Service=co.aixon
+X-Plasma-DBusRunner-Path=/devdocs

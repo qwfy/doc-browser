@@ -1,0 +1,105 @@
+-- This file has been generated from package.yaml by hpack version 0.20.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 5d73ed03e7210071645484986ecf8bada6326432213b65762fe9f372382ace47
+
+name:           doc-browser
+version:        0.1.0.0
+description:    Please see the README on Github at <https://github.com/qwfy/doc-browser#readme>
+homepage:       https://github.com/qwfy/doc-browser#readme
+bug-reports:    https://github.com/qwfy/doc-browser/issues
+author:         Incomplete
+maintainer:     incomplete@aixon.co
+copyright:      Incomplete
+license:        BSD3
+license-file:   LICENSE
+build-type:     Simple
+cabal-version:  >= 1.10
+
+extra-source-files:
+    ChangeLog.md
+    README.md
+
+source-repository head
+  type: git
+  location: https://github.com/qwfy/doc-browser
+
+library
+  hs-source-dirs:
+      src
+  ghc-options: -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , binary
+    , bytestring
+    , clock
+    , containers
+    , dbus
+    , directory
+    , edit-distance
+    , filepath
+    , hdaemonize
+    , hsqml
+    , http-types
+    , lens
+    , network-uri
+    , stm
+    , tar
+    , temporary
+    , text
+    , wai
+    , wai-extra
+    , wai-predicates
+    , wai-routing
+    , warp
+    , wreq
+    , zlib
+  exposed-modules:
+      Devdocs
+      DevdocsMeta
+      Entry
+      Search
+      Server
+      Utils
+  other-modules:
+      Paths_doc_browser
+  default-language: Haskell2010
+
+executable doc-browser
+  main-is: Main.hs
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , binary
+    , bytestring
+    , clock
+    , containers
+    , dbus
+    , directory
+    , doc-browser
+    , edit-distance
+    , filepath
+    , hdaemonize
+    , hsqml
+    , http-types
+    , lens
+    , network-uri
+    , stm
+    , tar
+    , temporary
+    , text
+    , wai
+    , wai-extra
+    , wai-predicates
+    , wai-routing
+    , warp
+    , wreq
+    , zlib
+  other-modules:
+      Paths_doc_browser
+  default-language: Haskell2010

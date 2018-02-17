@@ -1,0 +1,12 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>Match.qml</file>
+        <file>main.js</file>
+        <file>Doc.qml</file>
+        <file>style/Style.qml</file>
+        <file>match.js</file>
+        <file>tab.js</file>
+        <file>util.js</file>
+    </qresource>
+</RCC>
