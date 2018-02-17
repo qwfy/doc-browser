@@ -15,6 +15,8 @@ import qualified Data.Map.Strict as Map
 
 import Control.Concurrent.STM.TVar
 
+import System.Clock
+
 import Text.EditDistance
 
 import qualified Entry
@@ -64,19 +66,51 @@ filterEntry (Limited abbr _) es =
 getQueryText (Global t) = t
 getQueryText (Limited _ t) = t
 
--- TODO @incomplete: case insensitive
--- TODO @incomplete: performance
-search :: TVar [Entry.T] -> Query -> Int -> IO [Entry.T]
-search entriesTVar query limit = do
+-- -- TODO @incomplete: case insensitive
+-- -- TODO @incomplete: performance
+-- search :: TVar [Entry.T] -> Query -> Int -> IO [Entry.T]
+-- search entriesTVar query limit = do
+--   let txt = getQueryText query
+--   entries <- filterEntry query <$> readTVarIO entriesTVar
+--
+--   let measure = Text.EditDistance.levenshteinDistance
+--         editCosts (Text.unpack $ Text.toLower txt)
+--   let distances = map (measure . Entry.name) entries
+--   let tagged = zip distances entries
+--   let sorted = map snd $ Data.List.sort tagged
+--   return $ take limit sorted
+--   where
+--     editCosts = Text.EditDistance.EditCosts
+--       { deletionCosts = Text.EditDistance.ConstantCost 10
+--       , insertionCosts = Text.EditDistance.ConstantCost 1
+--       , substitutionCosts = Text.EditDistance.ConstantCost 10
+--       , transpositionCosts = Text.EditDistance.ConstantCost 5
+--       }
+
+
+-- modified version of search, used to do benchmarking
+search' entriesTVar query limit = do
   let txt = getQueryText query
-  entries <- filterEntry query <$> readTVarIO entriesTVar
+  clock1 <- getTime Monotonic
+
+  allEntries <- readTVarIO entriesTVar
+  clock2 <- getTime Monotonic
+
+  let entries = filterEntry query allEntries
+  clock3 <- getTime Monotonic
 
   let measure = Text.EditDistance.levenshteinDistance
         editCosts (Text.unpack $ Text.toLower txt)
   let distances = map (measure . Entry.name) entries
+  clock4 <- getTime Monotonic
+
   let tagged = zip distances entries
+  clock5 <- getTime Monotonic
+
   let sorted = map snd $ Data.List.sort tagged
-  return $ take limit sorted
+  clock6 <- getTime Monotonic
+
+  return $ (take limit sorted, Text.length txt, [clock1, clock2, clock3, clock4, clock5, clock6])
   where
     editCosts = Text.EditDistance.EditCosts
       { deletionCosts = Text.EditDistance.ConstantCost 10
@@ -84,3 +118,21 @@ search entriesTVar query limit = do
       , substitutionCosts = Text.EditDistance.ConstantCost 10
       , transpositionCosts = Text.EditDistance.ConstantCost 5
       }
+
+showClock :: TimeSpec -> TimeSpec -> String
+showClock (TimeSpec {sec=minSec, nsec=minNsec}) (TimeSpec {sec, nsec}) =
+  let zero = (fromIntegral minSec) * 1000000000 + (fromIntegral minNsec)
+      x = (fromIntegral sec) * 1000000000 + (fromIntegral nsec)
+  in show $ x - zero
+
+printStat len clockBegin clocks =
+  let cols = show len : map (showClock clockBegin) clocks
+      strs = Data.List.intercalate ", " cols
+  in putStrLn strs
+
+search a b c = do
+  clockBegin <- getTime Monotonic
+  (x, len, clocks) <- search' a b c
+  clockEnd <- getTime Monotonic
+  printStat len clockBegin (clocks ++ [clockEnd])
+  return x
