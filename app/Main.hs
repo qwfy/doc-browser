@@ -65,6 +65,7 @@ main = do
 
   -- TODO @incomplete: check for updates
   allEntries <- Devdocs.loadAll configRoot
+  allEntriesTVar <- STM.atomically $ newTVar allEntries
 
   matchesTVar <- STM.atomically $ newTVar ([] :: [Match])
 
@@ -89,10 +90,11 @@ main = do
                 STM.atomically writeOp
                 fireSignal matchesKey obj
               Just query -> do
+                -- TODO @incomplete: reuse thread if there is one already
                 _threadId <- Concurrent.forkIO
                   (do
                     -- TODO @incomplete: make this limit configurable
-                    entries <- Search.search allEntries query 27
+                    entries <- Search.search allEntriesTVar query 27
                     let matches = map (flip entryToMatch port) entries
                     let writeOp = writeTVar matchesTVar matches `STM.orElse` return ()
                     STM.atomically writeOp

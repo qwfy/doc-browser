@@ -13,6 +13,8 @@ import qualified Data.List
 import qualified Data.Text as Text
 import qualified Data.Map.Strict as Map
 
+import Control.Concurrent.STM.TVar
+
 import System.Clock
 
 import Text.EditDistance
@@ -87,11 +89,12 @@ getQueryText (Limited _ t) = t
 
 
 -- modified version of search, used to do benchmarking
-search' allEntries query limit = do
+search' entriesTVar query limit = do
   let txt = getQueryText query
   clock1 <- getTime Monotonic
 
-  let clock2 = clock1
+  allEntries <- readTVarIO entriesTVar
+  clock2 <- getTime Monotonic
 
   let entries = filterEntry query allEntries
   clock3 <- getTime Monotonic
