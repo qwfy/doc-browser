@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 5d73ed03e7210071645484986ecf8bada6326432213b65762fe9f372382ace47
+-- hash: 6d77305a30a659c654480ac16b69e3e533dd5c6ba0028edc2d1af00e77625076
 
 name:           doc-browser
 version:        0.1.0.0
@@ -36,6 +36,7 @@ library
     , bytestring
     , clock
     , containers
+    , criterion
     , dbus
     , directory
     , edit-distance
@@ -79,6 +80,7 @@ executable doc-browser
     , bytestring
     , clock
     , containers
+    , criterion
     , dbus
     , directory
     , doc-browser

@@ -46,6 +46,7 @@ dependencies:
 - temporary
 - directory
 - clock
+- criterion
 
 library:
   source-dirs: src
