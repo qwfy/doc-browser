@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 -- what will be searched on
 module Entry
@@ -15,6 +16,9 @@ import System.FilePath
 
 import Utils
 
+import Control.DeepSeq (NFData)
+import GHC.Generics (Generic)
+
 -- the choice of String is due to that Text.EditDistance only supports String
 data T = T
   { language :: String
@@ -22,7 +26,7 @@ data T = T
   , name     :: String
   , path     :: String
   , source   :: String
-  } deriving (Eq, Ord, Show)
+  } deriving (Eq, Ord, Show, Generic, NFData)
 
 buildUrl :: T -> Int -> Text
 buildUrl (T {source, language, version, path}) port =

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6d77305a30a659c654480ac16b69e3e533dd5c6ba0028edc2d1af00e77625076
+-- hash: 41e55a625d5c6985e9fe1d90e75223cd0eeee88fa028b0270b379ac6c269696b
 
 name:           doc-browser
 version:        0.1.0.0
@@ -38,6 +38,7 @@ library
     , containers
     , criterion
     , dbus
+    , deepseq
     , directory
     , edit-distance
     , filepath
@@ -82,6 +83,46 @@ executable doc-browser
     , containers
     , criterion
     , dbus
+    , deepseq
+    , directory
+    , doc-browser
+    , edit-distance
+    , filepath
+    , hdaemonize
+    , hsqml
+    , http-types
+    , lens
+    , network-uri
+    , stm
+    , tar
+    , temporary
+    , text
+    , wai
+    , wai-extra
+    , wai-predicates
+    , wai-routing
+    , warp
+    , wreq
+    , zlib
+  other-modules:
+      Paths_doc_browser
+  default-language: Haskell2010
+
+executable prof-search
+  main-is: Main.hs
+  hs-source-dirs:
+      prof
+  ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
+  build-depends:
+      aeson
+    , base >=4.7 && <5
+    , binary
+    , bytestring
+    , clock
+    , containers
+    , criterion
+    , dbus
+    , deepseq
     , directory
     , doc-browser
     , edit-distance

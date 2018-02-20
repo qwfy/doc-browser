@@ -47,6 +47,7 @@ dependencies:
 - directory
 - clock
 - criterion
+- deepseq
 
 library:
   source-dirs: src
@@ -60,6 +61,21 @@ executables:
   doc-browser:
     main:                Main.hs
     source-dirs:         app
+    ghc-options:
+    - -threaded
+    - -dynamic
+    - -rtsopts
+    - -with-rtsopts=-N
+    - -Wall
+    - -fno-warn-type-defaults
+    - -fno-warn-missing-signatures
+    - -Werror
+    dependencies:
+    - doc-browser
+
+  prof-search:
+    main:                Main.hs
+    source-dirs:         prof
     ghc-options:
     - -threaded
     - -dynamic
