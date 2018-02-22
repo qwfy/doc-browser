@@ -18,6 +18,7 @@ import Control.Concurrent.STM.TVar
 import Text.EditDistance
 
 import qualified Entry
+import Utils
 
 data Query
   = Global Text
@@ -73,14 +74,21 @@ search entriesTVar query limit = do
 
   let measure = Text.EditDistance.levenshteinDistance
         editCosts (Text.unpack $ Text.toLower txt)
-  let distances = map (measure . Entry.name) entries
-  let tagged = zip distances entries
-  let sorted = map snd $ Data.List.sort tagged
-  return $ take limit sorted
+  entries
+    |> map (measure . Entry.name)
+    |> (flip zip) entries
+    |> filter ((< 50) . fst)
+    |> Data.List.sort
+    |> map snd
+    |> take limit
+    |> return
   where
     editCosts = Text.EditDistance.EditCosts
       { deletionCosts = Text.EditDistance.ConstantCost 10
       , insertionCosts = Text.EditDistance.ConstantCost 1
       , substitutionCosts = Text.EditDistance.ConstantCost 10
-      , transpositionCosts = Text.EditDistance.ConstantCost 5
+
+      -- this field is not used, see here:
+      -- https://hackage.haskell.org/package/edit-distance-0.2.2.1/docs/Text-EditDistance.html#v:levenshteinDistance
+      , transpositionCosts = Text.EditDistance.ConstantCost 0
       }
