@@ -12,6 +12,7 @@ module Entry
 
 import Data.Text (Text)
 import qualified Data.Text as Text
+import qualified Data.ByteString.Char8 as C
 import System.FilePath
 
 import Utils
@@ -26,7 +27,7 @@ data T = T
   , name      :: String
   , path      :: String
   , source    :: String
-  , nameLower :: String
+  , nameLower :: C.ByteString
   } deriving (Eq, Ord, Show, Generic, NFData)
 
 buildUrl :: T -> Int -> Text

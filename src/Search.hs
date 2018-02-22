@@ -14,6 +14,7 @@ import qualified Data.Char
 import qualified Data.Array
 import qualified Data.Tuple
 import qualified Data.Maybe
+import qualified Data.ByteString.Char8 as C
 
 import Control.Concurrent.STM.TVar
 
@@ -98,25 +99,25 @@ search entriesTVar query limit = do
 
 
 -- note: this is not a proper metric
-distance :: String -> String -> Maybe Float
+distance :: String -> C.ByteString -> Maybe Float
 distance query target =
-  let a = subStringDistance query target
+  let a = subStringDistance (C.pack query) target
       b = regexDistance (queryToRegex query) (length query) target
   in a <|> b
 
 
-subStringDistance :: String -> String -> Maybe Float
+subStringDistance :: C.ByteString -> C.ByteString -> Maybe Float
 subStringDistance query target =
-  case query `Data.List.isInfixOf` target of
+  case query `C.isInfixOf` target of
     False ->
       Nothing
     True ->
       let epsilon = 0.00001
-          weight = fromIntegral (length target) / fromIntegral (length query)
+          weight = fromIntegral (C.length target) / fromIntegral (C.length query)
       in Just $ epsilon * weight
 
 
-regexDistance :: Regex -> Int -> String -> Maybe Float
+regexDistance :: Regex -> Int -> C.ByteString -> Maybe Float
 regexDistance regex queryLength target =
   case matchAll regex target of
     [] ->
@@ -129,9 +130,9 @@ regexDistance regex queryLength target =
 
           matchString = subString target matchOffset matchLength
 
-          weight = fromIntegral (length target) / fromIntegral queryLength
+          weight = fromIntegral (C.length target) / fromIntegral queryLength
 
-          d = fromIntegral (length matchString - queryLength) / fromIntegral queryLength
+          d = fromIntegral (C.length matchString - queryLength) / fromIntegral queryLength
 
       in Just $ d * weight
 
@@ -141,6 +142,7 @@ queryToRegex query =
   query
     |> map escape
     |> Data.List.intercalate ".*?"
+    |> C.pack
     |> makeRegexOpts compOpts defaultExecOpt
   where
     -- https://www.pcre.org/original/doc/html/pcrepattern.html#SEC5
@@ -150,6 +152,6 @@ queryToRegex query =
     compOpts = foldl (.|.) defaultCompOpt [compCaseless]
 
 
-subString :: String -> Int -> Int -> String
+subString :: C.ByteString -> Int -> Int -> C.ByteString
 subString str offset length' =
-  str |> drop offset |> take length'
+  str |> C.drop offset |> C.take length'
