@@ -6,6 +6,7 @@ import Graphics.QML
 import Data.Typeable (Typeable)
 
 import Control.Concurrent.STM.TVar
+import Control.Concurrent.STM.TMVar
 import qualified Control.Monad.STM as STM
 import qualified Control.Concurrent as Concurrent
 
@@ -67,11 +68,15 @@ main = do
   allEntries <- Devdocs.loadAll configRoot
   allEntriesTVar <- STM.atomically $ newTVar allEntries
 
+  print ("number of entries", length allEntries)
+
   matchesTVar <- STM.atomically $ newTVar ([] :: [Match])
 
   -- newSignalKey :: SignalSuffix p => IO (SignalKey p)
   -- instance SignalSuffix (IO ())
   matchesKey <- newSignalKey :: IO (SignalKey (IO ()))
+
+  searchThreadIdTm <- STM.atomically $ newEmptyTMVar
 
   classMatch <- defClassMatch
 
@@ -90,8 +95,15 @@ main = do
                 STM.atomically writeOp
                 fireSignal matchesKey obj
               Just query -> do
-                -- TODO @incomplete: reuse thread if there is one already
-                _threadId <- Concurrent.forkIO
+
+                oldThreadIdO <- STM.atomically $ tryTakeTMVar searchThreadIdTm
+                case oldThreadIdO of
+                  Nothing ->
+                    return ()
+                  Just oldThreadId ->
+                    Concurrent.killThread oldThreadId
+
+                newThreadId <- Concurrent.forkIO
                   (do
                     -- TODO @incomplete: make this limit configurable
                     entries <- Search.search allEntriesTVar query 27
@@ -99,6 +111,8 @@ main = do
                     let writeOp = writeTVar matchesTVar matches `STM.orElse` return ()
                     STM.atomically writeOp
                     fireSignal matchesKey obj)
+
+                STM.atomically $ putTMVar searchThreadIdTm newThreadId
                 return ()
         )
     ]
