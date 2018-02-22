@@ -62,7 +62,7 @@ main = do
 
   -- TODO @incomplete: read port from config
   let port = 7701
-  _threadId <- Concurrent.forkOS $ Server.start port configRoot
+  _threadId <- Concurrent.forkIO $ Server.start port configRoot
 
   -- TODO @incomplete: check for updates
   allEntries <- Devdocs.loadAll configRoot

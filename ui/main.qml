@@ -135,7 +135,7 @@ Window {
 
                 Match {
                     isSelected: index === matchContainer.selected
-                    onClicked: Logic.matchOpen(index)
+                    onClicked: {Logic.enterMode(Logic.MODE.selecting); Logic.matchOpen(index)}
                 }
 
             }
