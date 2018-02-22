@@ -12,10 +12,17 @@ import Data.Text (Text)
 import qualified Data.List
 import qualified Data.Text as Text
 import qualified Data.Map.Strict as Map
+import qualified Data.Char
+import qualified Data.Array
+import qualified Data.Tuple
+import qualified Data.Maybe
 
 import Control.Concurrent.STM.TVar
 
-import Text.EditDistance
+import Text.Regex.PCRE
+import Data.Bits ((.|.))
+
+import Control.Applicative ((<|>))
 
 import qualified Entry
 import Utils
@@ -72,23 +79,63 @@ search entriesTVar query limit = do
   let txt = getQueryText query
   entries <- filterEntry query <$> readTVarIO entriesTVar
 
-  let measure = Text.EditDistance.levenshteinDistance
-        editCosts (Text.unpack $ Text.toLower txt)
   entries
-    |> map (measure . Entry.name)
+    |> map (distance (compileQuery txt) txt . Entry.name)
     |> (flip zip) entries
-    |> filter ((< 50) . fst)
+    |> filter (Data.Maybe.isJust . fst)
     |> Data.List.sort
     |> map snd
     |> take limit
     |> return
-  where
-    editCosts = Text.EditDistance.EditCosts
-      { deletionCosts = Text.EditDistance.ConstantCost 10
-      , insertionCosts = Text.EditDistance.ConstantCost 1
-      , substitutionCosts = Text.EditDistance.ConstantCost 10
 
-      -- this field is not used, see here:
-      -- https://hackage.haskell.org/package/edit-distance-0.2.2.1/docs/Text-EditDistance.html#v:levenshteinDistance
-      , transpositionCosts = Text.EditDistance.ConstantCost 0
-      }
+compileQuery :: Text -> Regex
+compileQuery query =
+  query
+    |> Text.unpack
+    |> map escape
+    |> Data.List.intercalate ".*?"
+    |> makeRegexOpts compOpts defaultExecOpt
+  where
+    -- https://www.pcre.org/original/doc/html/pcrepattern.html#SEC5
+    escape c
+      | Data.Char.isAlphaNum c = [c]
+      | otherwise = ['\\', c]
+    compOpts = foldl (.|.) defaultCompOpt [compCaseless]
+
+-- note: this is not a proper metric
+distance :: Regex -> Text -> String -> Maybe Float
+distance regex query target =
+  subStringDistance query (Text.pack target) <|> regexDistance regex (Text.unpack query) target
+
+subStringDistance :: Text -> Text -> Maybe Float
+subStringDistance query target =
+  case Text.toLower query `Text.isInfixOf` Text.toLower target of
+    False ->
+      Nothing
+    True ->
+      let epsilon = 0.00001
+          weight = fromIntegral (Text.length target) / fromIntegral (Text.length query)
+      in Just $ epsilon * weight
+
+regexDistance :: Regex -> String -> String -> Maybe Float
+regexDistance query queryStr target =
+  case matchAll query target of
+    [] ->
+      Nothing
+    matchesArray ->
+      let (matchOffset, matchLength) = matchesArray
+            |> map (Data.Array.! 0)
+            |> Data.List.sortBy (\a b -> compare (Data.Tuple.swap a) (Data.Tuple.swap b))
+            |> head
+
+          matchString = subString target matchOffset matchLength
+
+          weight = fromIntegral (length target) / fromIntegral (length queryStr)
+
+          d = fromIntegral (length matchString - length queryStr) / fromIntegral (length queryStr)
+
+      in Just $ d * weight
+
+subString :: String -> Int -> Int -> String
+subString str offset length' =
+  str |> drop offset |> take length'

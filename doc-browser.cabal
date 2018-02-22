@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 41e55a625d5c6985e9fe1d90e75223cd0eeee88fa028b0270b379ac6c269696b
+-- hash: 36dc5ea3061492ced9839d14128ed2b17797c5386d063e33b77b2d8fc884e396
 
 name:           doc-browser
 version:        0.1.0.0
@@ -31,6 +31,7 @@ library
   ghc-options: -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
   build-depends:
       aeson
+    , array
     , base >=4.7 && <5
     , binary
     , bytestring
@@ -47,6 +48,7 @@ library
     , http-types
     , lens
     , network-uri
+    , regex-pcre
     , stm
     , tar
     , temporary
@@ -76,6 +78,7 @@ executable doc-browser
   ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
   build-depends:
       aeson
+    , array
     , base >=4.7 && <5
     , binary
     , bytestring
@@ -93,6 +96,7 @@ executable doc-browser
     , http-types
     , lens
     , network-uri
+    , regex-pcre
     , stm
     , tar
     , temporary
@@ -115,6 +119,7 @@ executable prof-search
   ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
   build-depends:
       aeson
+    , array
     , base >=4.7 && <5
     , binary
     , bytestring
@@ -132,6 +137,7 @@ executable prof-search
     , http-types
     , lens
     , network-uri
+    , regex-pcre
     , stm
     , tar
     , temporary

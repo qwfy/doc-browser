@@ -48,6 +48,8 @@ dependencies:
 - clock
 - criterion
 - deepseq
+- regex-pcre
+- array
 
 library:
   source-dirs: src
