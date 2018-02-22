@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 36dc5ea3061492ced9839d14128ed2b17797c5386d063e33b77b2d8fc884e396
+-- hash: ec10a59d989bb9b3bb6b67a23bd49bf4542d255aba2f3214a807f6b085d7a7a2
 
 name:           doc-browser
 version:        0.1.0.0
@@ -48,6 +48,7 @@ library
     , http-types
     , lens
     , network-uri
+    , optparse-applicative
     , regex-pcre
     , stm
     , tar
@@ -64,6 +65,7 @@ library
       Devdocs
       DevdocsMeta
       Entry
+      Opt
       Search
       Server
       Utils
@@ -96,6 +98,7 @@ executable doc-browser
     , http-types
     , lens
     , network-uri
+    , optparse-applicative
     , regex-pcre
     , stm
     , tar
@@ -137,6 +140,7 @@ executable prof-search
     , http-types
     , lens
     , network-uri
+    , optparse-applicative
     , regex-pcre
     , stm
     , tar

@@ -50,6 +50,7 @@ dependencies:
 - deepseq
 - regex-pcre
 - array
+- optparse-applicative
 
 library:
   source-dirs: src

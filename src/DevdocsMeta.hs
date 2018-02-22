@@ -73,7 +73,7 @@ printTypeMap = do
   metasR <- getMetaJson metaJsonUrl
   case metasR of
     Left err ->
-      print ("error decoding json", err)
+      report ["error decoding json:", err]
     Right metas -> do
       let showMeta (Meta {metaName, metaType}) =
             Text.concat ["  , (\"", metaName, "\", \"", metaType, "\")"]
@@ -134,34 +134,40 @@ untgz bs filePath =
   let decompressed = GZip.decompress bs
   in Tar.unpack filePath (Tar.read decompressed)
 
+report strs =
+  putStrLn . unwords $ strs
 
 -- TODO @incomplete: multithreads and proxy
 downloadMany :: FilePath -> [String] -> IO ()
-downloadMany unpackTo wants = do
+downloadMany unpackTo' wants = do
+  report ["downloading", show $ length wants, "devdocs to", unpackTo]
+
   metaJsonR <- getMetaJson metaJsonUrl
   case metaJsonR of
     Left e ->
-      putStrLn e
+      report [e]
     Right metas ->
       let matches = findRecent metas wants
       in mapM_ downloadOne matches
   where
+    unpackTo = joinPath [unpackTo', Devdocs.devdocs]
     downloadOne (Left e) = do
-      putStrLn e
+      report [e]
     downloadOne (Right meta@(Meta {metaName, metaRelease})) = do
       let url = toDownloadUrl meta
-      putStrLn . unwords $ ["downloading", url]
+      report ["downloading", Text.unpack metaName, url]
       result <- download url
       case result of
         Left e ->
-          putStrLn e
+          report [e]
         Right bs -> do
           let langHome = combineLangVer
                 (Text.unpack metaName)
                 (Text.unpack $ fromMaybe "" metaRelease)
-          let dir = joinPath [unpackTo, Devdocs.devdocs, langHome]
-          putStrLn . unwords $ ["unpacking to", dir]
+          let dir = joinPath [unpackTo, langHome]
+          report ["unpacking to", dir]
           untgz bs dir
+          report ["downloaded", Text.unpack metaName]
 
 
 -- generated with:

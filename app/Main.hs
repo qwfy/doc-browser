@@ -17,7 +17,9 @@ import System.Directory
 import qualified Entry
 import qualified Search
 import qualified Devdocs
+import qualified DevdocsMeta
 import qualified Server
+import qualified Opt
 
 
 -- this is what will be displayed in the search results
@@ -55,10 +57,8 @@ defClassMatch =
     ]
 
 
-main :: IO ()
-main = do
-
-  configRoot <- getXdgDirectory XdgConfig "doc-browser"
+startGUI :: FilePath -> IO ()
+startGUI configRoot = do
 
   -- TODO @incomplete: read port from config
   let port = 7701
@@ -128,3 +128,17 @@ main = do
     { initialDocument = fileDocument "ui/main.qml"
     , contextObject = Just $ anyObjRef objectContext
     }
+
+
+main :: IO ()
+main = do
+  opt <- Opt.get
+
+  configRoot <- getXdgDirectory XdgConfig "doc-browser"
+
+  case opt of
+    Opt.StartGUI ->
+      startGUI configRoot
+
+    Opt.InstallDevdocs languages ->
+      DevdocsMeta.downloadMany configRoot languages
