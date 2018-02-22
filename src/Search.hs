@@ -88,7 +88,7 @@ search entriesTVar query limit = do
   entries <- filterEntry query <$> readTVarIO entriesTVar
 
   entries
-    |> map (distance queryStr . Entry.name)
+    |> map (distance queryStr . Entry.nameLower)
     |> (flip zip) entries
     |> filter (Data.Maybe.isJust . fst)
     |> Data.List.sort
@@ -107,7 +107,7 @@ distance query target =
 
 subStringDistance :: String -> String -> Maybe Float
 subStringDistance query target =
-  case query `Data.List.isInfixOf` (map Data.Char.toLower target) of
+  case query `Data.List.isInfixOf` target of
     False ->
       Nothing
     True ->

@@ -18,6 +18,7 @@ import System.Directory
 
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Aeson as Aeson
+import qualified Data.Char
 
 import qualified Entry
 import Utils
@@ -71,6 +72,7 @@ load docRoot language version = do
               , Entry.language = language
               , Entry.version = version
               , Entry.source = devdocs
+              , Entry.nameLower = map Data.Char.toLower name
               }
 
 getDocFile :: String -> String -> String -> String

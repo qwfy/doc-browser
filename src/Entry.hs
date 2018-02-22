@@ -21,11 +21,12 @@ import GHC.Generics (Generic)
 
 -- the choice of String is due to that Text.EditDistance only supports String
 data T = T
-  { language :: String
-  , version  :: String
-  , name     :: String
-  , path     :: String
-  , source   :: String
+  { language  :: String
+  , version   :: String
+  , name      :: String
+  , path      :: String
+  , source    :: String
+  , nameLower :: String
   } deriving (Eq, Ord, Show, Generic, NFData)
 
 buildUrl :: T -> Int -> Text
