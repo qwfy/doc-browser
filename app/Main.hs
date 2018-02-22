@@ -89,7 +89,7 @@ main = do
 
     , defMethod' "search"
         (\obj txt -> do
-            case Search.makeQuery txt of
+            case Search.makeQuery (Text.unpack txt) of
               Nothing -> do
                 let writeOp = writeTVar matchesTVar [] `STM.orElse` return ()
                 STM.atomically writeOp

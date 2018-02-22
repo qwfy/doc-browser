@@ -8,9 +8,7 @@ module Search
   , makeQuery
   ) where
 
-import Data.Text (Text)
 import qualified Data.List
-import qualified Data.Text as Text
 import qualified Data.Map.Strict as Map
 import qualified Data.Char
 import qualified Data.Array
@@ -27,30 +25,35 @@ import Control.Applicative ((<|>))
 import qualified Entry
 import Utils
 
+
 data Query
-  = Global Text
-  | Limited String Text
+  = Global String
+  | Limited String String
   deriving (Show)
 
-makeQuery :: Text -> Maybe Query
-makeQuery txt =
-  let str = Text.unpack txt
-  in case str of
-       [] ->
-         Nothing
-       ('/':c1:c2:c3:t) ->
-         -- limit using prefix, like this: /pysigmoid
-         Just $ Limited [c1, c2] (Text.pack (c3:t))
-       ('/':_) ->
-         -- cannot start a search with /
-         Nothing
-       _ ->
-         case reverse str of
-           (c1:c2:'/':c3:t) ->
-             -- limit using suffix, like this: sigmoid/py
-             Just $ Limited [c2, c1] (Text.pack . reverse $ (c3:t))
-           _ ->
-             Just . Global $ txt
+
+makeQuery :: String -> Maybe Query
+makeQuery str =
+  case str of
+    [] ->
+      Nothing
+
+    ('/':c1:c2:c3:t) ->
+      -- limit using prefix, like this: /tfsigmoid
+      Just $ Limited [c1, c2] (c3:t)
+
+    ('/':_) ->
+      -- cannot start a search with /
+      Nothing
+
+    _ ->
+      case reverse str of
+        (c1:c2:'/':c3:t) ->
+          -- limit using suffix, like this: sigmoid/tf
+          Just $ Limited [c2, c1] (reverse $ (c3:t))
+        _ ->
+          Just . Global $ str
+
 
 shortcuts = Map.fromList
   [ ("hs", "Haskell")
@@ -59,6 +62,7 @@ shortcuts = Map.fromList
   , ("np", "NumPy")
   , ("pd", "pandas")
   ]
+
 
 filterEntry :: Query -> [Entry.T] -> [Entry.T]
 filterEntry (Global _) es = es
@@ -69,18 +73,22 @@ filterEntry (Limited abbr _) es =
     Just language ->
       filter (\entry -> Entry.language entry == language) es
 
-getQueryText (Global t) = t
-getQueryText (Limited _ t) = t
 
--- TODO @incomplete: case insensitive
+getQueryTextLower query =
+  let queryStr = case query of
+        Global s -> s
+        Limited _ s -> s
+  in map Data.Char.toLower queryStr
+
+
 -- TODO @incomplete: performance
 search :: TVar [Entry.T] -> Query -> Int -> IO [Entry.T]
 search entriesTVar query limit = do
-  let txt = getQueryText query
+  let queryStr = getQueryTextLower query
   entries <- filterEntry query <$> readTVarIO entriesTVar
 
   entries
-    |> map (distance (compileQuery txt) txt . Entry.name)
+    |> map (distance queryStr . Entry.name)
     |> (flip zip) entries
     |> filter (Data.Maybe.isJust . fst)
     |> Data.List.sort
@@ -88,38 +96,29 @@ search entriesTVar query limit = do
     |> take limit
     |> return
 
-compileQuery :: Text -> Regex
-compileQuery query =
-  query
-    |> Text.unpack
-    |> map escape
-    |> Data.List.intercalate ".*?"
-    |> makeRegexOpts compOpts defaultExecOpt
-  where
-    -- https://www.pcre.org/original/doc/html/pcrepattern.html#SEC5
-    escape c
-      | Data.Char.isAlphaNum c = [c]
-      | otherwise = ['\\', c]
-    compOpts = foldl (.|.) defaultCompOpt [compCaseless]
 
 -- note: this is not a proper metric
-distance :: Regex -> Text -> String -> Maybe Float
-distance regex query target =
-  subStringDistance query (Text.pack target) <|> regexDistance regex (Text.unpack query) target
+distance :: String -> String -> Maybe Float
+distance query target =
+  let a = subStringDistance query target
+      b = regexDistance (queryToRegex query) (length query) target
+  in a <|> b
 
-subStringDistance :: Text -> Text -> Maybe Float
+
+subStringDistance :: String -> String -> Maybe Float
 subStringDistance query target =
-  case Text.toLower query `Text.isInfixOf` Text.toLower target of
+  case query `Data.List.isInfixOf` (map Data.Char.toLower target) of
     False ->
       Nothing
     True ->
       let epsilon = 0.00001
-          weight = fromIntegral (Text.length target) / fromIntegral (Text.length query)
+          weight = fromIntegral (length target) / fromIntegral (length query)
       in Just $ epsilon * weight
 
-regexDistance :: Regex -> String -> String -> Maybe Float
-regexDistance query queryStr target =
-  case matchAll query target of
+
+regexDistance :: Regex -> Int -> String -> Maybe Float
+regexDistance regex queryLength target =
+  case matchAll regex target of
     [] ->
       Nothing
     matchesArray ->
@@ -130,11 +129,26 @@ regexDistance query queryStr target =
 
           matchString = subString target matchOffset matchLength
 
-          weight = fromIntegral (length target) / fromIntegral (length queryStr)
+          weight = fromIntegral (length target) / fromIntegral queryLength
 
-          d = fromIntegral (length matchString - length queryStr) / fromIntegral (length queryStr)
+          d = fromIntegral (length matchString - queryLength) / fromIntegral queryLength
 
       in Just $ d * weight
+
+
+queryToRegex :: String -> Regex
+queryToRegex query =
+  query
+    |> map escape
+    |> Data.List.intercalate ".*?"
+    |> makeRegexOpts compOpts defaultExecOpt
+  where
+    -- https://www.pcre.org/original/doc/html/pcrepattern.html#SEC5
+    escape c
+      | Data.Char.isAlphaNum c = [c]
+      | otherwise = ['\\', c]
+    compOpts = foldl (.|.) defaultCompOpt [compCaseless]
+
 
 subString :: String -> Int -> Int -> String
 subString str offset length' =
