@@ -44,7 +44,6 @@ extra-deps:
 - Cabal-1.24.2.0
 - process-1.4.3.0
 - c2hs-0.28.3
-- fuzzy-0.1.0.0
 
 
 # Override default flag values for local packages and extra-deps

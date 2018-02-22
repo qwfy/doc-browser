@@ -9,15 +9,15 @@ module Search
   ) where
 
 import Data.Text (Text)
+import qualified Data.List
 import qualified Data.Text as Text
 import qualified Data.Map.Strict as Map
 
-import qualified Text.Fuzzy as Fuzzy
-
 import Control.Concurrent.STM.TVar
 
+import Text.EditDistance
+
 import qualified Entry
-import Utils
 
 data Query
   = Global Text
@@ -71,7 +71,16 @@ search entriesTVar query limit = do
   let txt = getQueryText query
   entries <- filterEntry query <$> readTVarIO entriesTVar
 
-  Fuzzy.filter (Text.unpack txt) entries "" "" Entry.name False
-    |> take limit
-    |> map Fuzzy.original
-    |> return
+  let measure = Text.EditDistance.levenshteinDistance
+        editCosts (Text.unpack $ Text.toLower txt)
+  let distances = map (measure . Entry.name) entries
+  let tagged = zip distances entries
+  let sorted = map snd $ Data.List.sort tagged
+  return $ take limit sorted
+  where
+    editCosts = Text.EditDistance.EditCosts
+      { deletionCosts = Text.EditDistance.ConstantCost 10
+      , insertionCosts = Text.EditDistance.ConstantCost 1
+      , substitutionCosts = Text.EditDistance.ConstantCost 10
+      , transpositionCosts = Text.EditDistance.ConstantCost 5
+      }

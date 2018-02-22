@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 265bf72d7a4b387b291b26dddfdd76122f3ead3fec1a2a1c4a61761db414fb28
+-- hash: 41e55a625d5c6985e9fe1d90e75223cd0eeee88fa028b0270b379ac6c269696b
 
 name:           doc-browser
 version:        0.1.0.0
@@ -42,7 +42,6 @@ library
     , directory
     , edit-distance
     , filepath
-    , fuzzy
     , hdaemonize
     , hsqml
     , http-types
@@ -89,7 +88,6 @@ executable doc-browser
     , doc-browser
     , edit-distance
     , filepath
-    , fuzzy
     , hdaemonize
     , hsqml
     , http-types
@@ -129,7 +127,6 @@ executable prof-search
     , doc-browser
     , edit-distance
     , filepath
-    , fuzzy
     , hdaemonize
     , hsqml
     , http-types

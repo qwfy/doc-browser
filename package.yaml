@@ -48,7 +48,6 @@ dependencies:
 - clock
 - criterion
 - deepseq
-- fuzzy
 
 library:
   source-dirs: src
