@@ -10,8 +10,8 @@ Rectangle {
     anchors.right: parent.right
 
     // TODO @incomplete: for some unknown reason, this cannot be from a variable
-    height: 35
-    radius: 3.5
+    height: 40
+    radius: 3.8
 
     signal clicked()
 
@@ -40,7 +40,6 @@ Rectangle {
             id: shortcut
             anchors.left: parent.left
             anchors.verticalCenter: parent.verticalCenter
-            //leftPadding: Style.ewPadding
             text: MatchJs.shortcutText(index)
             font: Style.matchShortcutFont
             color: root.isSelected ? Style.selectedFg : MatchJs.shortcutColor(index)
