@@ -9,6 +9,13 @@ copyright:           "Incomplete"
 extra-source-files:
 - README.md
 
+data-files:
+- ui/**/*.qml
+- ui/**/*.js
+- ui/**/qmldir
+- ui/**/*.png
+- ui/**/SOURCE
+
 synopsis:            A documentation browser
 category:            Application
 
@@ -17,19 +24,14 @@ description:         Please see the README on Github at <https://github.com/qwfy
 dependencies:
 - base >= 4.7 && < 5
 - dbus
-- hdaemonize
-- containers
 - filepath
+- containers
 - hsqml
 - text
 - aeson
 - bytestring
-- edit-distance
 - warp
 - wai
-- wai-routing
-- wai-predicates
-- wai-extra
 - binary
 - http-types
 - network-uri
@@ -40,7 +42,6 @@ dependencies:
 - tar
 - temporary
 - directory
-- clock
 - criterion
 - deepseq
 - regex-pcre

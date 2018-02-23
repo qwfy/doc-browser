@@ -21,6 +21,8 @@ import qualified DevdocsMeta
 import qualified Server
 import qualified Opt
 
+import Paths_doc_browser
+
 
 -- this is what will be displayed in the search results
 -- the choice of Text is due to that HsQML cannot marshal String
@@ -123,9 +125,11 @@ startGUI configRoot = do
   -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
   True <- setQtFlag QtShareOpenGLContexts True
 
+  mainQml <- getDataFileName "ui/main.qml"
+
   runEngineLoop
     defaultEngineConfig
-    { initialDocument = fileDocument "ui/main.qml"
+    { initialDocument = fileDocument mainQml
     , contextObject = Just $ anyObjRef objectContext
     }
 
