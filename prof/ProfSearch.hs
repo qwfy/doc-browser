@@ -14,7 +14,6 @@ import Criterion.Main
 
 import Data.Semigroup
 
-
 main :: IO ()
 main = do
   configRoot <- getXdgDirectory XdgConfig "doc-browser"

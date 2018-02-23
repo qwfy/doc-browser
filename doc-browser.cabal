@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 744748abb62c11d36ba24c4f2a0f13271418db9e1c9e9dce5519c7b64909117d
+-- hash: 530caab195792a855fa3608f5ca7ca5fef882b156989010e436216c7ffbcf86d
 
 name:           doc-browser
 version:        0.1.0
@@ -496,8 +496,9 @@ executable doc-browser
       Paths_doc_browser
   default-language: Haskell2010
 
-executable prof-search
-  main-is: Main.hs
+benchmark prof-search
+  type: exitcode-stdio-1.0
+  main-is: ProfSearch.hs
   hs-source-dirs:
       prof
   ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
