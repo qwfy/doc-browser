@@ -1,22 +1,17 @@
 name:                doc-browser
-version:             0.1.0.0
+version:             0.1.0
 github:              "qwfy/doc-browser"
-license:             BSD3
+license:             MPL-2.0
 author:              "Incomplete"
 maintainer:          "incomplete@aixon.co"
 copyright:           "Incomplete"
 
 extra-source-files:
 - README.md
-- ChangeLog.md
 
-# Metadata used when publishing your package
-# synopsis:            Short description of your package
-# category:            Web
+synopsis:            A documentation browser
+category:            Application
 
-# To avoid duplicated efforts in documentation and dealing with the
-# complications of embedding Haddock markup inside cabal files, it is
-# common to point users to the README.md file.
 description:         Please see the README on Github at <https://github.com/qwfy/doc-browser#readme>
 
 dependencies:

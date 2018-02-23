@@ -2,23 +2,24 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ec10a59d989bb9b3bb6b67a23bd49bf4542d255aba2f3214a807f6b085d7a7a2
+-- hash: 98c29225242678343534bfca65ea9d7ef16a8a16433e355da5dc0cf8dd3390b9
 
 name:           doc-browser
-version:        0.1.0.0
+version:        0.1.0
+synopsis:       A documentation browser
 description:    Please see the README on Github at <https://github.com/qwfy/doc-browser#readme>
+category:       Application
 homepage:       https://github.com/qwfy/doc-browser#readme
 bug-reports:    https://github.com/qwfy/doc-browser/issues
 author:         Incomplete
 maintainer:     incomplete@aixon.co
 copyright:      Incomplete
-license:        BSD3
+license:        MPL-2.0
 license-file:   LICENSE
 build-type:     Simple
 cabal-version:  >= 1.10
 
 extra-source-files:
-    ChangeLog.md
     README.md
 
 source-repository head
