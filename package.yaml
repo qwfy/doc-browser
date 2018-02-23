@@ -45,6 +45,8 @@ dependencies:
 - regex-pcre
 - array
 - optparse-applicative
+- transformers
+- cache
 
 library:
   source-dirs: src

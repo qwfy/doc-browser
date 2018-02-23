@@ -10,12 +10,10 @@ module DevdocsMeta
   ) where
 
 import GHC.Generics (Generic)
-import qualified Network.Wreq as Wreq
-import Network.HTTP.Types.Status
 
-import qualified Control.Lens as Lens
 import qualified Codec.Compression.GZip as GZip
 import qualified Codec.Archive.Tar as Tar
+import Control.Monad.Trans.Except
 
 import Data.Maybe
 import Data.Text (Text)
@@ -70,7 +68,7 @@ instance Aeson.FromJSON Meta where
 
 printTypeMap :: IO ()
 printTypeMap = do
-  metasR <- getMetaJson metaJsonUrl
+  metasR <- runExceptT $ getMetaJson metaJsonUrl
   case metasR of
     Left err ->
       report ["error decoding json:", err]
@@ -80,28 +78,10 @@ printTypeMap = do
       mapM_ TextIO.putStrLn (Data.List.nub $ map showMeta metas)
       TextIO.putStrLn "  ]"
 
-download :: String -> IO (Either String LBS.ByteString)
-download url = do
-  resp <- Wreq.get url
-  let respStatus = resp Lens.^. Wreq.responseStatus
-  if respStatus == status200
-    then
-      return . Right $ resp Lens.^. Wreq.responseBody
-    else
-      return . Left . unwords $ ["error downloading", url, show respStatus]
-
-getMetaJson :: String -> IO (Either String [Meta])
+getMetaJson :: String -> ExceptT String IO [Meta]
 getMetaJson url = do
-  resp <- download url
-  case resp of
-    Left e ->
-      return . Left $ e
-    Right bs ->
-      case Aeson.eitherDecode bs of
-        Left err ->
-          return . Left . unwords $ ["error decoding json", err]
-        Right metas -> do
-          return $ Right metas
+  bs <- download url
+  ExceptT . return $ Aeson.eitherDecode bs
 
 findRecent :: [Meta] -> [String] -> [Either String Meta]
 findRecent metas wants =
@@ -134,15 +114,12 @@ untgz bs filePath =
   let decompressed = GZip.decompress bs
   in Tar.unpack filePath (Tar.read decompressed)
 
-report strs =
-  putStrLn . unwords $ strs
-
 -- TODO @incomplete: multithreads and proxy
 downloadMany :: FilePath -> [String] -> IO ()
 downloadMany unpackTo' wants = do
   report ["downloading", show $ length wants, "devdocs to", unpackTo]
 
-  metaJsonR <- getMetaJson metaJsonUrl
+  metaJsonR <- runExceptT $ getMetaJson metaJsonUrl
   case metaJsonR of
     Left e ->
       report [e]
@@ -156,7 +133,7 @@ downloadMany unpackTo' wants = do
     downloadOne (Right meta@(Meta {metaName, metaRelease})) = do
       let url = toDownloadUrl meta
       report ["downloading", Text.unpack metaName, url]
-      result <- download url
+      result <- runExceptT $ download url
       case result of
         Left e ->
           report [e]

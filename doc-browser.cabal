@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ab22d66fb393cfe301908786e71fd29b7760ada98611edca43a2afaf7e4adf59
+-- hash: 807bf26b4029575850cdf8494fdf65777fdd0f586dcaff212dc2f5bbb22a0056
 
 name:           doc-browser
 version:        0.1.0
@@ -428,6 +428,7 @@ library
     , base >=4.7 && <5
     , binary
     , bytestring
+    , cache
     , containers
     , criterion
     , dbus
@@ -444,6 +445,7 @@ library
     , tar
     , temporary
     , text
+    , transformers
     , wai
     , warp
     , wreq
@@ -471,6 +473,7 @@ executable doc-browser
     , base >=4.7 && <5
     , binary
     , bytestring
+    , cache
     , containers
     , criterion
     , dbus
@@ -488,6 +491,7 @@ executable doc-browser
     , tar
     , temporary
     , text
+    , transformers
     , wai
     , warp
     , wreq
@@ -508,6 +512,7 @@ benchmark prof-search
     , base >=4.7 && <5
     , binary
     , bytestring
+    , cache
     , containers
     , criterion
     , dbus
@@ -525,6 +530,7 @@ benchmark prof-search
     , tar
     , temporary
     , text
+    , transformers
     , wai
     , warp
     , wreq

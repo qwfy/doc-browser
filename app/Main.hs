@@ -59,12 +59,12 @@ defClassMatch =
     ]
 
 
-startGUI :: FilePath -> IO ()
-startGUI configRoot = do
+startGUI :: FilePath -> FilePath -> IO ()
+startGUI configRoot cacheRoot = do
 
   -- TODO @incomplete: read port from config
   let port = 7701
-  _threadId <- Concurrent.forkIO $ Server.start port configRoot
+  _threadId <- Concurrent.forkIO $ Server.start port configRoot cacheRoot
 
   -- TODO @incomplete: check for updates
   allEntries <- Devdocs.loadAll configRoot
@@ -139,10 +139,11 @@ main = do
   opt <- Opt.get
 
   configRoot <- getXdgDirectory XdgConfig "doc-browser"
+  cacheRoot <- getXdgDirectory XdgCache "doc-browser"
 
   case opt of
     Opt.StartGUI ->
-      startGUI configRoot
+      startGUI configRoot cacheRoot
 
     Opt.InstallDevdocs languages ->
       DevdocsMeta.downloadMany configRoot languages
