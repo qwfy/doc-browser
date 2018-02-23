@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 530caab195792a855fa3608f5ca7ca5fef882b156989010e436216c7ffbcf86d
+-- hash: ab22d66fb393cfe301908786e71fd29b7760ada98611edca43a2afaf7e4adf59
 
 name:           doc-browser
 version:        0.1.0
@@ -13,7 +13,7 @@ homepage:       https://github.com/qwfy/doc-browser#readme
 bug-reports:    https://github.com/qwfy/doc-browser/issues
 author:         Incomplete
 maintainer:     incomplete@aixon.co
-copyright:      Incomplete
+copyright:      Incomplete 2018
 license:        MPL-2.0
 license-file:   LICENSE
 build-type:     Simple
