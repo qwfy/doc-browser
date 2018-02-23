@@ -1,5 +1,5 @@
 name:           doc-browser
-version:        0.1.0
+version:        0.1.1
 author:         Incomplete
 maintainer:     incomplete@aixon.co
 copyright:      Incomplete 2018
@@ -11,6 +11,7 @@ description:    Please see the README on Github at <https://github.com/qwfy/doc-
 
 extra-source-files:
 - README.md
+- CHANGELOG.md
 
 data-files:
 - ui/**/*.qml
