@@ -5,12 +5,12 @@ module Main (main) where
 import Graphics.QML
 import Data.Typeable (Typeable)
 
+import Control.Concurrent
+import Control.Monad.STM
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TMVar
-import qualified Control.Monad.STM as STM
-import qualified Control.Concurrent as Concurrent
 
-import qualified System.Posix.Daemonize as Daemonize
+import System.Posix.Daemonize
 
 import Data.Text (Text)
 import qualified Data.Text as Text
@@ -36,8 +36,8 @@ data Match = Match
   , matchVersion  :: Text
   } deriving (Eq, Show, Typeable)
 
-entryToMatch :: Entry.T -> Int -> Match
-entryToMatch entry port = Match
+entryToMatch :: Int -> Entry.T -> Match
+entryToMatch port entry = Match
   { matchName     = Text.pack $ Entry.name entry
   , matchLanguage = Text.pack $ Entry.language entry
   , matchVersion  = Text.pack $ Entry.version entry
@@ -67,21 +67,15 @@ startGUI configRoot cacheRoot = do
 
   -- TODO @incomplete: read port from config
   let port = 7701
-  _threadId <- Concurrent.forkIO $ Server.start port configRoot cacheRoot
+  _serverThreadId <- forkIO $ Server.start port configRoot cacheRoot
 
-  -- TODO @incomplete: check for updates
-  allEntries <- Devdocs.loadAll configRoot
-  allEntriesTVar <- STM.atomically $ newTVar allEntries
-
-  report ["number of entries:", show $ length allEntries]
-
-  matchesTVar <- STM.atomically $ newTVar ([] :: [Match])
+  matchesTVar <- atomically $ newTVar ([] :: [Match])
 
   -- newSignalKey :: SignalSuffix p => IO (SignalKey p)
   -- instance SignalSuffix (IO ())
   matchesKey <- newSignalKey :: IO (SignalKey (IO ()))
 
-  searchThreadIdTm <- STM.atomically $ newEmptyTMVar
+  querySlot <- atomically $ newEmptyTMVar
 
   classMatch <- defClassMatch
 
@@ -93,34 +87,22 @@ startGUI configRoot cacheRoot = do
           mapM (newObject classMatch) matches)
 
     , defMethod' "search"
-        (\obj txt -> do
-            case Search.makeQuery (Text.unpack txt) of
-              Nothing -> do
-                let writeOp = writeTVar matchesTVar [] `STM.orElse` return ()
-                STM.atomically writeOp
-                fireSignal matchesKey obj
-
-              Just query -> do
-                oldThreadIdO <- STM.atomically $ tryTakeTMVar searchThreadIdTm
-                case oldThreadIdO of
-                  Nothing ->
-                    return ()
-                  Just oldThreadId ->
-                    Concurrent.killThread oldThreadId
-
-                newThreadId <- Concurrent.forkIO $ do
-                    -- TODO @incomplete: make this limit configurable
-                    entries <- Search.search allEntriesTVar query 27
-                    let matches = map (flip entryToMatch port) entries
-                    let writeOp = writeTVar matchesTVar matches `STM.orElse` return ()
-                    STM.atomically writeOp
-                    fireSignal matchesKey obj
-
-                STM.atomically $ putTMVar searchThreadIdTm newThreadId
-                return ())
+        (\_obj txt ->
+          atomically $ updateTMVar querySlot (Text.unpack txt))
     ]
 
   objectContext <- newObject classContext ()
+
+  -- send matches to C++ side
+  let sendEntries entries = do
+        let matches = map (entryToMatch port) entries
+        atomically $ writeTVar matchesTVar matches `orElse` return ()
+        fireSignal matchesKey objectContext
+
+  -- TODO @incomplete: check for updates
+  allEntries <- Devdocs.loadAll configRoot
+  report ["number of entries:", show $ length allEntries]
+  _searchThreadId <- Search.startThread allEntries querySlot sendEntries
 
   -- this flag is required by QtWebEngine
   -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
@@ -138,6 +120,11 @@ startGUI configRoot cacheRoot = do
   -- > It is recommended that you call this function at the end of your program ...
   shutdownQt
 
+updateTMVar :: TMVar a -> a -> STM ()
+updateTMVar slot x = do
+  _ <- tryTakeTMVar slot
+  putTMVar slot x
+
 
 main :: IO ()
 main = do
@@ -148,7 +135,7 @@ main = do
 
   case opt of
     Opt.StartGUI ->
-      Daemonize.daemonize $ startGUI configRoot cacheRoot
+      daemonize $ startGUI configRoot cacheRoot
 
     Opt.InstallDevdocs languages ->
       DevdocsMeta.downloadMany configRoot languages

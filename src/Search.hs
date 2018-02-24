@@ -6,6 +6,7 @@
 module Search
   ( search
   , makeQuery
+  , startThread
   ) where
 
 import qualified Data.List
@@ -16,7 +17,10 @@ import qualified Data.Tuple
 import qualified Data.Maybe
 import qualified Data.ByteString.Char8 as C
 
-import Control.Concurrent.STM.TVar
+import Control.Monad
+import Control.Concurrent
+import Control.Monad.STM
+import Control.Concurrent.STM.TMVar
 
 import Text.Regex.PCRE
 import Data.Bits ((.|.))
@@ -84,20 +88,17 @@ getQueryTextLower query =
   in map Data.Char.toLower queryStr
 
 
--- TODO @incomplete: performance
-search :: TVar [Entry.T] -> Query -> Int -> IO [Entry.T]
-search entriesTVar query limit = do
+search :: [Entry.T] -> Int -> Query -> [Entry.T]
+search allEntries limit query =
   let queryStr = getQueryTextLower query
-  entries <- filterEntry query <$> readTVarIO entriesTVar
-
-  entries
-    |> map (distance queryStr . Entry.nameLower)
-    |> (flip zip) entries
-    |> filter (Data.Maybe.isJust . fst)
-    |> Data.List.sort
-    |> map snd
-    |> take limit
-    |> return
+      entries = filterEntry query allEntries
+  in entries
+       |> map (distance queryStr . Entry.nameLower)
+       |> (flip zip) entries
+       |> filter (Data.Maybe.isJust . fst)
+       |> Data.List.sort
+       |> map snd
+       |> take limit
 
 
 -- note: this is not a proper metric
@@ -157,3 +158,13 @@ queryToRegex query =
 subString :: C.ByteString -> Int -> Int -> C.ByteString
 subString str offset length' =
   str |> C.drop offset |> C.take length'
+
+startThread :: [Entry.T] -> TMVar String -> ([Entry.T] -> IO ())-> IO ThreadId
+startThread entries querySlot handleEntries =
+  forkIO . forever $ do
+    queryStr <- atomically $ takeTMVar querySlot
+    let matches = case Search.makeQuery queryStr of
+          Nothing -> []
+          -- TODO @incomplete: make this limit configurable
+          Just query -> Search.search entries 27 query
+    handleEntries matches
