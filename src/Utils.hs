@@ -7,6 +7,7 @@ module Utils
   , download
   , downloadFile
   , report
+  , updateTMVar
   ) where
 
 import qualified Data.Text as Text
@@ -16,6 +17,9 @@ import qualified Control.Lens as Lens
 
 import Control.Monad.Trans.Except
 import Control.Monad.Trans.Class
+
+import Control.Monad.STM
+import Control.Concurrent.STM.TMVar
 
 import Network.HTTP.Types.Status
 import System.FilePath
@@ -51,3 +55,8 @@ downloadFile url saveTo = do
 -- TODO @incomplete: proper logging
 report strs =
   putStrLn . unwords $ strs
+
+updateTMVar :: TMVar a -> a -> STM ()
+updateTMVar slot x = do
+  _ <- tryTakeTMVar slot
+  putTMVar slot x

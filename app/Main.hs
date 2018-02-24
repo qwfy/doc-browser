@@ -120,12 +120,6 @@ startGUI configRoot cacheRoot = do
   -- > It is recommended that you call this function at the end of your program ...
   shutdownQt
 
-updateTMVar :: TMVar a -> a -> STM ()
-updateTMVar slot x = do
-  _ <- tryTakeTMVar slot
-  putTMVar slot x
-
-
 main :: IO ()
 main = do
   opt <- Opt.get
