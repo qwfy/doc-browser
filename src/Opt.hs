@@ -7,7 +7,7 @@ module Opt
   ) where
 
 import Options.Applicative
-import Data.Semigroup
+import Data.Monoid
 
 data Ground = Foreground | Background
 

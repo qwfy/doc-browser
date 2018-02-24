@@ -7,7 +7,7 @@ import Network.Wai
 import Network.HTTP.Types
 import Network.Wai.Handler.Warp (run)
 
-import Data.Semigroup
+import Data.Monoid
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Binary.Builder as Builder
