@@ -10,6 +10,8 @@ import Control.Concurrent.STM.TMVar
 import qualified Control.Monad.STM as STM
 import qualified Control.Concurrent as Concurrent
 
+import qualified System.Posix.Daemonize as Daemonize
+
 import Data.Text (Text)
 import qualified Data.Text as Text
 import System.Directory
@@ -133,6 +135,10 @@ startGUI configRoot cacheRoot = do
     , contextObject = Just $ anyObjRef objectContext
     }
 
+  -- https://hackage.haskell.org/package/hsqml-0.3.5.0/docs/Graphics-QML-Engine.html#v:shutdownQt
+  -- > It is recommended that you call this function at the end of your program ...
+  shutdownQt
+
 
 main :: IO ()
 main = do
@@ -143,7 +149,7 @@ main = do
 
   case opt of
     Opt.StartGUI ->
-      startGUI configRoot cacheRoot
+      Daemonize.daemonize $ startGUI configRoot cacheRoot
 
     Opt.InstallDevdocs languages ->
       DevdocsMeta.downloadMany configRoot languages

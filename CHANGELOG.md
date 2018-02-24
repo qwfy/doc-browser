@@ -1,6 +1,13 @@
 # Changelog
 
 
+## Unreleased
+
+### Added
+
+- Run the GUI in background.
+
+
 ## 0.1.1 - 2018-02-23
 
 ### Added

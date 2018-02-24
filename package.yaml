@@ -48,6 +48,7 @@ dependencies:
 - optparse-applicative
 - transformers
 - cache
+- hdaemonize
 
 library:
   source-dirs: src
