@@ -134,8 +134,11 @@ main = do
   cacheRoot <- getXdgDirectory XdgCache "doc-browser"
 
   case opt of
-    Opt.StartGUI ->
-      daemonize $ startGUI configRoot cacheRoot
+    Opt.StartGUI ground ->
+      let start = startGUI configRoot cacheRoot
+      in case ground of
+           Opt.Background -> daemonize start
+           Opt.Foreground -> start
 
     Opt.InstallDevdocs languages ->
       DevdocsMeta.downloadMany configRoot languages

@@ -3,13 +3,16 @@
 module Opt
   ( T(..)
   , get
+  , Ground(..)
   ) where
 
 import Options.Applicative
 import Data.Semigroup
 
+data Ground = Foreground | Background
+
 data T
-  = StartGUI
+  = StartGUI Ground
   | InstallDevdocs [String]
 
 
@@ -21,26 +24,25 @@ optParser =
   where
     optParser' :: Parser T
     optParser' =
-      startGUIParser <|> installDevdocsParser <|> pure StartGUI
-
+      startGUIParser <|> installDevdocsParser <|> pure (StartGUI Background)
 
 startGUIParser :: Parser T
 startGUIParser =
   flag' StartGUI
     (  long "gui"
-    <> help "Start the GUI. This is the default behaviour"
-    )
+    <> help "Start the GUI. This is the default behaviour")
+  <*> flag Background Foreground
+    (  long "foreground"
+    <> help "Run the GUI in foreground")
 
 
 installDevdocsParser :: Parser T
 installDevdocsParser = do
-  (InstallDevdocs . words) <$>
-    (strOption
+  InstallDevdocs . words <$>
+    strOption
       (  long "install-devdocs"
       <> metavar "DOC1 DOC2 ..."
-      <> help "Install devdocs' doc set. Separate multiple doc sets with a space"
-      )
-    )
+      <> help "Install devdocs' doc set. Separate multiple doc sets with a space")
 
 get :: IO T
 get = execParser optParser
