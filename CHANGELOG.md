@@ -6,6 +6,7 @@
 ### Added
 
 - Run the GUI in background.
+- Abbreviation for Erlang.
 
 
 ## 0.1.1 - 2018-02-23

@@ -21,6 +21,7 @@ import Control.DeepSeq (NFData)
 import GHC.Generics (Generic)
 
 -- the choice of String is due to that Text.EditDistance only supports String
+-- TODO @incomplete: use a newtype for these fields, it's quit confusing
 data T = T
   { language  :: String
   , version   :: String

@@ -56,12 +56,14 @@ makeQuery str =
           Just . Global $ str
 
 
+-- shortcuts :: [(AbbrStriing, Language)]
 shortcuts = Map.fromList
   [ ("hs", "Haskell")
   , ("py", "Python")
   , ("tf", "TensorFlow")
   , ("np", "NumPy")
   , ("pd", "pandas")
+  , ("er", "Erlang")
   ]
 
 

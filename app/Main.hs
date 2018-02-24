@@ -22,6 +22,7 @@ import qualified Devdocs
 import qualified DevdocsMeta
 import qualified Server
 import qualified Opt
+import Utils
 
 import Paths_doc_browser
 
@@ -72,7 +73,7 @@ startGUI configRoot cacheRoot = do
   allEntries <- Devdocs.loadAll configRoot
   allEntriesTVar <- STM.atomically $ newTVar allEntries
 
-  print ("number of entries", length allEntries)
+  report ["number of entries:", show $ length allEntries]
 
   matchesTVar <- STM.atomically $ newTVar ([] :: [Match])
 
@@ -98,8 +99,8 @@ startGUI configRoot cacheRoot = do
                 let writeOp = writeTVar matchesTVar [] `STM.orElse` return ()
                 STM.atomically writeOp
                 fireSignal matchesKey obj
-              Just query -> do
 
+              Just query -> do
                 oldThreadIdO <- STM.atomically $ tryTakeTMVar searchThreadIdTm
                 case oldThreadIdO of
                   Nothing ->
@@ -107,18 +108,16 @@ startGUI configRoot cacheRoot = do
                   Just oldThreadId ->
                     Concurrent.killThread oldThreadId
 
-                newThreadId <- Concurrent.forkIO
-                  (do
+                newThreadId <- Concurrent.forkIO $ do
                     -- TODO @incomplete: make this limit configurable
                     entries <- Search.search allEntriesTVar query 27
                     let matches = map (flip entryToMatch port) entries
                     let writeOp = writeTVar matchesTVar matches `STM.orElse` return ()
                     STM.atomically writeOp
-                    fireSignal matchesKey obj)
+                    fireSignal matchesKey obj
 
                 STM.atomically $ putTMVar searchThreadIdTm newThreadId
-                return ()
-        )
+                return ())
     ]
 
   objectContext <- newObject classContext ()
