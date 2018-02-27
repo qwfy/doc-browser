@@ -21,6 +21,7 @@ Window {
 
     Shortcut {
       sequence: "/"
+      // TODO @incomplete: there maybe a confiction here
       onActivated: Logic.enterMode(Logic.MODE.inputQuery)
     }
 
