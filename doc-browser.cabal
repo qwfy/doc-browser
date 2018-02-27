@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: f766be510692c3f1abc23ad2d2593916a503c7c6a3479b9f0282c322699650ca
+-- hash: cda453754822b13a0e19caedcc7101acdc543b57c5557f266ed028be086d6354
 
 name:           doc-browser
 version:        0.1.1
@@ -422,7 +422,7 @@ source-repository head
 library
   hs-source-dirs:
       src
-  ghc-options: -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
+  ghc-options: -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror -O2
   build-depends:
       aeson
     , array
@@ -468,7 +468,7 @@ executable doc-browser
   main-is: Main.hs
   hs-source-dirs:
       app
-  ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
+  ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -O2 -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
   build-depends:
       aeson
     , array
@@ -508,7 +508,7 @@ benchmark prof-search
   main-is: ProfSearch.hs
   hs-source-dirs:
       prof
-  ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
+  ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -O2 -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
   build-depends:
       aeson
     , array

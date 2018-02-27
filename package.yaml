@@ -57,6 +57,7 @@ library:
   - -fno-warn-type-defaults
   - -fno-warn-missing-signatures
   - -Werror
+  - -O2
 
 executables:
   doc-browser:
@@ -68,6 +69,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     - -Wall
+    - -O2
     - -fno-warn-type-defaults
     - -fno-warn-missing-signatures
     - -Werror
