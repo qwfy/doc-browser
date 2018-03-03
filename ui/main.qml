@@ -17,10 +17,7 @@ Window {
 
     Shortcut {
         sequence: "/"
-        onActivated: {
-            searchInput.focus = true;
-            if (matchContainer.selected !== -1) matchContainer.selected = -1;
-        }
+        onActivated: searchInput.focus = true
     }
 
     // =====================================================================
@@ -111,7 +108,19 @@ Window {
                 font: Style.searchFont
 
                 onTextChanged: {
+                    // TODO @incomplete:
+                    //
+                    // Ideally, matchContainer.selected should be set to -1 when
+                    // onMatchesChanged, to reflect the fact that the selection
+                    // is no longer correct due to the change of the matches.
+                    //
+                    // But I haven't found a way to do this, as an approximation,
+                    // do it here, which assumes that whenever the text changed,
+                    // so does the matches. This assumption is not always true,
+                    // when it is false, we suffer from a bad performance, but
+                    // the functionality is still correct.
                     if (matchContainer.selected !== -1) matchContainer.selected = -1;
+
                     search(text);
                 }
 
