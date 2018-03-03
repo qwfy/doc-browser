@@ -8,6 +8,7 @@
 - Run the GUI in background.
 - Abbreviation for Erlang.
 - Option to run the GUI in foreground.
+- Can use tab and arrow key to navigate matches.
 
 ### Fixed
 

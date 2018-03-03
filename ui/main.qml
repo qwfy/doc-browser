@@ -146,6 +146,15 @@ Window {
                         Match {
                             isSelected: index === matchContainer.selected
                             onClicked: Logic.matchOpen(index)
+                            Keys.onPressed: {
+                                if (event.key === Qt.Key_Tab || event.key === Qt.Key_Down) {
+                                    Logic.matchSelect(index + 1);
+                                    event.accepted = true;
+                                } else if (event.key === Qt.Key_Backtab || event.key === Qt.Key_Up) {
+                                    Logic.matchSelect(index - 1);
+                                    event.accepted = true;
+                                }
+                            }
                         }
 
                     }
