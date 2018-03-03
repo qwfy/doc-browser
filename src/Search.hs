@@ -109,6 +109,7 @@ distance query target =
   in a <|> b
 
 
+-- TODO @incomplete: a match at the begining is better than a match at the end
 subStringDistance :: C.ByteString -> C.ByteString -> Maybe Float
 subStringDistance query target =
   case query `C.isInfixOf` target of

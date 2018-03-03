@@ -4,36 +4,6 @@
 
 
 // =====================================================================
-// Model that controls the UI
-// =====================================================================
-var MODE = {
-    inputQuery: 0,
-    selecting: 1
-}
-
-function inMode(mode) {
-    return window.currentMode === mode;
-}
-
-function enterMode(mode) {
-  // console.log("mode transition: " + [window.currentMode, mode].toString());
-  if (! inMode(mode)) {
-    window.currentMode = mode;
-
-    // do these if a transition happened
-    if (mode === MODE.selecting) {
-      matchContainer.selected = matchBoundIndex(0);
-    }
-    else if (mode === MODE.inputQuery) {
-      matchContainer.selected = -1;
-    } else {
-        null.x = 1;
-    }
-  }
-}
-
-
-// =====================================================================
 // Match manipulation
 // =====================================================================
 
@@ -44,7 +14,7 @@ function matchBoundIndex(index) {
 function matchSelect(indexIn) {
     var index = matchBoundIndex(indexIn);
     if (index >= 0 && matchContainer.selected !== index) {
-        enterMode(MODE.selecting);
+        matchContainerFocusScope.focus = true;
         matchContainer.selected = index;
     }
 }
@@ -52,7 +22,7 @@ function matchSelect(indexIn) {
 // Select the specified match, and open it in a calculated tab.
 function matchOpen(indexIn) {
     var index = matchBoundIndex(indexIn);
-    if (!inMode(MODE.inputQuery) && index >= 0) {
+    if (index >= 0) {
         matchSelect(index);
 
         var tabIndex;
@@ -101,7 +71,7 @@ function tabBoundIndex(index) {
 
 function tabSelect(indexIn) {
     var index = tabBoundIndex(indexIn);
-    if (!inMode(MODE.inputQuery) && index >= 0 && tabContainer.currentIndex !== index) {
+    if (index >= 0 && tabContainer.currentIndex !== index) {
         tabContainer.currentIndex = index;
         tabContainer.getTab(index).active = true;
     }

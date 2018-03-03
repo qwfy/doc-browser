@@ -11,18 +11,16 @@ import "match.js" as MatchJs
 import "tab.js" as TabJs
 
 Window {
-    id: window
-
     title: "Doc Browser"
     visible: true
     visibility: Window.Maximized
 
-    property int currentMode: Logic.MODE.inputQuery
-
     Shortcut {
-      sequence: "/"
-      // TODO @incomplete: there maybe a confiction here
-      onActivated: Logic.enterMode(Logic.MODE.inputQuery)
+        sequence: "/"
+        onActivated: {
+            searchInput.focus = true;
+            if (matchContainer.selected !== -1) matchContainer.selected = -1;
+        }
     }
 
     // =====================================================================
@@ -96,52 +94,63 @@ Window {
             spacing: 1
 
             TextInput {
-
                 id: searchInput
-                focus: Logic.inMode(Logic.MODE.inputQuery)
+
+                // when the application started, this field will have focus
+                focus: true
 
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
+
                 anchors.leftMargin: Style.ewPadding
                 anchors.rightMargin: Style.ewPadding
 
                 selectByMouse: true
+
                 font: Style.searchFont
 
                 onTextChanged: {
-                    // this line is a dirty hack to steal focus from matches
-                    // when user clicks on the text input
-                    Logic.enterMode(Logic.MODE.inputQuery);
+                    if (matchContainer.selected !== -1) matchContainer.selected = -1;
                     search(text);
                 }
-                onAccepted: Logic.enterMode(Logic.MODE.selecting)
+
+                onAccepted: Logic.matchSelect(0)
 
                 Keys.onEscapePressed: text = ""
 
             }
 
 
-            Repeater {
-                id: matchContainer
+            FocusScope {
+                id: matchContainerFocusScope
+
                 anchors.top: searchInput.bottom
-                anchors.bottom: parent.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
-                Layout.fillHeight: true
 
-                model: matches
+                ColumnLayout {
+                    spacing: 1
+                    anchors.top: parent.top
+                    anchors.left: parent.left
+                    anchors.right: parent.right
 
-                property int selected: -1
+                    // TODO @incomplete: cut off off-screen elements
+                    Repeater {
+                        id: matchContainer
 
-                Match {
-                    isSelected: index === matchContainer.selected
-                    onClicked: {Logic.enterMode(Logic.MODE.selecting); Logic.matchOpen(index)}
+                        model: matches
+
+                        property int selected: -1
+
+                        Match {
+                            isSelected: index === matchContainer.selected
+                            onClicked: Logic.matchOpen(index)
+                        }
+
+                    }
                 }
-
             }
-
-
 
         }
 

@@ -8,17 +8,18 @@ QtObject {
     readonly property color selectedBg: "#586e75"
     readonly property color selectedFg: "#fdf6e3"
 
-    property font searchFont:
+    readonly property font searchFont:
     Qt.font({
                 pixelSize: 24,
                 family: "Input Mono"})
 
-    property font matchMainFont:
+    readonly property font matchMainFont:
     Qt.font({
                 pixelSize: 22,
-                family: "Input Mono, Light"})
+                family: "Input Mono, Light",
+                lineHeight: 1})
 
-    property font matchShortcutFont:
+    readonly property font matchShortcutFont:
     Qt.font({
                 pixelSize: 17,
                 family: "Input Mono, Light"})

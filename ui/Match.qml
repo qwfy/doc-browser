@@ -9,11 +9,23 @@ Rectangle {
     anchors.left: parent.left
     anchors.right: parent.right
 
-    // TODO @incomplete: for some unknown reason, this cannot be from a variable
+    // TODO @incomplete: for some unknown reasons, if this is from a variable,
+    // say, Math.floor(Style.matchMainFont.pixelSize * 1.818)
+    // the order of the matches will be messed up
     height: 40
-    radius: 3.8
+    radius: height / 10.526
 
     signal clicked()
+
+    // About focus and isSelected
+    //
+    // matchContainerFocusScope won't always have focus, when it doesn't,
+    // neither does this item. We still want a visual effect on
+    // matchContainer.selected-th match, even it doesn't have focus, thus
+    // the visual effect should be derived from isSelected, not from focus
+    //
+    // We also maintain the focus status, for the purpose of opening the
+    // selected match and navigating matches.
 
     property bool isSelected
     focus: isSelected
