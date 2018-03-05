@@ -100,7 +100,7 @@ findRecent metas wants =
     find want =
       case Data.List.find (isWanted want) mostRecent of
         Nothing ->
-          Left $ unwords [want, "is not found"]
+          Left $ unwords ["docset", want, "is not found"]
         Just meta ->
           Right meta
 
@@ -117,7 +117,7 @@ untgz bs filePath =
 -- TODO @incomplete: multithreads and proxy
 downloadMany :: FilePath -> [String] -> IO ()
 downloadMany unpackTo' wants = do
-  report ["downloading", show $ length wants, "devdocs to", unpackTo]
+  report ["downloading", show $ length wants, "docsets to", unpackTo]
 
   metaJsonR <- runExceptT $ getMetaJson metaJsonUrl
   case metaJsonR of
@@ -132,7 +132,13 @@ downloadMany unpackTo' wants = do
       report [e]
     downloadOne (Right meta@(Meta {metaName, metaRelease})) = do
       let url = toDownloadUrl meta
-      report ["downloading", Text.unpack metaName, url]
+      let docId = Data.List.intercalate "-"
+            [ Text.unpack metaName
+            , maybe "<no version>" Text.unpack metaRelease]
+      report [ "downloading"
+             , docId
+             , "from"
+             , url ]
       result <- runExceptT $ download url
       case result of
         Left e ->
@@ -142,9 +148,9 @@ downloadMany unpackTo' wants = do
                 (Text.unpack metaName)
                 (Text.unpack $ fromMaybe "" metaRelease)
           let dir = joinPath [unpackTo, langHome]
-          report ["unpacking to", dir]
+          report ["unpacking", docId, "to", dir]
           untgz bs dir
-          report ["downloaded", Text.unpack metaName]
+          report ["installed", docId]
 
 
 -- generated with:

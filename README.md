@@ -16,7 +16,7 @@ Many thanks to [Thibaut Courouble](https://github.com/Thibaut) and [other contri
 
 - This application ships with icons collected by DevDocs.
 
-- This application uses docsets, along the corresponding style sheets, produced by DevDocs.
+- This application uses docsets, along with the corresponding style sheets, produced by DevDocs.
 
 
 ## Implemented Features

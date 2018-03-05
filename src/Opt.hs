@@ -42,7 +42,7 @@ installDevdocsParser = do
     strOption
       (  long "install-devdocs"
       <> metavar "DOC1 DOC2 ..."
-      <> help "Install devdocs' doc set. Separate multiple doc sets with a space")
+      <> help "Install DevDocs' docset. Separate multiple docsets with a space")
 
 get :: IO T
 get = execParser optParser
