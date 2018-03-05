@@ -73,7 +73,7 @@ printTypeMap = do
     Left err ->
       report ["error decoding json:", err]
     Right metas -> do
-      let showMeta (Meta {metaName, metaType}) =
+      let showMeta Meta{metaName, metaType} =
             Text.concat ["  , (\"", metaName, "\", \"", metaType, "\")"]
       mapM_ TextIO.putStrLn (Data.List.nub $ map showMeta metas)
       TextIO.putStrLn "  ]"
@@ -84,10 +84,9 @@ getMetaJson url = do
   ExceptT . return $ Aeson.eitherDecode bs
 
 findRecent :: [Meta] -> [String] -> [Either String Meta]
-findRecent metas wants =
-  map find wants
+findRecent metas = map find
   where
-    metaSortKey (Meta {metaRelease, metaVersion, metaMtime}) =
+    metaSortKey Meta{metaRelease, metaVersion, metaMtime} =
       (metaRelease, metaVersion, metaMtime)
     compareMeta m1 m2 =
       compare (metaSortKey m1) (metaSortKey m2)
@@ -95,8 +94,8 @@ findRecent metas wants =
       |> Data.List.groupBy (\m1 m2 -> metaName m1 == metaName m2)
       |> map (Data.List.sortBy compareMeta)
       |> map last
-    isWanted want (Meta {metaName}) =
-      (Text.toLower $ Text.pack want) == Text.toLower metaName
+    isWanted want Meta{metaName} =
+      Text.toLower (Text.pack want) == Text.toLower metaName
     find want =
       case Data.List.find (isWanted want) mostRecent of
         Nothing ->
@@ -104,7 +103,7 @@ findRecent metas wants =
         Just meta ->
           Right meta
 
-toDownloadUrl (Meta {metaSlug}) =
+toDownloadUrl Meta{metaSlug} =
   concat ["http://dl.devdocs.io/", Text.unpack metaSlug, ".tar.gz"]
 
 -- TODO @incomplete: exception handling
@@ -128,9 +127,9 @@ downloadMany unpackTo' wants = do
       in mapM_ downloadOne matches
   where
     unpackTo = joinPath [unpackTo', Devdocs.devdocs]
-    downloadOne (Left e) = do
+    downloadOne (Left e) =
       report [e]
-    downloadOne (Right meta@(Meta {metaName, metaRelease})) = do
+    downloadOne (Right meta@Meta{metaName, metaRelease}) = do
       let url = toDownloadUrl meta
       let docId = Data.List.intercalate "-"
             [ Text.unpack metaName

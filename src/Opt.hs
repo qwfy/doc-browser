@@ -37,7 +37,7 @@ startGUIParser =
 
 
 installDevdocsParser :: Parser T
-installDevdocsParser = do
+installDevdocsParser =
   InstallDevdocs . words <$>
     strOption
       (  long "install-devdocs"

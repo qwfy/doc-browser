@@ -35,7 +35,7 @@ main = do
   -- read in all entries
   -- search all entries
   -- wait for result
-  matchesSlot1 <- atomically $ newEmptyTMVar
+  matchesSlot1 <- atomically newEmptyTMVar
   let searchFork c n = do
         _ <- forkIO $ do
             entries <- readTVarIO allEntriesTVar
@@ -48,10 +48,10 @@ main = do
   -- start a dedicated thread
   -- communicate the search thread with a TMVar
   -- wait for result
-  matchesSlot2 <- atomically $ newEmptyTMVar
-  querySlot <- atomically $ newEmptyTMVar
+  matchesSlot2 <- atomically newEmptyTMVar
+  querySlot <- atomically newEmptyTMVar
 
-  let handleEntries entries = do
+  let handleEntries entries =
         atomically $ putTMVar matchesSlot2 entries
 
   _ <- Search.startThread allEntries querySlot handleEntries

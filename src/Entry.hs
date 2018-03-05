@@ -32,7 +32,7 @@ data T = T
   } deriving (Eq, Ord, Show, Generic, NFData)
 
 buildUrl :: T -> Int -> Text
-buildUrl (T {source, language, version, path}) port =
+buildUrl T{source, language, version, path} port =
   let p = joinPath
         [ source
         , combineLangVer language version

@@ -42,7 +42,7 @@ app configRoot cache request respond = do
                ("devdocs" : langver : rest) ->
                  let (language, version) = breakLangVer . Text.unpack $ langver
                  in fetchDevdocs configRoot cache (Text.pack language) (Text.pack version) (Text.intercalate "/" rest)
-               _ -> do
+               _ ->
                  -- TODO @incomplete: better error message or use a type safe route lib
                  return $ Builder.fromByteString $ rawPathInfo request
   let headers = [("Content-Type", "text/html; charset=utf-8")]
@@ -81,7 +81,7 @@ fetchDevdocs configRoot cache language version path = do
             Data.String.fromString $ "<div class='_page _" ++ t ++ "'>"
       begin = Builder.fromLazyByteString $ begin' <> pageDiv
 
-  let end = Builder.fromLazyByteString $
+  let end = Builder.fromLazyByteString
         "    </div>\
         \  </main>\
         \</body>\

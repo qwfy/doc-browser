@@ -30,7 +30,7 @@ combineLangVer language version =
   language ++ "==" ++ version
 
 breakLangVer langver =
-  let (a, b') = (Text.breakOn "==") . Text.pack . takeFileName $ langver
+  let (a, b') = Text.breakOn "==" . Text.pack . takeFileName $ langver
       b = Text.drop (Text.length "==") b'
   in (Text.unpack a, Text.unpack b)
 
@@ -53,8 +53,7 @@ downloadFile url saveTo = do
   lift $ LBS.writeFile saveTo bs
 
 -- TODO @incomplete: proper logging
-report strs =
-  putStrLn . unwords $ strs
+report = putStrLn . unwords
 
 updateTMVar :: TMVar a -> a -> STM ()
 updateTMVar slot x = do

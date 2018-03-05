@@ -1,7 +1,5 @@
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE DeriveGeneric #-}
 
 module Search
   ( search
@@ -55,7 +53,7 @@ makeQuery str =
       case reverse str of
         (c1:c2:'/':c3:t) ->
           -- limit using suffix, like this: sigmoid/tf
-          Just $ Limited [c2, c1] (reverse $ (c3:t))
+          Just $ Limited [c2, c1] (reverse (c3:t))
         _ ->
           Just . Global $ str
 
@@ -94,7 +92,7 @@ search allEntries limit query =
       entries = filterEntry query allEntries
   in entries
        |> map (distance queryStr . Entry.nameLower)
-       |> (flip zip) entries
+       |> flip zip entries
        |> filter (Data.Maybe.isJust . fst)
        |> Data.List.sort
        |> map snd
@@ -112,13 +110,13 @@ distance query target =
 -- TODO @incomplete: a match at the begining is better than a match at the end
 subStringDistance :: C.ByteString -> C.ByteString -> Maybe Float
 subStringDistance query target =
-  case query `C.isInfixOf` target of
-    False ->
-      Nothing
-    True ->
+  if query `C.isInfixOf` target
+    then
       let epsilon = 0.00001
           weight = fromIntegral (C.length target) / fromIntegral (C.length query)
       in Just $ epsilon * weight
+    else
+      Nothing
 
 
 regexDistance :: Regex -> Int -> C.ByteString -> Maybe Float

@@ -75,7 +75,7 @@ startGUI configRoot cacheRoot = do
   -- instance SignalSuffix (IO ())
   matchesKey <- newSignalKey :: IO (SignalKey (IO ()))
 
-  querySlot <- atomically $ newEmptyTMVar
+  querySlot <- atomically newEmptyTMVar
 
   classMatch <- defClassMatch
 

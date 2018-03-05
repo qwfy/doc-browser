@@ -36,9 +36,9 @@ newtype IndexList = IndexList [Index]
 instance Aeson.FromJSON Index
 
 instance Aeson.FromJSON IndexList where
-  parseJSON = (\(Aeson.Object object) -> do
+  parseJSON = Aeson.withObject "IndexDotJson" $ \object -> do
     indices' <- object Aeson..: "entries"
-    IndexList <$> Aeson.parseJSONList indices')
+    IndexList <$> Aeson.parseJSONList indices'
 
 -- TODO @incomplete: use ADT?
 devdocs = "devdocs"
@@ -67,7 +67,7 @@ load docRoot language version = do
   let Just (IndexList indices) = Aeson.decode' bs
   return $ map indexToEntry indices
   where
-    indexToEntry (Index {name, path}) =
+    indexToEntry Index{name, path} =
       Entry.T { Entry.name = name
               , Entry.path = path
               , Entry.language = language
