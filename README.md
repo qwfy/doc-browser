@@ -19,7 +19,7 @@ Many thanks to [Thibaut Courouble](https://github.com/Thibaut) and [other contri
 - This application uses docsets, along the corresponding style sheets, produced by DevDocs.
 
 
-## Current Functions
+## Implemented Features
 
 - Native desktop application
 
@@ -30,7 +30,7 @@ Many thanks to [Thibaut Courouble](https://github.com/Thibaut) and [other contri
 - Easy-to-type shortcuts
 
 
-## Planned Functions (in random order)
+## Planned Features (in no particular order)
 
 - Hoogle integration
 
@@ -42,6 +42,7 @@ Many thanks to [Thibaut Courouble](https://github.com/Thibaut) and [other contri
 
 - Configurable
 
+- Display version number
 
 ## Current Status
 
@@ -54,15 +55,28 @@ Currently, this application can only be installed from source, and only tested o
 
 1. Install the font [Input Mono](http://input.fontbureau.com/), it is free for personal use. (In a later version you can specify the font you want to use)
 
-2. Install the Haskell tool [stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/)
+2. This application uses [Qt 5](http://qt-project.org/), make sure you have it installed. You also need [Qt WebEngine](https://wiki.qt.io/QtWebEngine), install it if it doesn't come with your Qt installation, on Arch Linux, this is provided by the [extra/qt5-webengine](https://www.archlinux.org/packages/extra/x86_64/qt5-webengine/) package.
 
-3. This application uses [Qt 5](http://qt-project.org/), make sure you have it installed.
+3. Install the Haskell tool [stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/).
+
+4. The build process depends on an executable called `c2hs`, you can install it using your package manager, or use the instruction below.
+
+5. You may also need an executable called `happy`, if the build process reports that this is missing, install it in a similar manner with c2hs.
 
 Finally, run these commands in the shell to build and install the application:
 
     git clone 'https://github.com/qwfy/doc-browser.git'
     cd doc-browser
+
+    # optionally, install `c2hs` if not already installed:
+    # stack install c2hs
+
     stack install
+
+    # optionally, install `happy` if the above command complains the lack of `happy`:
+    # and run `stack install` again after the installation
+    # stack install happy
+
     echo "binary installed to $(stack path --local-bin)"
 
 Note, due to a restriction of stack, you shouldn't delete the `.stack-work` directory inside the source code directory you just cloned after the build, for the installed binary still need to access files in it. If you really don't want to depends on this `.stack-wrok` directory, you can copy the `ui` directory of this repository to somewhere, say `/foo/ui`, and then start this application with `doc_browser_datadir=/foo doc-browser` instead of the usual `doc-browser`. This annoying situation will be handled when this application gets a packaging system for various operating systems.
@@ -70,7 +84,7 @@ Note, due to a restriction of stack, you shouldn't delete the `.stack-work` dire
 If you have trouble building this application, you can:
 
 - Is it a dependency problem?
-- Does [this page](http://www.gekkou.co.uk/software/hsqml/) help?
+- Does [this page](http://www.gekkou.co.uk/software/hsqml/) help? Especially the _Requirements_ and _Installation_ section.
 - Open an issue.
 
 
@@ -89,21 +103,21 @@ Start the application with:
 
 ## GUI
 
-- When the application starts, you will see a blank screen, you can start typing to search
+- When the application starts, you will see a blank screen, you can start typing to search.
 
-- Press "Enter" to accept query string
+- Press "Enter" to accept query string.
 
-- Press one of "ASDFWERTC", or "G" + one of "ASDFWERTC", or "V" + one of "ASDFWERTC" to open a match
+- Press one of "ASDFWERTC", or "G" + one of "ASDFWERTC", or "V" + one of "ASDFWERTC" to open a match.
 
-- "j" to select next match, and "k" to select the previous one, and "Enter" to open
+- "j" to select next match, and "k" to select the previous one, and "Enter" to open.
 
-- Press one of "1234567890" to go to the corresponding tab
+- Press one of "1234567890" to go to the corresponding tab.
 
-- "Alt+h" to go to the previous tab, "Alt+l" to go to the next tab
+- "Alt+h" to go to the previous tab, "Alt+l" to go to the next tab.
 
-- "Ctrl+w" to close the current tab
+- "Ctrl+w" to close the current tab.
 
-- Press "/" to input query string
+- Press "/" to input query string.
 
 - Prefix or suffix a search string with "/py", (eg. "/pyabspath", "abspath/py"), to limit the search to Python, more abbreviations are available, see file `src/Search.hs`, binding `shortcuts`.
 
