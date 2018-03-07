@@ -26,12 +26,15 @@ import Data.Bits ((.|.))
 import Control.Applicative ((<|>))
 
 import qualified Entry
+import qualified Hoo
 import Utils
 
 
+-- TODO @incomplete: refine this into smaller types?
 data Query
   = Global String
   | Limited String String
+  | Hoogle String
   deriving (Show)
 
 
@@ -40,6 +43,9 @@ makeQuery str =
   case str of
     [] ->
       Nothing
+
+    ('/':'h':'h':c:t) ->
+      Just $ Hoogle (c:t)
 
     ('/':c1:c2:c3:t) ->
       -- limit using prefix, like this: /tfsigmoid
@@ -77,12 +83,14 @@ filterEntry (Limited abbr _) es =
       []
     Just language ->
       filter (\entry -> Entry.language entry == language) es
+filterEntry (Hoogle _) _ = undefined
 
 
 getQueryTextLower query =
   let queryStr = case query of
         Global s -> s
         Limited _ s -> s
+        Hoogle _ -> undefined
   in map Data.Char.toLower queryStr
 
 
@@ -161,9 +169,14 @@ subString str offset length' =
 startThread :: [Entry.T] -> TMVar String -> ([Entry.T] -> IO ())-> IO ThreadId
 startThread entries querySlot handleEntries =
   forkIO . forever $ do
+    -- TODO @incomplete: make this limit configurable
+    let limit = 27
     queryStr <- atomically $ takeTMVar querySlot
-    let matches = case Search.makeQuery queryStr of
-          Nothing -> []
-          -- TODO @incomplete: make this limit configurable
-          Just query -> Search.search entries 27 query
+    matches <- case Search.makeQuery queryStr of
+                 Nothing ->
+                   return []
+                 Just (Hoogle s) ->
+                   Hoo.search limit s
+                 Just query ->
+                   return $ Search.search entries limit query
     handleEntries matches

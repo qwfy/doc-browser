@@ -49,6 +49,7 @@ dependencies:
 - transformers
 - cache
 - hdaemonize
+- hoogle
 
 library:
   source-dirs: src

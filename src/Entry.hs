@@ -31,6 +31,7 @@ data T = T
   , nameLower :: C.ByteString
   } deriving (Eq, Ord, Show, Generic, NFData)
 
+-- TODO @incomplete: refactor to handle hoogle
 buildUrl :: T -> Int -> Text
 buildUrl T{source, language, version, path} port =
   let p = joinPath

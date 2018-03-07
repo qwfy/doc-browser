@@ -42,11 +42,34 @@ app configRoot cache request respond = do
                ("devdocs" : langver : rest) ->
                  let (language, version) = breakLangVer . Text.unpack $ langver
                  in fetchDevdocs configRoot cache (Text.pack language) (Text.pack version) (Text.intercalate "/" rest)
-               _ ->
+               ("hoogle" : langver : rest) ->
+                 let (_, version) = breakLangVer . Text.unpack $ langver
+                 in fetchHoogle configRoot version (Text.unpack $ Text.intercalate "/" rest)
+               _ -> do
+                 print ("unhanlded url", rawPathInfo request)
                  -- TODO @incomplete: better error message or use a type safe route lib
                  return $ Builder.fromByteString $ rawPathInfo request
-  let headers = [("Content-Type", "text/html; charset=utf-8")]
+
+  -- TODO @incomplete: send file directly to socket instead of reading and then sending
+  let ext = takeExtension . Text.unpack . last $ paths
+  let contentType = case ext of
+        ".css" -> "text/css; charset=utf-8"
+        ".js"  -> "text/javascript; charset=utf-8"
+        _      -> "text/html; charset=utf-8"
+  let headers = [("Content-Type", contentType)]
   respond (responseBuilder status200 headers builder)
+
+
+fetchHoogle :: FilePath -> String -> String -> IO Builder.Builder
+fetchHoogle configRoot ltsVersion path = do
+  let filePath = joinPath
+        [ configRoot
+        , "hoogle"
+        , ltsVersion
+        , path
+        ]
+  Builder.fromLazyByteString <$> LBS.readFile filePath
+
 
 fetchDevdocs :: FilePath -> Cache String LBS.ByteString -> Text -> Text -> Text -> IO Builder.Builder
 fetchDevdocs configRoot cache language version path = do

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: cda453754822b13a0e19caedcc7101acdc543b57c5557f266ed028be086d6354
+-- hash: 90683291ccb3d3edeab3e997cd5741acd320926ed97a09e58d9f6948322f61a4
 
 name:           doc-browser
 version:        0.1.1
@@ -437,6 +437,7 @@ library
     , directory
     , filepath
     , hdaemonize
+    , hoogle
     , hsqml
     , http-types
     , lens
@@ -456,6 +457,7 @@ library
       Devdocs
       DevdocsMeta
       Entry
+      Hoo
       Opt
       Search
       Server
@@ -484,6 +486,7 @@ executable doc-browser
     , doc-browser
     , filepath
     , hdaemonize
+    , hoogle
     , hsqml
     , http-types
     , lens
@@ -524,6 +527,7 @@ benchmark prof-search
     , doc-browser
     , filepath
     , hdaemonize
+    , hoogle
     , hsqml
     , http-types
     , lens
