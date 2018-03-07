@@ -86,7 +86,7 @@ Window {
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             Layout.fillWidth: false
-            Layout.preferredWidth: 400
+            Layout.preferredWidth: searchInput.text.startsWith("/hh") ? 600 : 400
 
             spacing: 1
 

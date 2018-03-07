@@ -39,6 +39,7 @@ toMatch port entry = Match.T
   , Match.language = Text.pack $ language entry
   , Match.version  = Text.pack $ version entry
   , Match.url      = buildUrl entry port
+  , Match.source   = Text.pack $ source entry
   }
 
 

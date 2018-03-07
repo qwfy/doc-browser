@@ -16,6 +16,7 @@ data T = T
   , url      :: Text
   , language :: Text
   , version  :: Text
+  , source   :: Text
   } deriving (Eq, Show, Typeable)
 
 
@@ -30,6 +31,9 @@ defClass =
 
     , defPropertyConst' "language"
         (\obj -> return (Match.language $ fromObjRef obj))
+
+    , defPropertyConst' "source"
+        (\obj -> return (Match.source $ fromObjRef obj))
 
     , defPropertyConst' "version"
         (\obj -> return (Match.version $ fromObjRef obj))

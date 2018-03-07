@@ -29,8 +29,8 @@ toMatch target =
           , Match.version = "lts-10.8"
           , Match.name = Text.pack $ Hoogle.targetItem target
           -- TODO @incomplete: proper handling
-          -- , Entry.path = fromMaybe "404.html" $ stripPrefix "file:///home/incomplete/.config/doc-browser/hoogle/lts-10.8/" (Hoogle.targetURL target)
           , Match.url = Text.pack $ Hoogle.targetURL target
+          , Match.source = "hoogle"
           }
 
 
