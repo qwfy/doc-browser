@@ -86,7 +86,7 @@ Window {
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             Layout.fillWidth: false
-            Layout.preferredWidth: searchInput.text.startsWith("/hh") ? 600 : 400
+            Layout.preferredWidth: searchInput.text.startsWith("/hh") || searchInput.text.endsWith("/hh") ? 600 : 400
 
             spacing: 1
 
@@ -127,7 +127,6 @@ Window {
                 onAccepted: Logic.matchSelect(0)
 
                 Keys.onEscapePressed: text = ""
-
             }
 
 
@@ -138,7 +137,7 @@ Window {
                 anchors.left: parent.left
                 anchors.right: parent.right
 
-                ColumnLayout {
+                Column {
                     spacing: 1
                     anchors.top: parent.top
                     anchors.left: parent.left

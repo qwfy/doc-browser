@@ -2,6 +2,7 @@ import QtQuick 2.9
 import QtQuick.Layouts 1.2
 import "./style"
 import "match.js" as MatchJs
+import "util.js" as UtilJs
 
 Rectangle {
     id: root
@@ -9,10 +10,7 @@ Rectangle {
     anchors.left: parent.left
     anchors.right: parent.right
 
-    // TODO @incomplete: for some unknown reasons, if this is from a variable,
-    // say, Math.floor(Style.matchMainFont.pixelSize * 1.818)
-    // the order of the matches will be messed up
-    height: 40
+    height: mainItem.height
     radius: height / 10.526
 
     signal clicked()
@@ -44,9 +42,15 @@ Rectangle {
     }
 
     Item {
+        id: mainItem
         anchors.fill: parent
         anchors.leftMargin: Style.ewPadding
         anchors.rightMargin: Style.ewPadding
+
+        height: Math.max(
+            shortcut.height,
+            icon.height,
+            mainColumn.height) + 16
 
         Text {
             id: shortcut
@@ -65,20 +69,43 @@ Rectangle {
             source: MatchJs.icon(modelData.language)
         }
 
-        Text {
-            id: mainText
-            clip: true
+        Column {
+            id: mainColumn
+
             anchors.left: icon.right
             anchors.leftMargin: Style.ewPadding
             anchors.right: parent.right
             anchors.rightMargin: Style.ewPadding
             anchors.verticalCenter: parent.verticalCenter
 
-            text: modelData.name
+            spacing: 4
 
-            font: Style.matchMainFont
-            color: root.isSelected ? Style.selectedFg : Style.normalFg
+            Text {
+                clip: true
+                text: modelData.name
+                font: Style.matchMainFont
+                color: root.isSelected ? Style.selectedFg : Style.normalFg
+            }
+
+            RowLayout {
+                Text {
+                    visible: UtilJs.isString(modelData.package_)
+                    clip: true
+                    text: modelData.package_
+                    font: Style.matchMetaFont
+                    color: root.isSelected ? Style.selectedFg : Style.normalFg
+                }
+                Text {
+                    visible: UtilJs.isString(modelData.module_)
+                    anchors.leftMargin: 3
+                    clip: true
+                    text: modelData.module_
+                    font: Style.matchMetaFont
+                    color: root.isSelected ? Style.selectedFg : Style.normalFg
+                }
+            }
         }
+
 
 
     }

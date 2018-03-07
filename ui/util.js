@@ -14,3 +14,7 @@ function boundIndex(index, containerSize) {
         }
     }
 }
+
+function isString(x) {
+  return typeof(x) === "string";
+}

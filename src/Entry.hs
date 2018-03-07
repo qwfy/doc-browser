@@ -40,6 +40,9 @@ toMatch port entry = Match.T
   , Match.version  = Text.pack $ version entry
   , Match.url      = buildUrl entry port
   , Match.source   = Text.pack $ source entry
+
+  , Match.package_ = Nothing
+  , Match.module_  = Nothing
   }
 
 

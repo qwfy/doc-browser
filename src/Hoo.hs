@@ -31,6 +31,8 @@ toMatch target =
           -- TODO @incomplete: proper handling
           , Match.url = Text.pack $ Hoogle.targetURL target
           , Match.source = "hoogle"
+          , Match.package_ = Text.pack . fst <$> Hoogle.targetPackage target
+          , Match.module_ = Text.pack . fst <$> Hoogle.targetModule target
           }
 
 

@@ -7,6 +7,7 @@ module Match
 
 import Data.Typeable (Typeable)
 import Data.Text (Text)
+
 import Graphics.QML
 
 -- this is what will be displayed in the search results
@@ -17,6 +18,10 @@ data T = T
   , language :: Text
   , version  :: Text
   , source   :: Text
+
+  -- hoogle stuff
+  , package_ :: Maybe Text
+  , module_  :: Maybe Text
   } deriving (Eq, Show, Typeable)
 
 
@@ -37,4 +42,10 @@ defClass =
 
     , defPropertyConst' "version"
         (\obj -> return (Match.version $ fromObjRef obj))
+
+    , defPropertyConst' "package_"
+        (\obj -> return (Match.package_ $ fromObjRef obj))
+
+    , defPropertyConst' "module_"
+        (\obj -> return (Match.module_ $ fromObjRef obj))
     ]
