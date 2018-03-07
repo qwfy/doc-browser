@@ -50,6 +50,7 @@ dependencies:
 - cache
 - hdaemonize
 - hoogle
+- safe
 
 library:
   source-dirs: src

@@ -24,6 +24,7 @@ import Text.Regex.PCRE
 import Data.Bits ((.|.))
 
 import Control.Applicative ((<|>))
+import qualified Hoogle
 
 import qualified Entry
 import qualified Hoo
@@ -166,17 +167,29 @@ subString :: C.ByteString -> Int -> Int -> C.ByteString
 subString str offset length' =
   str |> C.drop offset |> C.take length'
 
-startThread :: [Entry.T] -> TMVar String -> ([Entry.T] -> IO ())-> IO ThreadId
-startThread entries querySlot handleEntries =
-  forkIO . forever $ do
-    -- TODO @incomplete: make this limit configurable
-    let limit = 27
-    queryStr <- atomically $ takeTMVar querySlot
-    matches <- case Search.makeQuery queryStr of
-                 Nothing ->
-                   return []
-                 Just (Hoogle s) ->
-                   Hoo.search limit s
-                 Just query ->
-                   return $ Search.search entries limit query
-    handleEntries matches
+-- TODO @incomplete: this function is too ugly
+startThread :: [Entry.T] -> Maybe FilePath -> TMVar String -> ([Entry.T] -> IO ())-> IO ThreadId
+startThread entries hooMay querySlot handleEntries =
+  case hooMay of
+    Nothing -> forkIO $ loop False undefined
+    Just dbPath -> forkIO $ Hoogle.withDatabase dbPath (loop True)
+  where
+    loop hasDb db = forever $ do
+      let limit = 27
+      queryStr <- atomically $ takeTMVar querySlot
+      let matches = case Search.makeQuery queryStr of
+            Nothing ->
+              []
+
+            Just (Hoogle s) ->
+              if hasDb
+                then
+                  Hoo.search db limit s
+                else
+                  -- TODO @incomplete: warn user about the lack of hoogle database
+                  []
+
+            Just query ->
+              Search.search entries limit query
+
+      handleEntries matches

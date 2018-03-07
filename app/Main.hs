@@ -15,6 +15,7 @@ import System.Posix.Daemonize
 import Data.Text (Text)
 import qualified Data.Text as Text
 import System.Directory
+import System.FilePath
 
 import qualified Entry
 import qualified Search
@@ -22,6 +23,7 @@ import qualified Devdocs
 import qualified DevdocsMeta
 import qualified Server
 import qualified Opt
+import qualified Hoo
 import Utils
 
 import Paths_doc_browser
@@ -102,7 +104,10 @@ startGUI configRoot cacheRoot = do
   -- TODO @incomplete: check for updates
   allEntries <- Devdocs.loadAll configRoot
   report ["number of entries:", show $ length allEntries]
-  _searchThreadId <- Search.startThread allEntries querySlot sendEntries
+
+  hooMay <- Hoo.findDatabase configRoot
+  _searchThreadId <- Search.startThread
+    allEntries ((configRoot </>) <$> hooMay) querySlot sendEntries
 
   -- this flag is required by QtWebEngine
   -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
