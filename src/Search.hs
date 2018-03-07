@@ -30,14 +30,19 @@ import qualified Entry
 import qualified Hoo
 import Utils
 
-
--- TODO @incomplete: refine this into smaller types?
 data Query
-  = Global String
-  | Limited String String
-  | Hoogle String
+  = G GeneralQuery
+  | H HoogleQuery
   deriving (Show)
 
+data GeneralQuery
+  = Global String
+  | Limited String String
+  deriving (Show)
+
+newtype HoogleQuery
+  = Hoogle String
+  deriving (Show)
 
 makeQuery :: String -> Maybe Query
 makeQuery str =
@@ -46,11 +51,11 @@ makeQuery str =
       Nothing
 
     ('/':'h':'h':c:t) ->
-      Just $ Hoogle (c:t)
+      Just . H . Hoogle $ (c:t)
 
     ('/':c1:c2:c3:t) ->
       -- limit using prefix, like this: /tfsigmoid
-      Just $ Limited [c1, c2] (c3:t)
+      Just . G $ Limited [c1, c2] (c3:t)
 
     ('/':_) ->
       -- cannot start a search with /
@@ -58,11 +63,13 @@ makeQuery str =
 
     _ ->
       case reverse str of
+        ('h':'h':'/':c:t) ->
+          Just . H . Hoogle . reverse $ (c:t)
         (c1:c2:'/':c3:t) ->
           -- limit using suffix, like this: sigmoid/tf
-          Just $ Limited [c2, c1] (reverse (c3:t))
+          Just . G $ Limited [c2, c1] (reverse (c3:t))
         _ ->
-          Just . Global $ str
+          Just . G . Global $ str
 
 
 -- shortcuts :: [(AbbrStriing, Language)]
@@ -76,7 +83,7 @@ shortcuts = Map.fromList
   ]
 
 
-filterEntry :: Query -> [Entry.T] -> [Entry.T]
+filterEntry :: GeneralQuery -> [Entry.T] -> [Entry.T]
 filterEntry (Global _) es = es
 filterEntry (Limited abbr _) es =
   case Map.lookup abbr shortcuts of
@@ -84,18 +91,16 @@ filterEntry (Limited abbr _) es =
       []
     Just language ->
       filter (\entry -> Entry.language entry == language) es
-filterEntry (Hoogle _) _ = undefined
 
 
 getQueryTextLower query =
   let queryStr = case query of
         Global s -> s
         Limited _ s -> s
-        Hoogle _ -> undefined
   in map Data.Char.toLower queryStr
 
 
-search :: [Entry.T] -> Int -> Query -> [Entry.T]
+search :: [Entry.T] -> Int -> GeneralQuery -> [Entry.T]
 search allEntries limit query =
   let queryStr = getQueryTextLower query
       entries = filterEntry query allEntries
@@ -181,7 +186,7 @@ startThread entries hooMay querySlot handleEntries =
             Nothing ->
               []
 
-            Just (Hoogle s) ->
+            Just (H (Hoogle s)) ->
               if hasDb
                 then
                   Hoo.search db limit s
@@ -189,7 +194,7 @@ startThread entries hooMay querySlot handleEntries =
                   -- TODO @incomplete: warn user about the lack of hoogle database
                   []
 
-            Just query ->
+            Just (G query) ->
               Search.search entries limit query
 
       handleEntries matches
