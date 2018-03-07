@@ -6,34 +6,31 @@ module Hoo
   ) where
 
 import qualified Safe
-import Data.Maybe
 import Data.List
+import qualified Data.Text as Text
 import System.Directory
 import System.FilePath
 import Control.Monad
 
 import qualified Hoogle
 
-import qualified Entry
+import qualified Match
 import Utils
 
-search :: Hoogle.Database -> Int -> String -> [Entry.T]
+search :: Hoogle.Database -> Int -> String -> [Match.T]
 search db limit query =
   Hoogle.searchDatabase db query
   |> take limit
-  |> map toEntry
+  |> map toMatch
 
-toEntry :: Hoogle.Target -> Entry.T
-toEntry target =
-  Entry.T { Entry.language = "Haskell"
-          , Entry.version = "lts-10.8"
-          , Entry.name = Hoogle.targetItem target
+toMatch :: Hoogle.Target -> Match.T
+toMatch target =
+  Match.T { Match.language = "Haskell"
+          , Match.version = "lts-10.8"
+          , Match.name = Text.pack $ Hoogle.targetItem target
           -- TODO @incomplete: proper handling
-          , Entry.path = fromMaybe "404.html" $ stripPrefix "file:///home/incomplete/.config/doc-browser/hoogle/lts-10.8/" (Hoogle.targetURL target)
-          -- TODO @incomplete: replace this with ADT
-          , Entry.source = "hoogle"
-          -- TODO @incomplete: remove this field
-          , Entry.nameLower = "dummy"
+          -- , Entry.path = fromMaybe "404.html" $ stripPrefix "file:///home/incomplete/.config/doc-browser/hoogle/lts-10.8/" (Hoogle.targetURL target)
+          , Match.url = Text.pack $ Hoogle.targetURL target
           }
 
 

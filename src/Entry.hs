@@ -7,6 +7,7 @@
 module Entry
   -- TODO @incomplete: expose accessor functions without exposing data constructor
   ( T(..)
+  , toMatch
   , buildUrl
   ) where
 
@@ -15,6 +16,7 @@ import qualified Data.Text as Text
 import qualified Data.ByteString.Char8 as C
 import System.FilePath
 
+import qualified Match
 import Utils
 
 import Control.DeepSeq (NFData)
@@ -30,6 +32,15 @@ data T = T
   , source    :: String
   , nameLower :: C.ByteString
   } deriving (Eq, Ord, Show, Generic, NFData)
+
+toMatch :: Int -> T -> Match.T
+toMatch port entry = Match.T
+  { Match.name     = Text.pack $ name entry
+  , Match.language = Text.pack $ language entry
+  , Match.version  = Text.pack $ version entry
+  , Match.url      = buildUrl entry port
+  }
+
 
 -- TODO @incomplete: refactor to handle hoogle
 buildUrl :: T -> Int -> Text

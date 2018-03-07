@@ -27,6 +27,7 @@ import Control.Applicative ((<|>))
 import qualified Hoogle
 
 import qualified Entry
+import qualified Match
 import qualified Hoo
 import Utils
 
@@ -173,8 +174,8 @@ subString str offset length' =
   str |> C.drop offset |> C.take length'
 
 -- TODO @incomplete: this function is too ugly
-startThread :: [Entry.T] -> Maybe FilePath -> TMVar String -> ([Entry.T] -> IO ())-> IO ThreadId
-startThread entries hooMay querySlot handleEntries =
+startThread :: (Entry.T -> Match.T) -> [Entry.T] -> Maybe FilePath -> TMVar String -> ([Match.T] -> IO ())-> IO ThreadId
+startThread entryToMatch entries hooMay querySlot handleMatches =
   case hooMay of
     Nothing -> forkIO $ loop False undefined
     Just dbPath -> forkIO $ Hoogle.withDatabase dbPath (loop True)
@@ -196,5 +197,6 @@ startThread entries hooMay querySlot handleEntries =
 
             Just (G query) ->
               Search.search entries limit query
+              |> map entryToMatch
 
-      handleEntries matches
+      handleMatches matches

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: ca3bab938003b3c30134c988039ff962f16f79733cb46bfdb511f185f5ac684a
+-- hash: 411a5b5dc6c98f2aa834498ee49ed2d6d3349392a0a3b090f8bb192bc1de9300
 
 name:           doc-browser
 version:        0.1.1
@@ -459,6 +459,7 @@ library
       DevdocsMeta
       Entry
       Hoo
+      Match
       Opt
       Search
       Server
