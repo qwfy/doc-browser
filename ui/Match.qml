@@ -92,7 +92,7 @@ Rectangle {
                 clip: true
                 text: modelData.typeConstraint
                 font: Style.matchMetaFont
-                color: root.isSelected ? Style.selectedFg : Style.normalFg
+                color: root.isSelected ? Style.selectedFg : Style.lightFg
             }
 
             RowLayout {
@@ -101,7 +101,7 @@ Rectangle {
                     clip: true
                     text: modelData.package_
                     font: Style.matchMetaFont
-                    color: root.isSelected ? Style.selectedFg : Style.normalFg
+                    color: root.isSelected ? Style.selectedFg : Style.lightFg
                 }
                 Text {
                     visible: UtilJs.isString(modelData.module_)
@@ -109,7 +109,7 @@ Rectangle {
                     clip: true
                     text: modelData.module_
                     font: Style.matchMetaFont
-                    color: root.isSelected ? Style.selectedFg : Style.normalFg
+                    color: root.isSelected ? Style.selectedFg : Style.lightFg
                 }
             }
         }

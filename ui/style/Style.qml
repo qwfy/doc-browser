@@ -7,6 +7,7 @@ QtObject {
     readonly property color normalFg: "#657b83"
     readonly property color selectedBg: "#586e75"
     readonly property color selectedFg: "#fdf6e3"
+    readonly property color lightFg: "#747f83"
 
     readonly property font searchFont:
     Qt.font({

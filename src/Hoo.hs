@@ -31,6 +31,7 @@ toMatch target =
         (\(a, b) -> (a, Just b))
         (splitTypeConstraint name')
   in Match.T { Match.language = "Haskell"
+             -- TODO @incomplete: don't hard code this
              , Match.version = "lts-10.8"
              , Match.name = Text.pack name
              -- TODO @incomplete: proper handling
