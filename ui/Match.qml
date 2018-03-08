@@ -87,6 +87,14 @@ Rectangle {
                 color: root.isSelected ? Style.selectedFg : Style.normalFg
             }
 
+            Text {
+                visible: UtilJs.isString(modelData.typeConstraint)
+                clip: true
+                text: modelData.typeConstraint
+                font: Style.matchMetaFont
+                color: root.isSelected ? Style.selectedFg : Style.normalFg
+            }
+
             RowLayout {
                 Text {
                     visible: UtilJs.isString(modelData.package_)

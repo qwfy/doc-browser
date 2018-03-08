@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 411a5b5dc6c98f2aa834498ee49ed2d6d3349392a0a3b090f8bb192bc1de9300
+-- hash: b93ac415076d9a0e6e7816be7b7e74a3879bcefa4e2d89dbebb9fbbe9ccb9448
 
 name:           doc-browser
 version:        0.1.1
@@ -435,6 +435,7 @@ library
     , dbus
     , deepseq
     , directory
+    , extra
     , filepath
     , hdaemonize
     , hoogle
@@ -486,6 +487,7 @@ executable doc-browser
     , deepseq
     , directory
     , doc-browser
+    , extra
     , filepath
     , hdaemonize
     , hoogle
@@ -528,6 +530,7 @@ benchmark prof-search
     , deepseq
     , directory
     , doc-browser
+    , extra
     , filepath
     , hdaemonize
     , hoogle

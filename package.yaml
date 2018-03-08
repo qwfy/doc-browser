@@ -51,6 +51,7 @@ dependencies:
 - hdaemonize
 - hoogle
 - safe
+- extra
 
 library:
   source-dirs: src

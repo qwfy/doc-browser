@@ -6,7 +6,7 @@ module Hoo
   ) where
 
 import qualified Safe
-import Data.List
+import Data.List.Extra
 import qualified Data.Text as Text
 import System.Directory
 import System.FilePath
@@ -25,15 +25,21 @@ search db limit query =
 
 toMatch :: Hoogle.Target -> Match.T
 toMatch target =
-  Match.T { Match.language = "Haskell"
-          , Match.version = "lts-10.8"
-          , Match.name = Text.pack . unHTML $ Hoogle.targetItem target
-          -- TODO @incomplete: proper handling
-          , Match.url = Text.pack $ Hoogle.targetURL target
-          , Match.source = "hoogle"
-          , Match.package_ = Text.pack . fst <$> Hoogle.targetPackage target
-          , Match.module_ = Text.pack . fst <$> Hoogle.targetModule target
-          }
+  let name' = unHTML . Hoogle.targetItem $ target
+      (name, typeConstraint) = maybe
+        (name', Nothing)
+        (\(a, b) -> (a, Just b))
+        (splitTypeConstraint name')
+  in Match.T { Match.language = "Haskell"
+             , Match.version = "lts-10.8"
+             , Match.name = Text.pack name
+             -- TODO @incomplete: proper handling
+             , Match.url = Text.pack $ Hoogle.targetURL target
+             , Match.source = "hoogle"
+             , Match.package_ = Text.pack . fst <$> Hoogle.targetPackage target
+             , Match.module_ = Text.pack . fst <$> Hoogle.targetModule target
+             , Match.typeConstraint = Text.pack <$> typeConstraint
+             }
 
 
 findDatabase :: FilePath -> IO (Maybe FilePath)
@@ -55,6 +61,19 @@ findDatabase configRoot = do
       let a = takeExtension name == ".hoo"
           b = "lts-" `isPrefixOf` name
       in a && b
+
+
+
+-- turn string "print :: Show a => a -> IO ()"
+-- into ("print :: a -> IO ()", "Show a")
+splitTypeConstraint :: String -> Maybe (String, String)
+splitTypeConstraint fullSig =
+  let colon = " :: "
+      arrow = " => "
+  in do
+      (name, afterName) <- stripInfix colon fullSig
+      (typeConstraint, smallSig) <- stripInfix arrow afterName
+      return (name ++ colon ++ smallSig, typeConstraint)
 
 -- BEGIN d419e005-b736-4dee-8019-4c0bd7851320
 --
@@ -83,4 +102,5 @@ innerTextHTML [] = []
 
 unHTML :: String -> String
 unHTML = unescapeHTML . innerTextHTML
+
 -- END d419e005-b736-4dee-8019-4c0bd7851320

@@ -41,8 +41,9 @@ toMatch port entry = Match.T
   , Match.url      = buildUrl entry port
   , Match.source   = Text.pack $ source entry
 
-  , Match.package_ = Nothing
-  , Match.module_  = Nothing
+  , Match.package_       = Nothing
+  , Match.module_        = Nothing
+  , Match.typeConstraint = Nothing
   }
 
 

@@ -20,8 +20,9 @@ data T = T
   , source   :: Text
 
   -- hoogle stuff
-  , package_ :: Maybe Text
-  , module_  :: Maybe Text
+  , package_       :: Maybe Text
+  , module_        :: Maybe Text
+  , typeConstraint :: Maybe Text
   } deriving (Eq, Show, Typeable)
 
 
@@ -48,4 +49,7 @@ defClass =
 
     , defPropertyConst' "module_"
         (\obj -> return (Match.module_ $ fromObjRef obj))
+
+    , defPropertyConst' "typeConstraint"
+        (\obj -> return (Match.typeConstraint $ fromObjRef obj))
     ]
