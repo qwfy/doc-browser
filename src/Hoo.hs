@@ -27,7 +27,7 @@ toMatch :: Hoogle.Target -> Match.T
 toMatch target =
   Match.T { Match.language = "Haskell"
           , Match.version = "lts-10.8"
-          , Match.name = Text.pack $ Hoogle.targetItem target
+          , Match.name = Text.pack . unHTML $ Hoogle.targetItem target
           -- TODO @incomplete: proper handling
           , Match.url = Text.pack $ Hoogle.targetURL target
           , Match.source = "hoogle"
@@ -55,3 +55,32 @@ findDatabase configRoot = do
       let a = takeExtension name == ".hoo"
           b = "lts-" `isPrefixOf` name
       in a && b
+
+-- BEGIN d419e005-b736-4dee-8019-4c0bd7851320
+--
+-- These functions are copied from the Hoogle code base:
+--
+--     Repository : https://github.com/ndmitchell/hoogle
+--     Version    : Version 5.0.14
+--     Commit     : b52d3d8b6a7a1e2405c0c5dc4e02d85e21a234e3
+--     File       : src/General/Util.hs
+--
+-- Modifications are made, the modified codes are licensed under the BSD license.
+
+unescapeHTML :: String -> String
+unescapeHTML ('&':xs)
+    | Just ys <- stripPrefix "lt;" xs = '<' : unescapeHTML ys
+    | Just ys <- stripPrefix "gt;" xs = '>' : unescapeHTML ys
+    | Just ys <- stripPrefix "amp;" xs = '&' : unescapeHTML ys
+    | Just ys <- stripPrefix "quot;" xs = '\"' : unescapeHTML ys
+unescapeHTML (x:xs) = x : unescapeHTML xs
+unescapeHTML [] = []
+
+innerTextHTML :: String -> String
+innerTextHTML ('<':xs) = innerTextHTML $ drop 1 $ dropWhile (/= '>') xs
+innerTextHTML (x:xs) = x : innerTextHTML xs
+innerTextHTML [] = []
+
+unHTML :: String -> String
+unHTML = unescapeHTML . innerTextHTML
+-- END d419e005-b736-4dee-8019-4c0bd7851320

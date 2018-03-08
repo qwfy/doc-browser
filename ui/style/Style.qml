@@ -19,6 +19,12 @@ QtObject {
                 family: "Input Mono, Light",
                 lineHeight: 1})
 
+    readonly property font matchMainFontHoogle:
+    Qt.font({
+                pixelSize: 20,
+                family: "Input Mono, Light",
+                lineHeight: 1})
+
     readonly property font matchMetaFont:
     Qt.font({
                 pixelSize: 16,

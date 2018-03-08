@@ -83,7 +83,7 @@ Rectangle {
             Text {
                 clip: true
                 text: modelData.name
-                font: Style.matchMainFont
+                font: modelData.source === "hoogle" ? Style.matchMainFontHoogle : Style.matchMainFont
                 color: root.isSelected ? Style.selectedFg : Style.normalFg
             }
 
