@@ -22,6 +22,7 @@ import Control.Concurrent.STM.TMVar
 
 import Text.Regex.PCRE
 import Data.Bits ((.|.))
+import System.FilePath
 
 import Control.Applicative ((<|>))
 import qualified Hoogle
@@ -29,6 +30,7 @@ import qualified Hoogle
 import qualified Entry
 import qualified Match
 import qualified Hoo
+import qualified Doc
 import Utils
 
 data Query
@@ -73,14 +75,13 @@ makeQuery str =
           Just . G . Global $ str
 
 
--- shortcuts :: [(AbbrStriing, Language)]
 shortcuts = Map.fromList
-  [ ("hs", "Haskell")
-  , ("py", "Python")
-  , ("tf", "TensorFlow")
-  , ("np", "NumPy")
-  , ("pd", "pandas")
-  , ("er", "Erlang")
+  [ ("hs", Doc.Collection "Haskell")
+  , ("py", Doc.Collection "Python")
+  , ("tf", Doc.Collection "TensorFlow")
+  , ("np", Doc.Collection "NumPy")
+  , ("pd", Doc.Collection "pandas")
+  , ("er", Doc.Collection "Erlang")
   ]
 
 
@@ -90,8 +91,8 @@ filterEntry (Limited abbr _) es =
   case Map.lookup abbr shortcuts of
     Nothing ->
       []
-    Just language ->
-      filter (\entry -> Entry.language entry == language) es
+    Just collection ->
+      filter ((== collection) . Entry.collection) es
 
 
 getQueryTextLower query =
@@ -200,4 +201,5 @@ startThread entryToMatch entries hooMay querySlot handleMatches =
                 Just dbPath ->
                   -- load the database on every search, instead of keeping it in memory,
                   -- this is done deliberately - turns out that it makes the GUI more responsive
-                  Hoogle.withDatabase dbPath (\db -> return $ Hoo.search db limit query)
+                  let version = Doc.Version . takeFileName $ dbPath
+                  in Hoogle.withDatabase dbPath (\db -> return $ Hoo.search version db limit query)

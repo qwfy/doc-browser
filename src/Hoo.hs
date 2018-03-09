@@ -15,28 +15,28 @@ import Control.Monad
 import qualified Hoogle
 
 import qualified Match
+import qualified Doc
 import Utils
 
-search :: Hoogle.Database -> Int -> String -> [Match.T]
-search db limit query =
+search :: Doc.Version -> Hoogle.Database -> Int -> String -> [Match.T]
+search version db limit query =
   Hoogle.searchDatabase db query
   |> take limit
-  |> map toMatch
+  |> map (toMatch version)
 
-toMatch :: Hoogle.Target -> Match.T
-toMatch target =
+toMatch :: Doc.Version -> Hoogle.Target -> Match.T
+toMatch version target =
   let name' = unHTML . Hoogle.targetItem $ target
       (name, typeConstraint) = maybe
         (name', Nothing)
         (\(a, b) -> (a, Just b))
         (splitTypeConstraint name')
-  in Match.T { Match.language = "Haskell"
+  in Match.T { Match.collection = "Haskell"
              -- TODO @incomplete: don't hard code this
-             , Match.version = "lts-10.8"
+             , Match.version = Text.pack $ Doc.getVersion version
              , Match.name = Text.pack name
-             -- TODO @incomplete: proper handling
              , Match.url = Text.pack $ Hoogle.targetURL target
-             , Match.source = "hoogle"
+             , Match.vendor = Text.pack . show $ Doc.Hoogle
              , Match.package_ = Text.pack . fst <$> Hoogle.targetPackage target
              , Match.module_ = Text.pack . fst <$> Hoogle.targetModule target
              , Match.typeConstraint = Text.pack <$> typeConstraint
@@ -45,7 +45,7 @@ toMatch target =
 
 findDatabase :: FilePath -> IO (Maybe FilePath)
 findDatabase configRoot = do
-  let hoogleDir = joinPath [configRoot, "hoogle"]
+  let hoogleDir = joinPath [configRoot, show Doc.Hoogle]
   exist <- doesDirectoryExist hoogleDir
   if not exist
     then return Nothing
@@ -55,14 +55,10 @@ findDatabase configRoot = do
         |> sort
         -- currently, only load the latest
         |> Safe.lastMay
-        |> fmap ("hoogle" </>)
+        |> fmap (show Doc.Hoogle </>)
         |> return
   where
-    isRecognized name =
-      let a = takeExtension name == ".hoo"
-          b = "lts-" `isPrefixOf` name
-      in a && b
-
+    isRecognized name = takeExtension name == ".hoo"
 
 
 -- turn string "print :: Show a => a -> IO ()"

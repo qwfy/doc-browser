@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: b93ac415076d9a0e6e7816be7b7e74a3879bcefa4e2d89dbebb9fbbe9ccb9448
+-- hash: 15ee2554b85bd6b42311fead4e8d97e7c37fc8eecf18675e6f78964b56e0158e
 
 name:           doc-browser
 version:        0.1.1
@@ -458,6 +458,7 @@ library
   exposed-modules:
       Devdocs
       DevdocsMeta
+      Doc
       Entry
       Hoo
       Match

@@ -66,7 +66,7 @@ Rectangle {
             anchors.left: shortcut.right
             anchors.leftMargin: Style.ewPadding
             anchors.verticalCenter: parent.verticalCenter
-            source: MatchJs.icon(modelData.language)
+            source: MatchJs.icon(modelData.collection)
         }
 
         Column {
@@ -83,7 +83,7 @@ Rectangle {
             Text {
                 clip: true
                 text: modelData.name
-                font: modelData.source === "hoogle" ? Style.matchMainFontHoogle : Style.matchMainFont
+                font: modelData.vendor === "Hoogle" ? Style.matchMainFontHoogle : Style.matchMainFont
                 color: root.isSelected ? Style.selectedFg : Style.normalFg
             }
 

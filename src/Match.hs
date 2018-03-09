@@ -17,11 +17,11 @@ import Graphics.QML
 -- this is what will be displayed in the search results
 -- the choice of Text is due to that HsQML cannot marshal String
 data T = T
-  { name     :: Text
-  , url      :: Text
-  , language :: Text
-  , version  :: Text
-  , source   :: Text
+  { name       :: Text
+  , url        :: Text
+  , collection :: Text
+  , version    :: Text
+  , vendor     :: Text
 
   -- hoogle stuff
   , package_       :: Maybe Text
@@ -39,11 +39,11 @@ defClass =
     , defPropertyConst' "url"
         (\obj -> return (url $ fromObjRef obj))
 
-    , defPropertyConst' "language"
-        (\obj -> return (language $ fromObjRef obj))
+    , defPropertyConst' "collection"
+        (\obj -> return (collection $ fromObjRef obj))
 
-    , defPropertyConst' "source"
-        (\obj -> return (source $ fromObjRef obj))
+    , defPropertyConst' "vendor"
+        (\obj -> return (vendor $ fromObjRef obj))
 
     , defPropertyConst' "version"
         (\obj -> return (version $ fromObjRef obj))

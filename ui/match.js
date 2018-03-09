@@ -39,8 +39,8 @@ function shortcutColor(index) {
 
 
 
-function icon(language) {
-    var l = language.toLowerCase();
+function icon(collection) {
+    var l = collection.toLowerCase();
     if (l === "c++") {
         l = "cpp"
     }

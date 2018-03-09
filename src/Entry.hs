@@ -1,63 +1,57 @@
 {-# LANGUAGE OverloadedStrings #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE DeriveAnyClass #-}
 
 -- what will be searched on
 module Entry
   -- TODO @incomplete: expose accessor functions without exposing data constructor
   ( T(..)
   , toMatch
-  , buildUrl
   ) where
 
-import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.ByteString.Char8 as C
+
 import System.FilePath
 
 import qualified Match
-import Utils
-
-import Control.DeepSeq (NFData)
-import GHC.Generics (Generic)
+import qualified Doc
 
 -- the choice of String is due to that Text.EditDistance only supports String
 -- TODO @incomplete: use a newtype for these fields, it's quite confusing
 data T = T
-  { language  :: String
-  , version   :: String
-  , name      :: String
-  , path      :: String
-  , source    :: String
-  , nameLower :: C.ByteString
-  } deriving (Eq, Ord, Show, Generic, NFData)
+  { collection :: Doc.Collection
+  , version    :: Doc.Version
+  , name       :: String
+  -- file path relative to vendor's root
+  -- TODO @incomplete: handle this semantic safely
+  , path       :: FilePath
+  , nameLower  :: C.ByteString
+  } deriving (Eq)
 
+instance Ord T where
+  compare a b = compare
+    (name a, version a)
+    (name b, version b)
+
+-- TODO @incomplete: use Port or elimate the port parameter
 toMatch :: Int -> T -> Match.T
 toMatch port entry = Match.T
-  { Match.name     = Text.pack $ name entry
-  , Match.language = Text.pack $ language entry
-  , Match.version  = Text.pack $ version entry
-  , Match.url      = buildUrl entry port
-  , Match.source   = Text.pack $ source entry
+  { Match.name       = Text.pack $ name entry
+  , Match.collection = Text.pack . Doc.getCollection . collection $ entry
+  , Match.version    = Text.pack . Doc.getVersion . version $ entry
+  , Match.url        = Text.pack $ buildUrl entry port
+  , Match.vendor     = Text.pack . show $ Doc.DevDocs
 
   , Match.package_       = Nothing
   , Match.module_        = Nothing
   , Match.typeConstraint = Nothing
   }
 
-
--- TODO @incomplete: refactor to handle hoogle
-buildUrl :: T -> Int -> Text
-buildUrl T{source, language, version, path} port =
-  let p = joinPath
-        [ source
-        , combineLangVer language version
-        , path
-        ]
-  in Text.concat
-      [ "http://localhost:"
-      , Text.pack $ show port
-      , "/"
-      , Text.pack p
-      ]
+buildUrl :: T -> Int -> String
+buildUrl T{collection, version, Entry.path=entryPath} port =
+  let relPath = joinPath
+        [ show Doc.DevDocs
+        , Doc.combineCollectionVersion collection version
+        , entryPath ]
+      host = "http://localhost:" ++ show port
+  in host </> relPath

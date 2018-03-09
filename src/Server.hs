@@ -8,12 +8,13 @@ import Network.HTTP.Types
 import Network.Wai.Handler.Warp (run)
 
 import Data.Monoid
-import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Binary.Builder as Builder
 import qualified Data.Map.Strict as Map
 import qualified Data.String
 import qualified Data.ByteString.Lazy as LBS
+import Data.List.Extra
+import Safe
 
 import System.FilePath
 import System.Directory
@@ -27,6 +28,7 @@ import Control.Monad.Trans.Except
 import Utils
 import qualified Devdocs
 import qualified DevdocsMeta
+import qualified Doc
 
 start :: Int -> FilePath -> FilePath -> IO ()
 start port configRoot cacheRoot = do
@@ -34,48 +36,51 @@ start port configRoot cacheRoot = do
   loadCache cache cacheRoot
   run port (app configRoot cache)
 
-app :: FilePath -> Cache String LBS.ByteString -> Request -> (Response -> IO ResponseReceived) -> IO ResponseReceived
+app :: FilePath
+    -> Cache String LBS.ByteString
+    -> Request
+    -> (Response -> IO ResponseReceived)
+    -> IO ResponseReceived
 app configRoot cache request respond = do
-  let paths = pathInfo request
-  builder <- case paths of
-               -- TODO @incomplete: use Devdocs.devdocs
-               ("devdocs" : langver : rest) ->
-                 let (language, version) = breakLangVer . Text.unpack $ langver
-                 in fetchDevdocs configRoot cache (Text.pack language) (Text.pack version) (Text.intercalate "/" rest)
-               ("hoogle" : langver : rest) ->
-                 let (_, version) = breakLangVer . Text.unpack $ langver
-                 in fetchHoogle configRoot version (Text.unpack $ Text.intercalate "/" rest)
-               _ -> do
-                 print ("unhanlded url", rawPathInfo request)
-                 -- TODO @incomplete: better error message or use a type safe route lib
-                 return $ Builder.fromByteString $ rawPathInfo request
+  let paths = pathInfo request |> map Text.unpack
 
-  -- TODO @incomplete: send file directly to socket instead of reading and then sending
-  let ext = takeExtension . Text.unpack . last $ paths
-  let contentType = case ext of
-        ".css" -> "text/css; charset=utf-8"
-        ".js"  -> "text/javascript; charset=utf-8"
-        _      -> "text/html; charset=utf-8"
+  let badRequest =
+        return $ Builder.fromByteString $ "Unhandled URL: " <> rawPathInfo request
+
+  builder <-
+    case paths of
+      (vendor : cv : rest) | vendor == show Doc.DevDocs ->
+        let (collection, version) = Doc.breakCollectionVersion cv
+            path = intercalate "/" rest
+        in fetchDevdocs configRoot cache collection version path
+
+      _ ->
+        badRequest
+
+  -- TODO @incomplete: send css and js files directly to socket instead of reading and then sending
+  let mime ext
+        | ext == ".css" = "text/css; charset=utf-8"
+        | ext == ".js"  = "text/javascript; charset=utf-8"
+        | otherwise     = "text/html; charset=utf-8"
+
+  let contentType = maybe
+        "text/html; charset=utf-8"
+        (mime . takeExtension)
+        (lastMay paths)
+
   let headers = [("Content-Type", contentType)]
   respond (responseBuilder status200 headers builder)
 
-
-fetchHoogle :: FilePath -> String -> String -> IO Builder.Builder
-fetchHoogle configRoot ltsVersion path = do
+fetchDevdocs :: FilePath
+             -> Cache String LBS.ByteString
+             -> Doc.Collection
+             -> Doc.Version
+             -> String
+             -> IO Builder.Builder
+fetchDevdocs configRoot cache collection version path = do
   let filePath = joinPath
         [ configRoot
-        , "hoogle"
-        , ltsVersion
-        , path
-        ]
-  Builder.fromLazyByteString <$> LBS.readFile filePath
-
-
-fetchDevdocs :: FilePath -> Cache String LBS.ByteString -> Text -> Text -> Text -> IO Builder.Builder
-fetchDevdocs configRoot cache language version path = do
-  let filePath = joinPath
-        [ configRoot
-        , Devdocs.getDocFile (Text.unpack language) (Text.unpack version) (Text.unpack path)
+        , Devdocs.getDocFile collection version path
         ]
 
   content <- Builder.fromLazyByteString <$> LBS.readFile filePath
@@ -97,7 +102,7 @@ fetchDevdocs configRoot cache language version path = do
         \<body>\
         \  <main class='_content' role='main'>"
       pageDiv =
-        case Map.lookup language DevdocsMeta.typeMap of
+        case Map.lookup collection DevdocsMeta.typeMap of
           Nothing ->
             "<div class='_page'>"
           Just t ->

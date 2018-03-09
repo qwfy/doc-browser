@@ -127,6 +127,7 @@ Window {
                 onAccepted: Logic.matchSelect(0)
 
                 Keys.onEscapePressed: text = ""
+                // TODO @incomplete: press Down key to accept
             }
 
 

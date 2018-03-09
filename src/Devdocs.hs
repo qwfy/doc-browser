@@ -5,7 +5,6 @@
 module Devdocs
   ( loadAll
   , getDocFile
-  , devdocs
   ) where
 
 import GHC.Generics (Generic)
@@ -22,7 +21,7 @@ import qualified Data.Aeson as Aeson
 import qualified Data.Char
 
 import qualified Entry
-import Utils
+import qualified Doc
 
 
 -- used to extract information from devdocs' index.json
@@ -40,16 +39,13 @@ instance Aeson.FromJSON IndexList where
     indices' <- object Aeson..: "entries"
     IndexList <$> Aeson.parseJSONList indices'
 
--- TODO @incomplete: use ADT?
-devdocs = "devdocs"
-
--- scan devdocs' root, return languages and versions
-scan :: FilePath -> IO [(String, String)]
-scan docRoot = do
-  let dir = docRoot </> devdocs
+-- scan devdocs' root, return collections and versions
+scan :: FilePath -> IO [(Doc.Collection, Doc.Version)]
+scan configRoot = do
+  let dir = configRoot </> show Doc.DevDocs
   entries <- listDirectory dir
   dirs <- filterM doesDirectoryExist (map (dir </>) entries)
-  return $ map breakLangVer dirs
+  return $ map Doc.breakCollectionVersion dirs
 
 
 loadAll :: FilePath -> IO [Entry.T]
@@ -59,10 +55,10 @@ loadAll configRoot = do
   concat <$> sequence loadOne
 
 
-load :: FilePath -> String -> String -> IO [Entry.T]
-load docRoot language version = do
-  let dirname = combineLangVer language version
-  let indexJson = joinPath [docRoot, devdocs, dirname, "index.json"]
+load :: FilePath -> Doc.Collection -> Doc.Version -> IO [Entry.T]
+load configRoot collection version = do
+  let dirName = Doc.combineCollectionVersion collection version
+  let indexJson = joinPath [configRoot, show Doc.DevDocs, dirName, "index.json"]
   bs <- LBS.readFile indexJson
   let Just (IndexList indices) = Aeson.decode' bs
   return $ map indexToEntry indices
@@ -70,21 +66,19 @@ load docRoot language version = do
     indexToEntry Index{name, path} =
       Entry.T { Entry.name = name
               , Entry.path = path
-              , Entry.language = language
+              , Entry.collection = collection
               , Entry.version = version
-              , Entry.source = devdocs
               , Entry.nameLower = C.pack $ map Data.Char.toLower name
               }
 
-getDocFile :: String -> String -> String -> String
-getDocFile language version path =
-  joinPath [ devdocs
-           , combineLangVer language version
-           , fixPath path]
+-- TODO @incomplete: type signature (FilePath) is wrong
+getDocFile :: Doc.Collection -> Doc.Version -> FilePath -> FilePath
+getDocFile collection version path =
+  joinPath [ show Doc.DevDocs
+           , Doc.combineCollectionVersion collection version
+           , extractPath path]
 
--- add extension at the appropriate place
-fixPath :: String -> String
-fixPath path =
+extractPath :: String -> String
+extractPath path =
   let Just uri = URI.parseRelativeReference path
-      newUri = uri {URI.uriPath = URI.uriPath uri <.> ".html"}
-  in URI.uriToString id newUri ""
+  in URI.uriPath uri <.> ".html"
