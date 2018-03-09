@@ -2,7 +2,7 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE NamedFieldPuns #-}
 
-module Devdocs
+module DevDocs
   ( loadAll
   , getDocFile
   ) where

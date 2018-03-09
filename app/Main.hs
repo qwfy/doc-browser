@@ -18,8 +18,8 @@ import System.FilePath
 import qualified Entry
 import qualified Match
 import qualified Search
-import qualified Devdocs
-import qualified DevdocsMeta
+import qualified DevDocs
+import qualified DevDocsMeta
 import qualified Server
 import qualified Opt
 import qualified Hoo
@@ -65,7 +65,7 @@ startGUI configRoot cacheRoot = do
         fireSignal matchesKey objectContext
 
   -- TODO @incomplete: check for updates
-  allEntries <- Devdocs.loadAll configRoot
+  allEntries <- DevDocs.loadAll configRoot
   report ["number of entries:", show $ length allEntries]
 
   hooMay <- Hoo.findDatabase configRoot
@@ -107,4 +107,4 @@ main = do
            Opt.Foreground -> start
 
     Opt.InstallDevdocs languages ->
-      DevdocsMeta.downloadMany configRoot languages
+      DevDocsMeta.downloadMany configRoot languages

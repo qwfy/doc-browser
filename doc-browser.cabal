@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 15ee2554b85bd6b42311fead4e8d97e7c37fc8eecf18675e6f78964b56e0158e
+-- hash: 0fd4d02d7e93f3920f4df629b0414690c0967e82920325a676e9048834166593
 
 name:           doc-browser
 version:        0.1.1
@@ -456,8 +456,8 @@ library
     , wreq
     , zlib
   exposed-modules:
-      Devdocs
-      DevdocsMeta
+      DevDocs
+      DevDocsMeta
       Doc
       Entry
       Hoo

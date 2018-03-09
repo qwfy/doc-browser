@@ -16,7 +16,7 @@ import Criterion.Main
 main :: IO ()
 main = do
   configRoot <- getXdgDirectory XdgConfig "doc-browser"
-  allEntries <- Devdocs.loadAll configRoot
+  allEntries <- DevDocs.loadAll configRoot
   allEntriesTVar <- atomically $ newTVar allEntries
 
   let makeQuery c n =

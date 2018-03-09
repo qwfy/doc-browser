@@ -26,8 +26,8 @@ import Control.Concurrent
 import Control.Monad.Trans.Except
 
 import Utils
-import qualified Devdocs
-import qualified DevdocsMeta
+import qualified DevDocs
+import qualified DevDocsMeta
 import qualified Doc
 
 start :: Int -> FilePath -> FilePath -> IO ()
@@ -80,7 +80,7 @@ fetchDevdocs :: FilePath
 fetchDevdocs configRoot cache collection version path = do
   let filePath = joinPath
         [ configRoot
-        , Devdocs.getDocFile collection version path
+        , DevDocs.getDocFile collection version path
         ]
 
   content <- Builder.fromLazyByteString <$> LBS.readFile filePath
@@ -102,7 +102,7 @@ fetchDevdocs configRoot cache collection version path = do
         \<body>\
         \  <main class='_content' role='main'>"
       pageDiv =
-        case Map.lookup collection DevdocsMeta.typeMap of
+        case Map.lookup collection DevDocsMeta.typeMap of
           Nothing ->
             "<div class='_page'>"
           Just t ->

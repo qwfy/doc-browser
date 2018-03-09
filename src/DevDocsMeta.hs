@@ -3,7 +3,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DevdocsMeta
+module DevDocsMeta
   ( downloadMany
   , printTypeMap
   , typeMap
