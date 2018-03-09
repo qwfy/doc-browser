@@ -71,10 +71,11 @@ splitTypeConstraint :: String -> Maybe (String, String)
 splitTypeConstraint fullSig =
   let colon = " :: "
       arrow = " => "
+      arrow' = " =>"
   in do
       (name, afterName) <- stripInfix colon fullSig
       (typeConstraint, smallSig) <- stripInfixEnd arrow afterName
-      return (name ++ colon ++ smallSig, typeConstraint ++ arrow)
+      return (name ++ colon ++ smallSig, typeConstraint ++ arrow')
 
 -- BEGIN d419e005-b736-4dee-8019-4c0bd7851320
 --
