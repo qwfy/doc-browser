@@ -26,30 +26,30 @@ data T = T
   } deriving (Eq, Show, Typeable)
 
 
-defClass :: IO (Class Match.T)
+defClass :: IO (Class T)
 defClass =
   newClass
     [ defPropertyConst' "name"
-        (\obj -> return (Match.name $ fromObjRef obj))
+        (\obj -> return (name $ fromObjRef obj))
 
     , defPropertyConst' "url"
-        (\obj -> return (Match.url $ fromObjRef obj))
+        (\obj -> return (url $ fromObjRef obj))
 
     , defPropertyConst' "language"
-        (\obj -> return (Match.language $ fromObjRef obj))
+        (\obj -> return (language $ fromObjRef obj))
 
     , defPropertyConst' "source"
-        (\obj -> return (Match.source $ fromObjRef obj))
+        (\obj -> return (source $ fromObjRef obj))
 
     , defPropertyConst' "version"
-        (\obj -> return (Match.version $ fromObjRef obj))
+        (\obj -> return (version $ fromObjRef obj))
 
     , defPropertyConst' "package_"
-        (\obj -> return (Match.package_ $ fromObjRef obj))
+        (\obj -> return (package_ $ fromObjRef obj))
 
     , defPropertyConst' "module_"
-        (\obj -> return (Match.module_ $ fromObjRef obj))
+        (\obj -> return (module_ $ fromObjRef obj))
 
     , defPropertyConst' "typeConstraint"
-        (\obj -> return (Match.typeConstraint $ fromObjRef obj))
+        (\obj -> return (typeConstraint $ fromObjRef obj))
     ]
