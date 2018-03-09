@@ -173,30 +173,31 @@ subString :: C.ByteString -> Int -> Int -> C.ByteString
 subString str offset length' =
   str |> C.drop offset |> C.take length'
 
--- TODO @incomplete: this function is too ugly
 startThread :: (Entry.T -> Match.T) -> [Entry.T] -> Maybe FilePath -> TMVar String -> ([Match.T] -> IO ())-> IO ThreadId
 startThread entryToMatch entries hooMay querySlot handleMatches =
-  case hooMay of
-    Nothing -> forkIO $ loop False undefined
-    Just dbPath -> forkIO $ Hoogle.withDatabase dbPath (loop True)
+  forkIO loop
   where
-    loop hasDb db = forever $ do
+    loop = forever $ do
+      -- TODO @incomplete: make this limit configurable
       let limit = 27
       queryStr <- atomically $ takeTMVar querySlot
-      let matches = case Search.makeQuery queryStr of
-            Nothing ->
-              []
 
-            Just (H (Hoogle s)) ->
-              if hasDb
-                then
-                  Hoo.search db limit s
-                else
-                  -- TODO @incomplete: warn user about the lack of hoogle database
-                  []
+      handleMatches =<<
+        case Search.makeQuery queryStr of
+            Nothing ->
+              return []
 
             Just (G query) ->
               Search.search entries limit query
-              |> map entryToMatch
+                |> map entryToMatch
+                |> return
 
-      handleMatches matches
+            Just (H (Hoogle query)) ->
+              case hooMay of
+                Nothing ->
+                  -- TODO @incomplete: warn user about the lack of a hoogle database
+                  return []
+                Just dbPath ->
+                  -- load the database on every search, instead of keeping it in memory,
+                  -- this is done deliberately - turns out that it makes the GUI more responsive
+                  Hoogle.withDatabase dbPath (\db -> return $ Hoo.search db limit query)

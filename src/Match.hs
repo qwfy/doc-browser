@@ -1,4 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE DeriveAnyClass #-}
 
 module Match
   ( T(..)
@@ -7,6 +9,8 @@ module Match
 
 import Data.Typeable (Typeable)
 import Data.Text (Text)
+import GHC.Generics (Generic)
+import Control.DeepSeq (NFData)
 
 import Graphics.QML
 
@@ -23,7 +27,7 @@ data T = T
   , package_       :: Maybe Text
   , module_        :: Maybe Text
   , typeConstraint :: Maybe Text
-  } deriving (Eq, Show, Typeable)
+  } deriving (Eq, Show, Typeable, Generic, NFData)
 
 
 defClass :: IO (Class T)
