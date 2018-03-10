@@ -6,13 +6,17 @@ module Hoo
   , install
   ) where
 
-import qualified Safe
 import Data.List.Extra
-import qualified Data.Text as Text
-import System.Directory
-import System.FilePath
-import Control.Monad
 import Data.Char
+import Data.Tuple
+import qualified Data.Text as Text
+
+import Safe
+import System.FilePath
+import System.Directory.Extra
+
+import Control.Monad
+import Control.Exception
 
 import qualified Hoogle
 
@@ -56,7 +60,7 @@ findDatabase configRoot = do
       filter isRecognized paths
         |> sort
         -- currently, only load the latest
-        |> Safe.lastMay
+        |> lastMay
         |> fmap (show Doc.Hoogle </>)
         |> return
   where
@@ -117,15 +121,32 @@ install configRoot cacheRoot url collection = do
   report ["unpacking", archivePath, "into", unpackPath]
   unpackXzInto archivePath unpackPath
 
-  let dbPath = joinPath [docRoot, collection] <.> "hoo"
-  report ["generating Hoogle database to", dbPath]
-  -- TODO @incomplete: Do we need to quote dbPath and unpackPath
-  -- when passing them to hoogle? The string concatenation scares me.
-  Hoogle.hoogle
-    [ "generate"
-    , "--database=" ++ dbPath
-    , "--local=" ++ unpackPath
-    ]
+  let runHoogle = do
+        let dbPath = joinPath [docRoot, collection] <.> "hoo"
+        report ["generating Hoogle database to", dbPath]
+        -- TODO @incomplete: Do we need to quote dbPath and unpackPath
+        -- when passing them to hoogle? The string concatenation scares me.
+        Hoogle.hoogle
+          [ "generate"
+          , "--database=" ++ dbPath
+          , "--local=" ++ unpackPath
+          ]
+
+  let renamePairs hintA hintB pairs =
+        forM_ pairs (\(x, y) -> do
+          report [hintA, x, hintB, y]
+          renameFile x y)
+
+  let setup = do
+        txts <- findTxtButNotHoogleTxt unpackPath
+        let pairs = map (\x -> (x, x <.> "__co.aixon.docbrowser-tempfile__")) txts
+        renamePairs "temporarily rename" "to" pairs
+        return pairs
+
+  let tearDown pairs =
+        renamePairs "move" "back to" $ map swap pairs
+
+  bracket setup tearDown (const runHoogle)
 
   report ["Hoogle database generated"]
 
@@ -144,3 +165,29 @@ getArchivePath url cachePath
   | otherwise =
     -- It's the user's fault if this file does not exist.
     return url
+
+findTxtButNotHoogleTxt dir = do
+  files <- listFilesRecursive dir
+  return $ filter (\f -> isTxt f && not (isHoogleTxt f)) files
+  where
+    isTxt = (== ".txt") . takeExtension
+    isHoogleTxt path =
+      case reverse . splitDirectories $ path of
+        (pkgTxt:pkgVer:_) ->
+          case stripInfixEnd "-" pkgVer of
+            Nothing ->
+              False
+            Just (pkg, ver) ->
+              let pkg' = takeBaseName pkgTxt
+                  a = pkg == pkg'
+                  b = isVersionNumber ver
+              in  isTxt pkgTxt && a && b
+        _ ->
+          False
+    isVersionNumber str =
+      let numbers = "0123456789"
+          goodChars = "." ++ numbers
+          beginWithNumber = Just True == ((`elem` numbers) <$> headMay str)
+          endWithNumber = Just True == ((`elem` numbers) <$> lastMay str)
+          allGoodChars = all (`elem` goodChars) str
+      in beginWithNumber && endWithNumber && allGoodChars
