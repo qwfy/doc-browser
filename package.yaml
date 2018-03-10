@@ -53,6 +53,7 @@ dependencies:
 - safe
 - extra
 - async
+- lzma
 
 library:
   source-dirs: src

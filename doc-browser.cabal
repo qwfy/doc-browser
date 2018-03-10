@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: d71e921bb72cef02971900fd7e171e4ce50f1cd6d347ed62fde3efc3d340d842
+-- hash: dd82cd7073ec98cb52ec6447ba89ff36bb8be468ec5a730f052437ea3cff4d92
 
 name:           doc-browser
 version:        0.1.1
@@ -444,6 +444,7 @@ library
     , hsqml
     , http-types
     , lens
+    , lzma
     , network-uri
     , optparse-applicative
     , regex-pcre
@@ -499,6 +500,7 @@ executable doc-browser
     , hsqml
     , http-types
     , lens
+    , lzma
     , network-uri
     , optparse-applicative
     , regex-pcre
@@ -543,6 +545,7 @@ benchmark prof-search
     , hsqml
     , http-types
     , lens
+    , lzma
     , network-uri
     , optparse-applicative
     , regex-pcre

@@ -3,6 +3,7 @@
 module Hoo
   ( search
   , findDatabase
+  , install
   ) where
 
 import qualified Safe
@@ -11,6 +12,7 @@ import qualified Data.Text as Text
 import System.Directory
 import System.FilePath
 import Control.Monad
+import Data.Char
 
 import qualified Hoogle
 
@@ -102,3 +104,43 @@ unHTML :: String -> String
 unHTML = unescapeHTML . innerTextHTML
 
 -- END d419e005-b736-4dee-8019-4c0bd7851320
+
+
+install :: FilePath -> FilePath -> String -> String -> IO ()
+install configRoot cacheRoot url collection = do
+
+  let docRoot = configRoot </> show Doc.Hoogle
+  let cachePath = joinPath [cacheRoot, collection] <.> "tar.xz"
+  archivePath <- getArchivePath url cachePath
+
+  let unpackPath = joinPath [docRoot, collection]
+  report ["unpacking", archivePath, "into", unpackPath]
+  unpackXzInto archivePath unpackPath
+
+  let dbPath = joinPath [docRoot, collection] <.> "hoo"
+  report ["generating Hoogle database to", dbPath]
+  -- TODO @incomplete: Do we need to quote dbPath and unpackPath
+  -- when passing them to hoogle? The string concatenation scares me.
+  Hoogle.hoogle
+    [ "generate"
+    , "--database=" ++ dbPath
+    , "--local=" ++ unpackPath
+    ]
+
+  report ["Hoogle database generated"]
+
+isHttp str =
+  let lowerStr = map toLower str
+  in "http://" `isPrefixOf` lowerStr || "https://" `isPrefixOf` lowerStr
+
+-- TODO @incomplete: verify integrity
+getArchivePath url cachePath
+  | isHttp url = do
+    cached <- doesFileExist cachePath
+    unless cached $ do
+      report ["downloading", url, "to", cachePath]
+      downloadFile' url cachePath
+    return cachePath
+  | otherwise =
+    -- It's the user's fault if this file does not exist.
+    return url

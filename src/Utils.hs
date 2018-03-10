@@ -8,6 +8,7 @@ module Utils
   , downloadFile'
   , report
   , updateTMVar
+  , unpackXzInto
   , DownloadError(..)
   ) where
 
@@ -23,6 +24,9 @@ import Control.Monad.STM
 import Control.Concurrent.STM.TMVar
 
 import Network.HTTP.Types.Status
+
+import qualified Codec.Archive.Tar as Tar
+import qualified Codec.Compression.Lzma as Lzma
 
 infixl 0 |>
 a |> f = f a
@@ -70,3 +74,10 @@ updateTMVar :: TMVar a -> a -> STM ()
 updateTMVar slot x = do
   _ <- tryTakeTMVar slot
   putTMVar slot x
+
+unpackXzInto :: FilePath -> FilePath -> IO ()
+unpackXzInto archive into = do
+  bs <- LBS.readFile archive
+  Lzma.decompress bs
+    |> Tar.read
+    |> Tar.unpack into

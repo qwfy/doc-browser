@@ -118,5 +118,8 @@ main = do
                Opt.Background -> daemonize start
                Opt.Foreground -> start
 
-        Opt.InstallDevDocs languages ->
-          DevDocsMeta.downloadMany configRoot languages
+        Opt.InstallDevDocs collections ->
+          DevDocsMeta.downloadMany configRoot collections
+
+        Opt.InstallHoogle url collection ->
+          Hoo.install configRoot cacheRoot url collection
