@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: dd82cd7073ec98cb52ec6447ba89ff36bb8be468ec5a730f052437ea3cff4d92
+-- hash: 9179b0e57685cecc09671c0c609d74408d39756a5e86399f31f3f2845e5ad89c
 
 name:           doc-browser
 version:        0.1.1
@@ -20,7 +20,6 @@ build-type:     Simple
 cabal-version:  >= 1.10
 
 extra-source-files:
-    CHANGELOG.md
     README.md
 
 data-files:

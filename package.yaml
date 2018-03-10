@@ -11,7 +11,6 @@ description:    Please see the README on Github at <https://github.com/qwfy/doc-
 
 extra-source-files:
 - README.md
-- CHANGELOG.md
 
 data-files:
 - ui/**/*.qml
