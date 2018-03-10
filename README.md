@@ -97,8 +97,8 @@ If you have trouble building this application, you can:
 To install DevDocs' docset, invoke:
 
 ```
-    doc-browser --install-devdocs 'DOC1 DOC2'
-    # e.g. doc-browser --install-devdocs 'python haskell'
+    doc-browser --install-devdocs DOC1 DOC2
+    # e.g. doc-browser --install-devdocs python haskell
 ```
 
 This will download docsets from devdocs.io, and unpack them to `XDG_CONFIG/doc-browser/DevDocs`.

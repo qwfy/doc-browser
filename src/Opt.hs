@@ -46,12 +46,13 @@ startGUIParser =
 
 installDevDocsParser :: Parser T
 installDevDocsParser =
-  -- TODO @incomplete: do this with arguments
-  InstallDevDocs . words <$>
-    strOption
-      (  long "install-devdocs"
-      <> metavar "DOC1 DOC2 ..."
-      <> help "Install DevDocs' docset. Separate multiple docsets with a space")
+  flag' InstallDevDocs
+    (  long "install-devdocs"
+    <> help "Install DevDocs' docset")
+  <*> some (strArgument
+    (  metavar "DOC"
+    <> help "Docset to install, like \"haskell\", \"python\""
+    ))
 
 installHoogleParser :: Parser T
 installHoogleParser =
