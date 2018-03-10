@@ -2,10 +2,10 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 9179b0e57685cecc09671c0c609d74408d39756a5e86399f31f3f2845e5ad89c
+-- hash: dbaa47c8e9b46e5f6cd56cd897435a78d49cc1705e12bd6567d970863a0e1fa4
 
 name:           doc-browser
-version:        0.1.1
+version:        0.2.0
 synopsis:       A documentation browser
 description:    Please see the README on Github at <https://github.com/qwfy/doc-browser#readme>
 category:       Application
