@@ -96,7 +96,7 @@ If you have trouble building this application, you can:
 - Open an issue.
 
 
-### Install DevDocs' docset
+### Install DevDocs' Docset
 To install DevDocs' docset, invoke:
 
 ```bash
