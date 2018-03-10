@@ -117,13 +117,18 @@ To support Hoogle, this application creates a Hoogle database from a documentati
 doc-browser --install-hoogle URL NAME
 # e.g. doc-browser --install-hoogle 'https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz' lts-10.8
 #
-# URL is where to read the archive. It can also be a local file, which I suggest you to use if you have a bad network connection, since the download function included in this program is pretty savage at this stage.
+# URL is where to read the archive.
+# It can also be a local file,
+# which I suggest you to use if you have a bad network connection,
+# since the download function included in this program is pretty savage at this stage.
 #
 # NAME shouldn't contain "/".
 #
 # See `doc-browser --help` for more
 #
-# Don't panic if you see a lot of lines like this at the begining and ending of the generation (for the above lts-10.8, there are 43 of these):
+# Don't panic if you see a lot of lines that looks like this
+# at the begining and ending of the generation
+# (for the above lts-10.8, there are 43 of these):
 #
 # temporarily rename /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt to /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt.__co.aixon.docbrowser-tempfile__
 # move /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt.__co.aixon.docbrowser-tempfile__ back to /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt
