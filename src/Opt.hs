@@ -9,11 +9,16 @@ module Opt
 import Options.Applicative
 import Data.Monoid
 
-data Ground = Foreground | Background
+data Ground
+  = Foreground
+  | Background
+  deriving (Show)
 
 data T
   = StartGUI Ground
   | InstallDevDocs [String]
+  | InstallHoogle String String
+  deriving (Show)
 
 
 optParser :: ParserInfo T
@@ -24,7 +29,10 @@ optParser =
   where
     optParser' :: Parser T
     optParser' =
-      startGUIParser <|> installDevDocsParser <|> pure (StartGUI Background)
+      startGUIParser
+        <|> installDevDocsParser
+        <|> installHoogleParser
+        <|> pure (StartGUI Background)
 
 startGUIParser :: Parser T
 startGUIParser =
@@ -38,11 +46,30 @@ startGUIParser =
 
 installDevDocsParser :: Parser T
 installDevDocsParser =
+  -- TODO @incomplete: do this with arguments
   InstallDevDocs . words <$>
     strOption
       (  long "install-devdocs"
       <> metavar "DOC1 DOC2 ..."
       <> help "Install DevDocs' docset. Separate multiple docsets with a space")
+
+installHoogleParser :: Parser T
+installHoogleParser =
+  flag' InstallHoogle
+    (  long "install-hoogle"
+    <> help "Generate a Hoogle database from an archive, so it can be queried later")
+  <*> strArgument
+    (  metavar "URL"
+    <> help (unwords
+        [ "The archive to read."
+        , "It can either be a local file or a HTTP link,"
+        , "but should be in the format of \".tar.xz\"."
+        , "It expects the unpacked archive can be consumed by `hoogle generate --local=<unpack_dir>`"
+        , "Example: https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz"
+        ]))
+  <*> strArgument
+    (  metavar "NAME"
+    <> help "Name of the database and documentation directory. Something like \"lts-10.8\" would be a good choice")
 
 get :: IO T
 get = execParser optParser
