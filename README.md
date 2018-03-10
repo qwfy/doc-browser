@@ -1,4 +1,4 @@
-# doc-browser
+# Doc Browser
 
 An API documentation browser written in Haskell and QML.
 
@@ -18,6 +18,10 @@ Many thanks to [Thibaut Courouble](https://github.com/Thibaut) and [other contri
 
 - This application uses docsets, along with the corresponding style sheets, produced by DevDocs.
 
+The Hoogle support receives [helps](https://github.com/qwfy/doc-browser/issues/2) from [Neil Mitchell](https://github.com/ndmitchell), the author of Hoogle. This application also ships with a little code (modified) from the [Hoogle](https://github.com/ndmitchell/hoogle) project, the modified code is licensed under the BSD license.
+
+For Hoogle support, this application guides user to download documentation archive from [Stackage](https://www.stackage.org).
+
 
 ## Implemented Features
 
@@ -29,10 +33,10 @@ Many thanks to [Thibaut Courouble](https://github.com/Thibaut) and [other contri
 
 - Easy-to-type shortcuts
 
-
-## Planned Features (in no particular order)
-
 - Hoogle integration
+
+
+## Planned (in no particular order)
 
 - Persistent tabs across application restarts
 
@@ -43,6 +47,7 @@ Many thanks to [Thibaut Courouble](https://github.com/Thibaut) and [other contri
 - Configurable
 
 - Display version number
+
 
 ## Current Status
 
@@ -88,17 +93,41 @@ If you have trouble building this application, you can:
 - Open an issue.
 
 
+### Install DevDocs' docset
 To install DevDocs' docset, invoke:
 
+```
     doc-browser --install-devdocs 'DOC1 DOC2'
     # e.g. doc-browser --install-devdocs 'python haskell'
+```
 
 This will download docsets from devdocs.io, and unpack them to `XDG_CONFIG/doc-browser/DevDocs`.
 
+### Enable Hoogle Support
 
-Start the application with:
+To support Hoogle, this application creates a Hoogle database from a documentation archive, which can be done by these steps:
 
+1. Find out which documentation archive you want to use. The Hoogle support is tested on archives provided by [Stackage](https://www.stackage.org), like [this one](https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz), which can be found at: [https://www.stackage.org/lts-10.8](https://www.stackage.org/lts-10.8). You can use other archives as well, as long as the unpacked archive can be read by `hoogle generate --local=dir_to_unpacked_archive`, but this is untested.
+
+2. Invoke the following installation command, this will unpack the archive to `XDG_CONFIG/doc-browser/Hoogle/NAME`, and creates a Hoogle database `XDG_CONFIG/doc-browser/Hoogle/NAME.hoo` for it, (doc-browser's Hoogle doesn't interfere with your system Hoogle in any way):
+
+    doc-browser --install-hoogle URL NAME
+    # e.g. doc-browser --install-hoogle 'https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz' lts-10.8
+    #
+    # URL is where to read the archive. It can also be a local file, which I suggest you to use if you have a bad network connection, since the download function included in this program is pretty savage at this stage.
+    #
+    # NAME shouldn't contain "/".
+    #
+    # See `doc-browser --help` for more
+
+
+3. Prefix or suffix a search with "/hh" to query Hoogle, like this: `/hh[a]->Int->[a]`.
+
+### Start the Application
+
+```
     doc-browser
+```
 
 
 ## GUI
