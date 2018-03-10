@@ -9,6 +9,7 @@
 - Abbreviation for Erlang.
 - Option to run the GUI in foreground.
 - Can use tab and arrow key to navigate matches.
+- A disk format upgrader.
 
 ### Fixed
 

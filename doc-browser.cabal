@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 0fd4d02d7e93f3920f4df629b0414690c0967e82920325a676e9048834166593
+-- hash: d71e921bb72cef02971900fd7e171e4ce50f1cd6d347ed62fde3efc3d340d842
 
 name:           doc-browser
 version:        0.1.1
@@ -24,6 +24,7 @@ extra-source-files:
     README.md
 
 data-files:
+    ui/disk-upgrade.qml
     ui/Doc.qml
     ui/icon/angular/16.png
     ui/icon/angular/16@2x.png
@@ -426,6 +427,7 @@ library
   build-depends:
       aeson
     , array
+    , async
     , base >=4.7 && <5
     , binary
     , bytestring
@@ -465,6 +467,7 @@ library
       Opt
       Search
       Server
+      Upgrade
       Utils
   other-modules:
       Paths_doc_browser
@@ -478,6 +481,7 @@ executable doc-browser
   build-depends:
       aeson
     , array
+    , async
     , base >=4.7 && <5
     , binary
     , bytestring
@@ -521,6 +525,7 @@ benchmark prof-search
   build-depends:
       aeson
     , array
+    , async
     , base >=4.7 && <5
     , binary
     , bytestring

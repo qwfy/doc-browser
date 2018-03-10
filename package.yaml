@@ -52,6 +52,7 @@ dependencies:
 - hoogle
 - safe
 - extra
+- async
 
 library:
   source-dirs: src

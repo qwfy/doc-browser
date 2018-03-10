@@ -8,5 +8,6 @@
         <file>match.js</file>
         <file>tab.js</file>
         <file>util.js</file>
+        <file>disk-upgrade.qml</file>
     </qresource>
 </RCC>

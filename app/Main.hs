@@ -23,6 +23,7 @@ import qualified DevDocsMeta
 import qualified Server
 import qualified Opt
 import qualified Hoo
+import qualified Upgrade
 import Utils
 
 import Paths_doc_browser
@@ -76,10 +77,6 @@ startGUI configRoot cacheRoot = do
     querySlot
     sendMatches
 
-  -- this flag is required by QtWebEngine
-  -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
-  True <- setQtFlag QtShareOpenGLContexts True
-
   mainQml <- getDataFileName "ui/main.qml"
 
   runEngineLoop
@@ -94,17 +91,32 @@ startGUI configRoot cacheRoot = do
 
 main :: IO ()
 main = do
+
+  -- This flag is required by QtWebEngine
+  -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
+  --
+  -- It is done here because the Upgrade.hs also starts a GUI, and according to
+  -- https://hackage.haskell.org/package/hsqml-0.3.5.0/docs/Graphics-QML-Engine.html#v:setQtFlag
+  -- > Setting flags once the Qt event loop is entered is unsupported and will also cause this function to return False.
+  True <- setQtFlag QtShareOpenGLContexts True
+
   opt <- Opt.get
 
   configRoot <- getXdgDirectory XdgConfig "doc-browser"
   cacheRoot <- getXdgDirectory XdgCache "doc-browser"
 
-  case opt of
-    Opt.StartGUI ground ->
-      let start = startGUI configRoot cacheRoot
-      in case ground of
-           Opt.Background -> daemonize start
-           Opt.Foreground -> start
+  upgradeResult <- Upgrade.startGUI configRoot
+  case upgradeResult of
+    Upgrade.Abort ->
+      return ()
 
-    Opt.InstallDevdocs languages ->
-      DevDocsMeta.downloadMany configRoot languages
+    Upgrade.Continue ->
+      case opt of
+        Opt.StartGUI ground ->
+          let start = startGUI configRoot cacheRoot
+          in case ground of
+               Opt.Background -> daemonize start
+               Opt.Foreground -> start
+
+        Opt.InstallDevdocs languages ->
+          DevDocsMeta.downloadMany configRoot languages
