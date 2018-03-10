@@ -70,19 +70,21 @@ Currently, this application can only be installed from source, and only tested o
 
 Finally, run these commands in the shell to build and install the application:
 
-    git clone 'https://github.com/qwfy/doc-browser.git'
-    cd doc-browser
+``` bash
+git clone 'https://github.com/qwfy/doc-browser.git'
+cd doc-browser
 
-    # optionally, install `c2hs` if not already installed:
-    # stack install c2hs
+# optionally, install `c2hs` if not already installed:
+# stack install c2hs
 
-    stack install
+stack install
 
-    # optionally, install `happy` if the above command complains the lack of `happy`:
-    # and run `stack install` again after the installation
-    # stack install happy
+# optionally, install `happy` if the above command complains the lack of `happy`:
+# and run `stack install` again after the installation
+# stack install happy
 
-    echo "binary installed to $(stack path --local-bin)"
+echo "binary installed to $(stack path --local-bin)"
+```
 
 Note, due to a restriction of stack, you shouldn't delete the `.stack-work` directory inside the source code directory you just cloned after the build, for the installed binary still need to access files in it. If you really don't want to depends on this `.stack-wrok` directory, you can copy the `ui` directory of this repository to somewhere, say `/foo/ui`, and then start this application with `doc_browser_datadir=/foo doc-browser` instead of the usual `doc-browser`. This annoying situation will be handled when this application gets a packaging system for various operating systems.
 
@@ -96,9 +98,9 @@ If you have trouble building this application, you can:
 ### Install DevDocs' docset
 To install DevDocs' docset, invoke:
 
-```
-    doc-browser --install-devdocs DOC1 DOC2
-    # e.g. doc-browser --install-devdocs python haskell
+```bash
+doc-browser --install-devdocs DOC1 DOC2
+# e.g. doc-browser --install-devdocs python haskell
 ```
 
 This will download docsets from devdocs.io, and unpack them to `XDG_CONFIG/doc-browser/DevDocs`.
@@ -111,28 +113,30 @@ To support Hoogle, this application creates a Hoogle database from a documentati
 
 2. Invoke the following installation command, this will unpack the archive to `XDG_CONFIG/doc-browser/Hoogle/NAME`, and creates a Hoogle database `XDG_CONFIG/doc-browser/Hoogle/NAME.hoo` for it, (doc-browser's Hoogle doesn't interfere with your system Hoogle in any way):
 
-    doc-browser --install-hoogle URL NAME
-    # e.g. doc-browser --install-hoogle 'https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz' lts-10.8
-    #
-    # URL is where to read the archive. It can also be a local file, which I suggest you to use if you have a bad network connection, since the download function included in this program is pretty savage at this stage.
-    #
-    # NAME shouldn't contain "/".
-    #
-    # See `doc-browser --help` for more
-    #
-    # Don't panic if you see a lot of lines like this at the begining and ending of the generation (for the above lts-10.8, there are 43 of these):
-    #
-    # temporarily rename /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt to /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt.__co.aixon.docbrowser-tempfile__
-    # move /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt.__co.aixon.docbrowser-tempfile__ back to /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt
-    #
-    # These are necessary to work around an Hoogle issue.
+```bash
+doc-browser --install-hoogle URL NAME
+# e.g. doc-browser --install-hoogle 'https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz' lts-10.8
+#
+# URL is where to read the archive. It can also be a local file, which I suggest you to use if you have a bad network connection, since the download function included in this program is pretty savage at this stage.
+#
+# NAME shouldn't contain "/".
+#
+# See `doc-browser --help` for more
+#
+# Don't panic if you see a lot of lines like this at the begining and ending of the generation (for the above lts-10.8, there are 43 of these):
+#
+# temporarily rename /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt to /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt.__co.aixon.docbrowser-tempfile__
+# move /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt.__co.aixon.docbrowser-tempfile__ back to /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt
+#
+# These are necessary to work around an Hoogle issue.
+```
 
 3. Prefix or suffix a search with "/hh" to query Hoogle, like this: `/hh[a]->Int->[a]`.
 
 ### Start the Application
 
-```
-    doc-browser
+```bash
+doc-browser
 ```
 
 
