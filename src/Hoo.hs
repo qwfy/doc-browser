@@ -119,6 +119,7 @@ install configRoot cacheRoot url collection = do
 
   let unpackPath = joinPath [docRoot, collection]
   report ["unpacking", archivePath, "into", unpackPath]
+  report ["this may take a while"]
   unpackXzInto archivePath unpackPath
 
   let runHoogle = do
