@@ -24,6 +24,7 @@ import qualified Server
 import qualified Opt
 import qualified Hoo
 import qualified Upgrade
+import qualified Doc
 import Utils
 
 import Paths_doc_browser
@@ -104,6 +105,10 @@ main = do
 
   configRoot <- getXdgDirectory XdgConfig "doc-browser"
   cacheRoot <- getXdgDirectory XdgCache "doc-browser"
+
+  createDirectoryIfMissing True $ joinPath [configRoot, show Doc.DevDocs]
+  createDirectoryIfMissing True $ joinPath [configRoot, show Doc.Hoogle]
+  createDirectoryIfMissing True $ joinPath [cacheRoot]
 
   upgradeResult <- Upgrade.startGUI configRoot
   case upgradeResult of
