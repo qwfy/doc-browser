@@ -118,5 +118,5 @@ main = do
                Opt.Background -> daemonize start
                Opt.Foreground -> start
 
-        Opt.InstallDevdocs languages ->
+        Opt.InstallDevDocs languages ->
           DevDocsMeta.downloadMany configRoot languages

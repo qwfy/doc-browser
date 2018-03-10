@@ -13,7 +13,7 @@ data Ground = Foreground | Background
 
 data T
   = StartGUI Ground
-  | InstallDevdocs [String]
+  | InstallDevDocs [String]
 
 
 optParser :: ParserInfo T
@@ -24,7 +24,7 @@ optParser =
   where
     optParser' :: Parser T
     optParser' =
-      startGUIParser <|> installDevdocsParser <|> pure (StartGUI Background)
+      startGUIParser <|> installDevDocsParser <|> pure (StartGUI Background)
 
 startGUIParser :: Parser T
 startGUIParser =
@@ -36,9 +36,9 @@ startGUIParser =
     <> help "Run the GUI in foreground")
 
 
-installDevdocsParser :: Parser T
-installDevdocsParser =
-  InstallDevdocs . words <$>
+installDevDocsParser :: Parser T
+installDevDocsParser =
+  InstallDevDocs . words <$>
     strOption
       (  long "install-devdocs"
       <> metavar "DOC1 DOC2 ..."
