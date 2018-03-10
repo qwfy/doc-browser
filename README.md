@@ -7,6 +7,7 @@ An API documentation browser written in Haskell and QML.
 
 ![Main Interface](asset/interface-annotated.png)
 
+[This one](asset/interface-hoogle.png) is the interface for Hoogle.
 
 ## Credits
 
