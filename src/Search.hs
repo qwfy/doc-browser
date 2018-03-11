@@ -174,8 +174,8 @@ subString :: C.ByteString -> Int -> Int -> C.ByteString
 subString str offset length' =
   str |> C.drop offset |> C.take length'
 
-startThread :: (Entry.T -> Match.T) -> [Entry.T] -> Maybe FilePath -> TMVar String -> ([Match.T] -> IO ())-> IO ThreadId
-startThread entryToMatch entries hooMay querySlot handleMatches =
+startThread :: Int -> FilePath -> (Entry.T -> Match.T) -> [Entry.T] -> Maybe FilePath -> TMVar String -> ([Match.T] -> IO ())-> IO ThreadId
+startThread port configRoot entryToMatch entries hooMay querySlot handleMatches =
   forkIO loop
   where
     loop = forever $ do
@@ -202,4 +202,4 @@ startThread entryToMatch entries hooMay querySlot handleMatches =
                   -- load the database on every search, instead of keeping it in memory,
                   -- this is done deliberately - turns out that it makes the GUI more responsive
                   let version = Doc.Version . takeFileName $ dbPath
-                  in Hoogle.withDatabase dbPath (\db -> return $ Hoo.search version db limit query)
+                  in Hoogle.withDatabase dbPath (\db -> return $ Hoo.search port configRoot version db limit query)

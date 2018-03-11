@@ -53,6 +53,9 @@ app configRoot cache request respond = do
         let (collection, version) = Doc.breakCollectionVersion cv
             path = intercalate "/" rest
         in fetchDevdocs configRoot cache collection version path
+      (vendor : _) | vendor == show Doc.Hoogle ->
+        let path = intercalate "/" paths
+        in fetchHoogle configRoot path
 
       _ ->
         badRequest
@@ -70,6 +73,24 @@ app configRoot cache request respond = do
 
   let headers = [("Content-Type", contentType)]
   respond (responseBuilder status200 headers builder)
+
+
+fetchHoogle :: FilePath -> FilePath -> IO Builder.Builder
+fetchHoogle configRoot path = do
+  let filePath = joinPath [configRoot, path]
+  fileToRead <- do
+    isFile <- doesFileExist filePath
+    if isFile
+      then return filePath
+      else do
+        let indexHtml = filePath </> "index.html"
+        indexExist <- doesFileExist indexHtml
+        if indexExist
+          then return indexHtml
+          -- TODO @incomplete: Add this file
+          else return "404.html"
+  Builder.fromLazyByteString <$> LBS.readFile fileToRead
+
 
 fetchDevdocs :: FilePath
              -> Cache String LBS.ByteString

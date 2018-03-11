@@ -65,10 +65,12 @@ startGUI configRoot cacheRoot = do
 
   -- TODO @incomplete: check for updates
   allEntries <- DevDocs.loadAll configRoot
-  report ["number of entries:", show $ length allEntries]
+  report ["number of entries from DevDocs:", show $ length allEntries]
 
   hooMay <- Hoo.findDatabase configRoot
   _searchThreadId <- Search.startThread
+    port
+    configRoot
     (Entry.toMatch port)
     allEntries
     ((configRoot </>) <$> hooMay)
@@ -100,8 +102,9 @@ main = do
 
   opt <- Opt.get
 
-  configRoot <- getXdgDirectory XdgConfig "doc-browser"
-  cacheRoot <- getXdgDirectory XdgCache "doc-browser"
+  -- TODO @incomplete: handle the absolute/relative semantic in the type level
+  configRoot <- makeAbsolute =<< getXdgDirectory XdgConfig "doc-browser"
+  cacheRoot <- makeAbsolute =<< getXdgDirectory XdgCache "doc-browser"
 
   createDirectoryIfMissing True $ joinPath [configRoot]
   createDirectoryIfMissing True $ joinPath [cacheRoot]

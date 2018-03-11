@@ -9,6 +9,7 @@ module Hoo
 import Data.List.Extra
 import Data.Char
 import Data.Tuple
+import Data.Maybe
 import qualified Data.Text as Text
 
 import Safe
@@ -24,14 +25,14 @@ import qualified Match
 import qualified Doc
 import Utils
 
-search :: Doc.Version -> Hoogle.Database -> Int -> String -> [Match.T]
-search version db limit query =
+search :: Int -> FilePath -> Doc.Version -> Hoogle.Database -> Int -> String -> [Match.T]
+search port configRoot version db limit query =
   Hoogle.searchDatabase db query
   |> take limit
-  |> map (toMatch version)
+  |> map (toMatch port configRoot version)
 
-toMatch :: Doc.Version -> Hoogle.Target -> Match.T
-toMatch version target =
+toMatch :: Int -> FilePath -> Doc.Version -> Hoogle.Target -> Match.T
+toMatch port configRoot version target =
   let name' = unHTML . Hoogle.targetItem $ target
       (name, typeConstraint) = maybe
         (name', Nothing)
@@ -41,12 +42,21 @@ toMatch version target =
              -- TODO @incomplete: don't hard code this
              , Match.version = Text.pack $ Doc.getVersion version
              , Match.name = Text.pack name
-             , Match.url = Text.pack $ Hoogle.targetURL target
+             , Match.url = Text.pack . toUrl port configRoot . Hoogle.targetURL $ target
              , Match.vendor = Text.pack . show $ Doc.Hoogle
              , Match.package_ = Text.pack . fst <$> Hoogle.targetPackage target
              , Match.module_ = Text.pack . fst <$> Hoogle.targetModule target
              , Match.typeConstraint = Text.pack <$> typeConstraint
              }
+
+toUrl :: Int -> FilePath -> String -> String
+toUrl port configRoot prefixedPath =
+  let prefix = "file://" ++ addTrailingPathSeparator configRoot
+      -- TODO @incomplete: This 404 is also 404
+      startWithHoogle = fromMaybe "404.html" $
+        stripPrefix prefix prefixedPath
+      host = "http://localhost:" ++ show port
+  in host </> startWithHoogle
 
 
 findDatabase :: FilePath -> IO (Maybe FilePath)
