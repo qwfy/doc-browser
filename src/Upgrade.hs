@@ -30,7 +30,7 @@ type DiskFormat = Int
 
 -- This needs to be manually increased when incompatible changes are made to the disk format.
 latestDiskFormat :: DiskFormat
-latestDiskFormat = 1
+latestDiskFormat = 2
 
 -- What should the main program do when the upgrader's window is closed.
 data Continue = Continue | Abort
@@ -98,6 +98,8 @@ upgrade report configRoot = do
        case userFormat of
          0 ->
            upgradeFrom0 report configRoot
+         1 ->
+           upgradeFrom1 report configRoot
          _ ->
            throwIO $ UnRecognizedDiskFormat userFormat
 
@@ -119,6 +121,13 @@ upgradeFrom0 report configRoot = do
            , "to"
            , newDevDocsDir]
     renameDirectory oldDevDocsDir newDevDocsDir
+
+upgradeFrom1 :: Reporter -> FilePath -> IO ()
+upgradeFrom1 report configRoot =
+  forM_ [Doc.DevDocs, Doc.Hoogle] (\vendor -> do
+    let targetDir = joinPath [configRoot, show vendor]
+    report ["Ensure directory:", targetDir]
+    createDirectoryIfMissing True targetDir)
 
 startGUI :: FilePath -> IO Continue
 startGUI configRoot = do
