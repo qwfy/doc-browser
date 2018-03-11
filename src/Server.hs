@@ -16,9 +16,7 @@ import qualified Data.ByteString.Lazy.Char8 as C
 import Data.List.Extra
 import Data.String
 import qualified Data.Hash.MD5 as MD5
-import qualified Data.Array
 import Safe
-import Text.Regex.PCRE
 
 import System.FilePath
 import System.Directory
@@ -53,7 +51,7 @@ app configRoot cacheRoot request respond = do
         in fetchDevdocs configRoot cacheRoot collection version path
       (vendor : _) | vendor == show Doc.Hoogle ->
         let path = intercalate "/" paths
-        in fetchHoogle configRoot cacheRoot path
+        in fetchHoogle configRoot path
 
       ("cache" : rest) ->
         let path = joinPath $ cacheRoot:rest
@@ -77,8 +75,8 @@ app configRoot cacheRoot request respond = do
   respond (responseBuilder status200 headers builder)
 
 
-fetchHoogle :: FilePath -> FilePath -> FilePath -> IO Builder.Builder
-fetchHoogle configRoot cacheRoot path = do
+fetchHoogle :: FilePath -> FilePath -> IO Builder.Builder
+fetchHoogle configRoot path = do
   let filePath = joinPath [configRoot, path]
   fileToRead <- do
     isFile <- doesFileExist filePath
@@ -92,22 +90,7 @@ fetchHoogle configRoot cacheRoot path = do
           -- TODO @incomplete: Add this file
           else return "404.html"
 
-  LBS.readFile fileToRead >>=
-    replaceMathJax cacheRoot >>=
-      return . Builder.fromLazyByteString
-
-replaceMathJax :: FilePath -> LBS.ByteString -> IO LBS.ByteString
-replaceMathJax cacheRoot source = do
-  let str = "src=\"(https://cdnjs\\.cloudflare\\.com/ajax/libs/mathjax/[\\.0-9]+/MathJax\\.js)(\\?config=[^\"]+)\"" :: LBS.ByteString
-  let regex = makeRegex str :: Regex
-  case matchOnceText regex source of
-    Nothing ->
-      return source
-    Just (before', match', after') -> do
-      let (src, _) = match' Data.Array.! 1
-      let (cfg, _) = match' Data.Array.! 2
-      cachedSrc <- getCached cacheRoot (src <> cfg) "js"
-      return $ before' <> "src=\"" <> cachedSrc <> cfg <> "\"" <> after'
+  Builder.fromLazyByteString <$> LBS.readFile fileToRead
 
 fetchDevdocs :: FilePath
              -> FilePath
