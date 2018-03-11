@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 6cf6508f2ad5d01cfa960de8f09951a14ac034fc4acc60e1aa0837efca0cea05
+-- hash: fed1b4223e5d848f0a8f1fe1ac1fee5acaeb5100afafecfae14987258d1d92a0
 
 name:           doc-browser
 version:        0.2.0
@@ -424,13 +424,13 @@ library
       src
   ghc-options: -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror -O2
   build-depends:
-      aeson
+      MissingH
+    , aeson
     , array
     , async
     , base >=4.7 && <5
     , binary
     , bytestring
-    , cache
     , containers
     , criterion
     , deepseq
@@ -477,13 +477,13 @@ executable doc-browser
       app
   ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -O2 -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
   build-depends:
-      aeson
+      MissingH
+    , aeson
     , array
     , async
     , base >=4.7 && <5
     , binary
     , bytestring
-    , cache
     , containers
     , criterion
     , deepseq
@@ -520,13 +520,13 @@ benchmark prof-search
       prof
   ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -O2 -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
   build-depends:
-      aeson
+      MissingH
+    , aeson
     , array
     , async
     , base >=4.7 && <5
     , binary
     , bytestring
-    , cache
     , containers
     , criterion
     , deepseq

@@ -11,19 +11,19 @@ import Data.Monoid
 import qualified Data.Text as Text
 import qualified Data.Binary.Builder as Builder
 import qualified Data.Map.Strict as Map
-import qualified Data.String
 import qualified Data.ByteString.Lazy as LBS
+import qualified Data.ByteString.Lazy.Char8 as C
 import Data.List.Extra
+import Data.String
+import qualified Data.Hash.MD5 as MD5
+import qualified Data.Array
 import Safe
+import Text.Regex.PCRE
 
 import System.FilePath
 import System.Directory
 
-import Data.Cache (Cache)
-import qualified Data.Cache as Cache
-
-import Control.Concurrent
-import Control.Monad.Trans.Except
+import Control.Exception
 
 import Utils
 import qualified DevDocs
@@ -31,17 +31,15 @@ import qualified DevDocsMeta
 import qualified Doc
 
 start :: Int -> FilePath -> FilePath -> IO ()
-start port configRoot cacheRoot = do
-  cache <- Cache.newCache Nothing
-  loadCache cache cacheRoot
-  run port (app configRoot cache)
+start port configRoot cacheRoot =
+  run port (app configRoot cacheRoot)
 
 app :: FilePath
-    -> Cache String LBS.ByteString
+    -> FilePath
     -> Request
     -> (Response -> IO ResponseReceived)
     -> IO ResponseReceived
-app configRoot cache request respond = do
+app configRoot cacheRoot request respond = do
   let paths = pathInfo request |> map Text.unpack
 
   let badRequest =
@@ -52,10 +50,14 @@ app configRoot cache request respond = do
       (vendor : cv : rest) | vendor == show Doc.DevDocs ->
         let (collection, version) = Doc.breakCollectionVersion cv
             path = intercalate "/" rest
-        in fetchDevdocs configRoot cache collection version path
+        in fetchDevdocs configRoot cacheRoot collection version path
       (vendor : _) | vendor == show Doc.Hoogle ->
         let path = intercalate "/" paths
-        in fetchHoogle configRoot path
+        in fetchHoogle configRoot cacheRoot path
+
+      ("cache" : rest) ->
+        let path = joinPath $ cacheRoot:rest
+        in Builder.fromLazyByteString <$> LBS.readFile path
 
       _ ->
         badRequest
@@ -75,8 +77,8 @@ app configRoot cache request respond = do
   respond (responseBuilder status200 headers builder)
 
 
-fetchHoogle :: FilePath -> FilePath -> IO Builder.Builder
-fetchHoogle configRoot path = do
+fetchHoogle :: FilePath -> FilePath -> FilePath -> IO Builder.Builder
+fetchHoogle configRoot cacheRoot path = do
   let filePath = joinPath [configRoot, path]
   fileToRead <- do
     isFile <- doesFileExist filePath
@@ -89,16 +91,31 @@ fetchHoogle configRoot path = do
           then return indexHtml
           -- TODO @incomplete: Add this file
           else return "404.html"
-  Builder.fromLazyByteString <$> LBS.readFile fileToRead
 
+  LBS.readFile fileToRead >>=
+    replaceMathJax cacheRoot >>=
+      return . Builder.fromLazyByteString
+
+replaceMathJax :: FilePath -> LBS.ByteString -> IO LBS.ByteString
+replaceMathJax cacheRoot source = do
+  let str = "src=\"(https://cdnjs\\.cloudflare\\.com/ajax/libs/mathjax/[\\.0-9]+/MathJax\\.js)(\\?config=[^\"]+)\"" :: LBS.ByteString
+  let regex = makeRegex str :: Regex
+  case matchOnceText regex source of
+    Nothing ->
+      return source
+    Just (before', match', after') -> do
+      let (src, _) = match' Data.Array.! 1
+      let (cfg, _) = match' Data.Array.! 2
+      cachedSrc <- getCached cacheRoot (src <> cfg) "js"
+      return $ before' <> "src=\"" <> cachedSrc <> cfg <> "\"" <> after'
 
 fetchDevdocs :: FilePath
-             -> Cache String LBS.ByteString
+             -> FilePath
              -> Doc.Collection
              -> Doc.Version
              -> String
              -> IO Builder.Builder
-fetchDevdocs configRoot cache collection version path = do
+fetchDevdocs configRoot cacheRoot collection version path = do
   let filePath = joinPath
         [ configRoot
         , DevDocs.getDocFile collection version path
@@ -106,12 +123,8 @@ fetchDevdocs configRoot cache collection version path = do
 
   content <- Builder.fromLazyByteString <$> LBS.readFile filePath
 
-  maybeCss <- Cache.lookup cache devdocsApplicationCssUrl
-  let css = case maybeCss of
-        Nothing ->
-          "<link rel='stylesheet' href='" <> Data.String.fromString devdocsApplicationCssUrl <> "'>"
-        Just bs ->
-          "<style>" <> bs <> "</style>"
+  cssUrl <- getCached cacheRoot "https://devdocs.io/application.css" "css"
+  let css = "<link rel='stylesheet' href='" <> cssUrl <> "'>"
 
   -- TODO @incomplete: handle the concatenation properly
   let begin' =
@@ -139,32 +152,24 @@ fetchDevdocs configRoot cache collection version path = do
   return $ begin <> content <> end
 
 
-loadCache :: Cache String LBS.ByteString -> FilePath -> IO ()
-loadCache cache cacheRoot = do
-  _ <- forkIO $ mapM_ (cacheOne cache) caches
-  return ()
-  where
-    caches =
-      [ (devdocsApplicationCssUrl, joinPath [cacheRoot, "devdocs-application.css"])
-      ]
-
-cacheOne :: Cache String LBS.ByteString -> (String, FilePath) -> IO ()
-cacheOne cache (url, saveTo) = do
-  exist <- doesFileExist saveTo
-  if exist
+-- Since we have only one web server running on the entire OS,
+-- we won't run into concurrency problems.
+getCached :: FilePath -> LBS.ByteString -> String -> IO LBS.ByteString
+getCached cacheRoot url' ext = do
+  let url = C.unpack url'
+  let basename = MD5.md5s (MD5.Str url) <.> ext
+  let cachedUrl = fromString $ joinPath ["/cache", basename]
+  let storage = joinPath [cacheRoot, basename]
+  cached <- doesFileExist storage
+  if cached
     then
-      cacheIt
+      return cachedUrl
     else do
-      dlRes <- runExceptT (downloadFile url saveTo)
+      dlRes <- try $ downloadFile' url storage :: IO (Either SomeException ())
       case dlRes of
-        Left e ->
-          report ["error downloading", url, saveTo, e]
-        Right () ->
-          cacheIt
-  where
-    cacheIt = do
-      LBS.readFile saveTo >>= Cache.insert cache url
-      report ["cached", url, saveTo]
-
-devdocsApplicationCssUrl :: String
-devdocsApplicationCssUrl = "https://devdocs.io/application.css"
+        Right () -> do
+          report ["cached url:", url, "to:", storage]
+          return cachedUrl
+        Left e -> do
+          report ["error caching:", url, show e]
+          return url'

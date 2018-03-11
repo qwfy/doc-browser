@@ -45,12 +45,12 @@ dependencies:
 - array
 - optparse-applicative
 - transformers
-- cache
 - hoogle
 - safe
 - extra
 - async
 - lzma
+- MissingH
 
 library:
   source-dirs: src
