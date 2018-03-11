@@ -3,19 +3,13 @@
 module Opt
   ( T(..)
   , get
-  , Ground(..)
   ) where
 
 import Options.Applicative
 import Data.Monoid
 
-data Ground
-  = Foreground
-  | Background
-  deriving (Show)
-
 data T
-  = StartGUI Ground
+  = StartGUI
   | InstallDevDocs [String]
   | InstallHoogle String String
   deriving (Show)
@@ -32,16 +26,13 @@ optParser =
       startGUIParser
         <|> installDevDocsParser
         <|> installHoogleParser
-        <|> pure (StartGUI Background)
+        <|> pure StartGUI
 
 startGUIParser :: Parser T
 startGUIParser =
   flag' StartGUI
     (  long "gui"
     <> help "Start the GUI. This is the default behaviour")
-  <*> flag Background Foreground
-    (  long "foreground"
-    <> help "Run the GUI in foreground")
 
 
 installDevDocsParser :: Parser T

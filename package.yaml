@@ -21,7 +21,6 @@ data-files:
 
 dependencies:
 - base >= 4.7 && < 5
-- dbus
 - filepath
 - containers
 - hsqml
@@ -47,7 +46,6 @@ dependencies:
 - optparse-applicative
 - transformers
 - cache
-- hdaemonize
 - hoogle
 - safe
 - extra

@@ -9,8 +9,6 @@ import Control.Monad.STM
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TMVar
 
-import System.Posix.Daemonize
-
 import qualified Data.Text as Text
 import System.Directory
 import System.FilePath
@@ -115,11 +113,8 @@ main = do
 
     Upgrade.Continue ->
       case opt of
-        Opt.StartGUI ground ->
-          let start = startGUI configRoot cacheRoot
-          in case ground of
-               Opt.Background -> daemonize start
-               Opt.Foreground -> start
+        Opt.StartGUI ->
+          startGUI configRoot cacheRoot
 
         Opt.InstallDevDocs collections ->
           DevDocsMeta.downloadMany configRoot collections
