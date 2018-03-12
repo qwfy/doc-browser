@@ -145,6 +145,24 @@ doc-browser --install-hoogle URL NAME
 doc-browser
 ```
 
+### Offline Support
+
+The documentation files themselves are downloaded to your disk when `doc-browser --install-devdocs` or `doc-browser --install-hoogle` is invoked, however, to display the documentation, some additional Cascading Style Sh\*t or JavaScript files are needed, some of these are not packaged with the documentation files.
+
+
+To make DevDocs' docsets work fully offline:
+
+- Start the application after `doc-browser --install-devdocs`
+
+- Search for anything, and open any match
+
+- When the tab is opened and the documentation is correctly displayed, all necessary files are cached, DevDocs' docsets work offline now
+
+(Cache-when-installing will be implemented after session restore is implemented.)
+
+Theoretically, the Hoogle documentations don't work fully offline yet, but in practice, most of the pages work just fine even when you are offline. (You can also try to open a Hoogle page when you are online, this might let the QtWebEngine cache kick-in, but this is untested)
+
+
 
 ## GUI
 
