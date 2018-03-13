@@ -20,6 +20,9 @@ Window {
         onActivated: searchInput.focus = true
     }
 
+    readonly property real leftColumnWidthNormal: 400
+    readonly property real leftColumnWidthHoogle: 700
+
     // =====================================================================
     // Shortcuts for navigating matches
     // TODO @incomplete: is this insane?
@@ -86,7 +89,7 @@ Window {
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             Layout.fillWidth: false
-            Layout.preferredWidth: searchInput.text.startsWith("/hh") || searchInput.text.endsWith("/hh") ? 700 : 400
+            Layout.preferredWidth: Logic.isHoogleMode() ? leftColumnWidthHoogle : leftColumnWidthNormal
 
             spacing: 1
 
@@ -131,20 +134,19 @@ Window {
             }
 
 
-            FocusScope {
+            ScrollView {
                 id: matchContainerFocusScope
 
                 anchors.top: searchInput.bottom
                 anchors.left: parent.left
                 anchors.right: parent.right
+                anchors.bottom: parent.bottom
 
-                Column {
+                ColumnLayout {
+
                     spacing: 1
-                    anchors.top: parent.top
-                    anchors.left: parent.left
-                    anchors.right: parent.right
+                    width: matchContainerFocusScope.viewport.width
 
-                    // TODO @incomplete: cut off off-screen elements
                     Repeater {
                         id: matchContainer
 

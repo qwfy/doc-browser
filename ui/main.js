@@ -94,3 +94,11 @@ function tabIndexOf(tab) {
     }
     return index;
 }
+
+
+// =====================================================================
+// Left column
+// =====================================================================
+function isHoogleMode() {
+    return searchInput.text.startsWith("/hh") || searchInput.text.endsWith("/hh");
+}

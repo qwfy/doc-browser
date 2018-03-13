@@ -10,7 +10,7 @@ Rectangle {
     anchors.left: parent.left
     anchors.right: parent.right
 
-    height: mainItem.height
+    implicitHeight: mainItem.height
     radius: height / 10.526
 
     signal clicked()
@@ -47,10 +47,10 @@ Rectangle {
         anchors.leftMargin: Style.ewPadding
         anchors.rightMargin: Style.ewPadding
 
-        height: Math.max(
-            shortcut.height,
-            icon.height,
-            mainColumn.height) + 16
+        height: Math.max(shortcut.height,
+                         icon.height,
+                         mainColumn.height
+                        ) + 16
 
         Text {
             id: shortcut
@@ -81,7 +81,6 @@ Rectangle {
             spacing: 4
 
             Text {
-                clip: true
                 text: modelData.name
                 font: modelData.vendor === "Hoogle" ? Style.matchMainFontHoogle : Style.matchMainFont
                 color: root.isSelected ? Style.selectedFg : Style.normalFg
@@ -89,7 +88,6 @@ Rectangle {
 
             Text {
                 visible: UtilJs.isString(modelData.typeConstraint)
-                clip: true
                 text: modelData.typeConstraint
                 font: Style.matchMetaFont
                 color: root.isSelected ? Style.selectedFg : Style.lightFg
@@ -98,7 +96,6 @@ Rectangle {
             RowLayout {
                 Text {
                     visible: UtilJs.isString(modelData.package_)
-                    clip: true
                     text: modelData.package_
                     font: Style.matchMetaFont
                     color: root.isSelected ? Style.selectedFg : Style.lightFg
@@ -106,7 +103,6 @@ Rectangle {
                 Text {
                     visible: UtilJs.isString(modelData.module_)
                     anchors.leftMargin: 3
-                    clip: true
                     text: modelData.module_
                     font: Style.matchMetaFont
                     color: root.isSelected ? Style.selectedFg : Style.lightFg
