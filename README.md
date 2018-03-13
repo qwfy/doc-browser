@@ -184,14 +184,14 @@ Theoretically, the Hoogle documentations don't work fully offline yet, but in pr
 
 - Prefix or suffix a search string with "/py", (eg. "/pyabspath", "abspath/py"), to limit the search to Python, more abbreviations are available, see file `src/Search.hs`, binding `shortcuts`.
 
-- If there are less than 10 tabs, match will be opened in a new tab. If there are 10 tabs open, match will be opened at the current tab.
+- Number of tabs will peak at 10, open one more tab will close the left-most one.
 
 
 ## FAQ
 
 Q: Why does this application display at most 27 matches?
 
-A: If your desired match is not in the top 27 matches, then there is probability something wrong with the search algorithm.
+A: If your desired match is not in the top 27 matches, then there is probably something wrong with the search algorithm.
 
 
 Q: Why does this application display at most 10 tabs?

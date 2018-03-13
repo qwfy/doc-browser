@@ -19,44 +19,35 @@ function matchSelect(indexIn) {
     }
 }
 
-// Select the specified match, and open it in a calculated tab.
+// Select the specified match, and open it in a new tab.
 function matchOpen(indexIn) {
     var index = matchBoundIndex(indexIn);
     if (index >= 0) {
         matchSelect(index);
 
-        var tabIndex;
-        var targetTab;
-
         // TODO @incomplete: make this number configurable
-        if (tabContainer.count < 10) {
-            tabIndex = tabContainer.count;
-            var component = Qt.createComponent("Doc.qml");
-            targetTab = tabContainer.insertTab(tabIndex, "Loading", component);
-            targetTab.active = true;
-            targetTab.item.url = matchContainer.model[index].url;
-            targetTab.item.selectedName = matchContainer.model[index].name;
-            targetTab.title = Qt.binding(function(){
-                var newIndex = tabIndexOf(targetTab);
-                var newTab = tabContainer.getTab(newIndex);
-                return TabJs.title(newIndex, newTab.item.selectedName)
-            });
+        var maxTabs = 10;
 
-
-            tabSelect(tabIndex);
-        } else {
-            tabIndex = tabContainer.currentIndex;
-            targetTab = tabContainer.getTab(tabIndex);
-            targetTab.active = true;
-
-            targetTab.item.url = matchContainer.model[index].url;
-            targetTab.item.selectedName = matchContainer.model[index].name;
-            targetTab.title = Qt.binding(function(){
-                var newIndex = tabIndexOf(targetTab);
-                var newTab = tabContainer.getTab(newIndex);
-                return TabJs.title(newIndex, newTab.item.selectedName)
-            });
+        if (tabContainer.count === maxTabs) {
+            tabContainer.removeTab(0);
         }
+
+        var tabIndex = tabContainer.count;
+        var component = Qt.createComponent("Doc.qml");
+        var targetTab = tabContainer.insertTab(tabIndex, "Loading", component);
+        targetTab.active = true;
+        targetTab.item.url = matchContainer.model[index].url;
+        targetTab.item.selectedName = matchContainer.model[index].name;
+        targetTab.title = Qt.binding(function(){
+            var newIndex = tabIndexOf(targetTab);
+            if (newIndex >= 0) {
+                var newTab = tabContainer.getTab(newIndex);
+                return TabJs.title(newIndex, newTab.item.selectedName);
+            } else {
+                return "<Tab Not Found>";
+            }
+        });
+        tabContainer.currentIndex = tabIndex;
     }
 }
 
