@@ -168,23 +168,44 @@ Theoretically, the Hoogle documentations don't work fully offline yet, but in pr
 
 - When the application starts, you will see a blank screen, you can start typing to search.
 
-- Press "Enter" to accept query string.
-
-- Press one of "ASDFWERTC", or "G" + one of "ASDFWERTC", or "V" + one of "ASDFWERTC" to open a match.
-
-- "j" to select next match, and "k" to select the previous one, and "Enter" to open.
-
-- Press one of "1234567890" to go to the corresponding tab.
-
-- "Alt+h" to go to the previous tab, "Alt+l" to go to the next tab.
-
-- "Ctrl+w" to close the current tab.
-
-- Press "/" to input query string.
-
-- Prefix or suffix a search string with "/py", (eg. "/pyabspath", "abspath/py"), to limit the search to Python, more abbreviations are available, see file `src/Search.hs`, binding `shortcuts`.
+- Prefix or suffix a search string with "/py", (eg. "/pyabspath", "abspath/py"), will limit the search to the Python docset provided by DevDocs, more commands are available, see below.
 
 - Number of tabs will peak at 10, open one more tab will close the left-most one.
+
+- Various keyboard shortcuts are available, see below.
+
+
+### Commands
+
+Command | Effect
+------- | ------
+hs      | Limit search to Haskell
+py      | Limit search to Python
+tf      | Limit search to TensorFlow
+np      | Limit search to NumPy
+pd      | Limit search to pandas
+er      | Limit search to Erlang
+hh      | Perform search with Hoogle
+
+
+### Keyboard
+
+Key                                             | Effect                                | Comment
+----------------------------------------------- | ------------------------------------- | ------
+<kbd>/</kbd>                                    |focus the search box
+<kbd>Enter</kbd>                                |accept query and select the first match|when in the search box
+<kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>C</kbd>             |open match 1-9
+<kbd>G</kbd>+<kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>C</kbd>|open match 10-18
+<kbd>V</kbd>+<kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>C</kbd>|open match 19-27
+<kbd>J</kbd>                                    |select the next match
+<kbd>K</kbd>                                    |select the previous match
+<kbd>Enter</kbd>                                |open the selected match  |when the selected item has focus
+<kbd>Tab</kbd> or <kbd>Down</kbd>               |select the next match    |when the selected item has focus
+<kbd>Shift</kbd>+<kbd>Tab</kbd> or <kbd>Up</kbd>|select the previous match|when the selected item has focus
+<kbd>1</kbd><kbd>2</kbd><kbd>3</kbd><kbd>4</kbd><kbd>5</kbd><kbd>6</kbd><kbd>7</kbd><kbd>8</kbd><kbd>9</kbd><kbd>0</kbd> | go to the corresponding tab
+<kbd>Alt</kbd>+<kbd>L</kbd> |go to the next tab
+<kbd>Alt</kbd>+<kbd>H</kbd> |go to the previous tab
+<kbd>Ctrl</kbd>+<kbd>W</kbd>|close the current tab
 
 
 ## FAQ
