@@ -19,7 +19,7 @@ Many thanks to [Thibaut Courouble](https://github.com/Thibaut) and [other contri
 
 - This application uses docsets, along with the corresponding style sheets, produced by DevDocs.
 
-The Hoogle support receives [helps](https://github.com/qwfy/doc-browser/issues/2) from [Neil Mitchell](https://github.com/ndmitchell), the author of Hoogle. This application also ships with a little code (modified) from the [Hoogle](https://github.com/ndmitchell/hoogle) project, the modified code is licensed under the BSD license.
+Many thanks to [Neil Mitchell](https://github.com/ndmitchell) for the great [Hoogle](https://github.com/ndmitchell/hoogle). The Hoogle support receives [helps](https://github.com/qwfy/doc-browser/issues/2) from him. This application also ships with a little code from the Hoogle project, the modified code is licensed under the BSD license.
 
 For Hoogle support, this application guides user to download documentation archive from [Stackage](https://www.stackage.org).
 
