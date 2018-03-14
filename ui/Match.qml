@@ -46,6 +46,7 @@ Rectangle {
         anchors.fill: parent
         anchors.leftMargin: Style.ewPadding
         anchors.rightMargin: Style.ewPadding
+        clip: true
 
         height: Math.max(shortcut.height,
                          icon.height,

@@ -16,7 +16,7 @@ QtObject {
 
     readonly property font matchMainFont:
     Qt.font({
-                pixelSize: 22,
+                pixelSize: 20,
                 family: "Input Mono, Light",
                 lineHeight: 1})
 
