@@ -42,7 +42,11 @@ function matchOpen(indexIn) {
             var newIndex = tabIndexOf(targetTab);
             if (newIndex >= 0) {
                 var newTab = tabContainer.getTab(newIndex);
-                return TabJs.title(newIndex, newTab.item.selectedName);
+                if (newTab.item !== null) {
+                    return TabJs.title(newIndex, newTab.item.selectedName);
+                } else {
+                    return "<Tab Not Found>";
+                }
             } else {
                 return "<Tab Not Found>";
             }
