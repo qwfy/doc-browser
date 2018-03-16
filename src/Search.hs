@@ -82,6 +82,7 @@ shortcuts = Map.fromList
   , ("np", Doc.Collection "NumPy")
   , ("pd", Doc.Collection "pandas")
   , ("er", Doc.Collection "Erlang")
+  , ("mp", Doc.Collection "Matplotlib")
   ]
 
 

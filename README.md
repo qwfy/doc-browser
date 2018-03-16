@@ -185,6 +185,7 @@ tf      | Limit search to TensorFlow
 np      | Limit search to NumPy
 pd      | Limit search to pandas
 er      | Limit search to Erlang
+mp      | Limit search to Matplotlib
 hh      | Perform search with Hoogle
 
 
