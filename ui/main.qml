@@ -20,6 +20,28 @@ Window {
         onActivated: searchInput.focus = true
     }
 
+    Shortcut {
+        sequence: "Ctrl+i"
+        onActivated: {
+            if (!searchInput.focus) {
+                searchInput.focus = true;
+            }
+            var len = searchInput.text.length;
+            var txt = searchInput.text;
+            if (len >= 3) {
+                if (txt.startsWith("/")) {
+                    searchInput.text = txt.substring(0, 3);
+                } else if (txt[len-3] === "/") {
+                    searchInput.text = txt.substring(len-3, len);
+                } else {
+                    searchInput.text = ""
+                }
+            } else {
+                searchInput.text = "";
+            }
+        }
+    }
+
     readonly property real leftColumnWidthNormal: 400
     readonly property real leftColumnWidthHoogle: 700
 
