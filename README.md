@@ -95,6 +95,7 @@ If you have trouble building this application, you can:
 - Does [this page](http://www.gekkou.co.uk/software/hsqml/) help? Especially the _Requirements_ and _Installation_ section.
 - Open an issue.
 
+Optionally, install the executable `xsel` or `xclip` for the <kbd>Y</kbd> shortcut (copy the selected match to clipboard) to work.
 
 ### Install DevDocs' Docset
 To install DevDocs' docset, invoke:
