@@ -99,15 +99,15 @@ startGUI configRoot cacheRoot = do
   -- > It is recommended that you call this function at the end of your program ...
   shutdownQt
 
-google :: String -> IO Bool
+google :: String -> IO ()
 google str =
   case Search.makeQuery str of
     Nothing ->
-      return False
+      return ()
     Just query -> do
       let q = Search.queryToGoogle query
       let url = "https://www.google.com/search?q=" ++ q
-      openBrowser url
+      fireAndForget $ openBrowser url
 
 main :: IO ()
 main = do

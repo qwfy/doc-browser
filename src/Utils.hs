@@ -9,6 +9,7 @@ module Utils
   , report
   , updateTMVar
   , unpackXzInto
+  , fireAndForget
   , DownloadError(..)
   ) where
 
@@ -16,12 +17,14 @@ import qualified Network.Wreq as Wreq
 import qualified Data.ByteString.Lazy as LBS
 import qualified Control.Lens as Lens
 
+import Control.Monad
 import Control.Monad.Trans.Except
 import Control.Monad.Trans.Class
 import Control.Exception
 
 import Control.Monad.STM
 import Control.Concurrent.STM.TMVar
+import Control.Concurrent
 
 import Network.HTTP.Types.Status
 
@@ -81,3 +84,6 @@ unpackXzInto archive into = do
   Lzma.decompress bs
     |> Tar.read
     |> Tar.unpack into
+
+fireAndForget :: IO a -> IO ()
+fireAndForget action = void $ forkIO (void action)
