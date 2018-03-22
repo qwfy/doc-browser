@@ -13,6 +13,7 @@ import qualified Data.Text as Text
 import System.Directory
 import System.FilePath
 import System.Hclip
+import Web.Browser
 
 import qualified Entry
 import qualified Match
@@ -59,6 +60,10 @@ startGUI configRoot cacheRoot = do
     , defMethod' "setClipboard"
         (\_obj txt ->
             setClipboard . Text.unpack $ txt)
+
+    , defMethod' "google"
+        (\_obj txt ->
+          google . Text.unpack $ txt)
     ]
 
   objectContext <- newObject classContext ()
@@ -93,6 +98,16 @@ startGUI configRoot cacheRoot = do
   -- https://hackage.haskell.org/package/hsqml-0.3.5.0/docs/Graphics-QML-Engine.html#v:shutdownQt
   -- > It is recommended that you call this function at the end of your program ...
   shutdownQt
+
+google :: String -> IO Bool
+google str =
+  case Search.makeQuery str of
+    Nothing ->
+      return False
+    Just query -> do
+      let q = Search.queryToGoogle query
+      let url = "https://www.google.com/search?q=" ++ q
+      openBrowser url
 
 main :: IO ()
 main = do

@@ -52,6 +52,7 @@ dependencies:
 - lzma
 - MissingH
 - Hclip
+- open-browser
 
 library:
   source-dirs: src

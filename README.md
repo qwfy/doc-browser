@@ -210,6 +210,7 @@ Key                                             | Effect                        
 <kbd>Alt</kbd>+<kbd>H</kbd> |go to the previous tab
 <kbd>Ctrl</kbd>+<kbd>W</kbd>|close the current tab
 <kbd>Y</kbd>|copy the selected match to clipboard|need executable `xsel` or `xclip`
+<kbd>Ctrl</kbd>+<kbd>/</kbd>|send query to Google|e.g. <kbd>Ctrl</kbd>+<kbd>/</kbd> on "/pyfoo" will search Google for "Python foo"; need executable `xdg-open`
 
 
 ## FAQ

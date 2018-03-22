@@ -5,6 +5,7 @@ module Search
   ( search
   , makeQuery
   , startThread
+  , queryToGoogle
   ) where
 
 import qualified Data.List
@@ -85,6 +86,15 @@ shortcuts = Map.fromList
   , ("mp", Doc.Collection "Matplotlib")
   ]
 
+queryToGoogle :: Query -> String
+queryToGoogle (H (Hoogle str)) = unwords ["Haskell", str]
+queryToGoogle (G (Global str)) = str
+queryToGoogle (G (Limited abbr str)) =
+  case Map.lookup abbr shortcuts of
+    Nothing ->
+      str
+    Just (Doc.Collection collection) ->
+      unwords [collection, str]
 
 filterEntry :: GeneralQuery -> [Entry.T] -> [Entry.T]
 filterEntry (Global _) es = es

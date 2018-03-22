@@ -31,6 +31,11 @@ Window {
     }
 
     Shortcut {
+        sequence: "Ctrl+/"
+        onActivated: google(searchInput.text);
+    }
+
+    Shortcut {
         sequence: "Ctrl+i"
         onActivated: {
             if (!searchInput.focus) {
