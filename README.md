@@ -208,6 +208,7 @@ Key                                             | Effect                        
 <kbd>Alt</kbd>+<kbd>L</kbd> |go to the next tab
 <kbd>Alt</kbd>+<kbd>H</kbd> |go to the previous tab
 <kbd>Ctrl</kbd>+<kbd>W</kbd>|close the current tab
+<kbd>Y</kbd>|copy the selected match to clipboard|need executable `xsel` or `xclip`
 
 
 ## FAQ

@@ -2,7 +2,7 @@
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: fed1b4223e5d848f0a8f1fe1ac1fee5acaeb5100afafecfae14987258d1d92a0
+-- hash: 8bcc66ee50f1cd82f97e6a9294a5d6bd71fd7a9610b30a758edd7d5890fc8d75
 
 name:           doc-browser
 version:        0.2.0
@@ -424,7 +424,8 @@ library
       src
   ghc-options: -Wall -fno-warn-type-defaults -fno-warn-missing-signatures -Werror -O2
   build-depends:
-      MissingH
+      Hclip
+    , MissingH
     , aeson
     , array
     , async
@@ -477,7 +478,8 @@ executable doc-browser
       app
   ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -O2 -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
   build-depends:
-      MissingH
+      Hclip
+    , MissingH
     , aeson
     , array
     , async
@@ -520,7 +522,8 @@ benchmark prof-search
       prof
   ghc-options: -threaded -dynamic -rtsopts -with-rtsopts=-N -Wall -O2 -fno-warn-type-defaults -fno-warn-missing-signatures -Werror
   build-depends:
-      MissingH
+      Hclip
+    , MissingH
     , aeson
     , array
     , async

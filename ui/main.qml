@@ -21,6 +21,16 @@ Window {
     }
 
     Shortcut {
+        sequence: "y"
+        onActivated: {
+            var match = matchContainer.model[matchContainer.selected];
+            if (match) {
+                setClipboard(match.name);
+            }
+        }
+    }
+
+    Shortcut {
         sequence: "Ctrl+i"
         onActivated: {
             if (!searchInput.focus) {

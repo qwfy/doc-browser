@@ -12,6 +12,7 @@ import Control.Concurrent.STM.TMVar
 import qualified Data.Text as Text
 import System.Directory
 import System.FilePath
+import System.Hclip
 
 import qualified Entry
 import qualified Match
@@ -54,6 +55,10 @@ startGUI configRoot cacheRoot = do
     , defMethod' "search"
         (\_obj txt ->
           atomically $ updateTMVar querySlot (Text.unpack txt))
+
+    , defMethod' "setClipboard"
+        (\_obj txt ->
+            setClipboard . Text.unpack $ txt)
     ]
 
   objectContext <- newObject classContext ()

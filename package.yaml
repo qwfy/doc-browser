@@ -51,6 +51,7 @@ dependencies:
 - async
 - lzma
 - MissingH
+- Hclip
 
 library:
   source-dirs: src
