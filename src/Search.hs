@@ -212,5 +212,5 @@ startThread port configRoot entryToMatch entries hooMay querySlot handleMatches 
                 Just dbPath ->
                   -- load the database on every search, instead of keeping it in memory,
                   -- this is done deliberately - turns out that it makes the GUI more responsive
-                  let version = Doc.Version . takeFileName $ dbPath
+                  let version = Doc.Version . takeBaseName $ dbPath
                   in Hoogle.withDatabase dbPath (\db -> return $ Hoo.search port configRoot version db limit query)
