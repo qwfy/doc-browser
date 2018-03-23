@@ -132,14 +132,18 @@ doc-browser --install-hoogle URL NAME
 #
 # See `doc-browser --help` for more
 #
-# Don't panic if you see a lot of lines that looks like this
-# at the begining and ending of the generation
+# Don't panic if you see a lot of lines that look like this
+# at the begining and the ending of the generation
 # (for the above lts-10.8, there are 43 of these):
 #
-# temporarily rename /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt to /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt.__co.aixon.docbrowser-tempfile__
-# move /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt.__co.aixon.docbrowser-tempfile__ back to /home/user/.config/doc-browser/Hoogle/lts-10.8/Decimal-0.4.2/LICENSE.txt
+# temporarily relocate x to x.__co.aixon.docbrowser-tempfile__, for x in:
+# /home/user/.config/doc-browser/Hoogle/lts-10.8/prologue.txt
+# ...
+# move x.__co.aixon.docbrowser-tempfile__ back to x, for x in:
+# /home/user/.config/doc-browser/Hoogle/lts-10.8/prologue.txt
+# ...
 #
-# These are necessary to work around an Hoogle issue.
+# These are necessary to work around a Hoogle issue.
 ```
 
 3. Prefix or suffix a search with "/hh" to query Hoogle, like this: `/hh[a]->Int->[a]`.

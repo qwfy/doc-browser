@@ -8,7 +8,6 @@ module Hoo
 
 import Data.List.Extra
 import Data.Char
-import Data.Tuple
 import Data.Maybe
 import qualified Data.Text as Text
 
@@ -119,6 +118,7 @@ unHTML = unescapeHTML . innerTextHTML
 
 -- END d419e005-b736-4dee-8019-4c0bd7851320
 
+data RenameDirection = AB | BA
 
 install :: FilePath -> FilePath -> String -> String -> IO ()
 install configRoot cacheRoot url collection = do
@@ -143,19 +143,23 @@ install configRoot cacheRoot url collection = do
           , "--local=" ++ unpackPath
           ]
 
-  let renamePairs hintA hintB pairs =
-        forM_ pairs (\(x, y) -> do
-          report [hintA, x, hintB, y]
-          renameFile x y)
+  let renameTxts direction files = do
+        let suffix = "__co.aixon.docbrowser-tempfile__"
+        case direction of
+          AB -> report ["temporarily relocate x to x." ++ suffix ++ ", for x in:"]
+          BA -> report ["move x." ++ suffix ++ " back to x, for x in:"]
+        forM_ files (\orig -> do
+          report [orig]
+          case direction of
+            AB -> renameFile orig (orig <.> suffix)
+            BA -> renameFile (orig <.> suffix) orig)
 
   let setup = do
         txts <- findTxtButNotHoogleTxt unpackPath
-        let pairs = map (\x -> (x, x <.> "__co.aixon.docbrowser-tempfile__")) txts
-        renamePairs "temporarily rename" "to" pairs
-        return pairs
+        renameTxts AB txts
+        return txts
 
-  let tearDown pairs =
-        renamePairs "move" "back to" $ map swap pairs
+  let tearDown = renameTxts BA
 
   bracket setup tearDown (const runHoogle)
 
