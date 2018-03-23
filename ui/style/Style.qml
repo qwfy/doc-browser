@@ -32,6 +32,11 @@ QtObject {
                 family: "Input Mono, Light",
                 lineHeight: 1})
 
+    readonly property font matchVersionFont:
+    Qt.font({
+                pixelSize: 12,
+                lineHeight: 1})
+
     readonly property font matchShortcutFont:
     Qt.font({
                 pixelSize: 17,

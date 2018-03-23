@@ -57,8 +57,8 @@ Window {
         }
     }
 
-    readonly property real leftColumnWidthNormal: 400
-    readonly property real leftColumnWidthHoogle: 700
+    readonly property real leftColumnWidthNormal: 420
+    readonly property real leftColumnWidthHoogle: 720
 
     // =====================================================================
     // Shortcuts for navigating matches

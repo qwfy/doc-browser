@@ -38,7 +38,6 @@ toMatch port configRoot version target =
         (\(a, b) -> (a, Just b))
         (splitTypeConstraint name')
   in Match.T { Match.collection = "Haskell"
-             -- TODO @incomplete: don't hard code this
              , Match.version = Text.pack $ Doc.getVersion version
              , Match.name = Text.pack name
              , Match.url = Text.pack . toUrl port configRoot . Hoogle.targetURL $ target

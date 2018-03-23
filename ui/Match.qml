@@ -29,6 +29,8 @@ Rectangle {
     focus: isSelected
     color: isSelected ? Style.selectedBg : Style.normalBg
 
+    property bool isHoogle: modelData.vendor === "Hoogle"
+
     MouseArea {
         anchors.fill: parent
         onClicked: root.clicked()
@@ -46,7 +48,6 @@ Rectangle {
         anchors.fill: parent
         anchors.leftMargin: Style.ewPadding
         anchors.rightMargin: Style.ewPadding
-        clip: true
 
         height: Math.max(shortcut.height,
                          icon.height,
@@ -75,15 +76,16 @@ Rectangle {
 
             anchors.left: icon.right
             anchors.leftMargin: Style.ewPadding
-            anchors.right: parent.right
+            anchors.right: versionInfo.left
             anchors.rightMargin: Style.ewPadding
             anchors.verticalCenter: parent.verticalCenter
+            clip: true
 
             spacing: 4
 
             Text {
                 text: modelData.name
-                font: modelData.vendor === "Hoogle" ? Style.matchMainFontHoogle : Style.matchMainFont
+                font: isHoogle ? Style.matchMainFontHoogle : Style.matchMainFont
                 color: root.isSelected ? Style.selectedFg : Style.normalFg
             }
 
@@ -111,7 +113,14 @@ Rectangle {
             }
         }
 
-
+        Text {
+            id: versionInfo
+            anchors.right: parent.right
+            anchors.verticalCenter: parent.verticalCenter
+            text: modelData.version
+            font: Style.matchVersionFont
+            color: root.isSelected ? Style.selectedFg : Style.lightFg
+        }
 
     }
 }
