@@ -9,6 +9,8 @@ An API documentation browser written in Haskell and QML.
 
 [This one](asset/interface-hoogle.png) is the interface for Hoogle.
 
+More shortcuts available: [commands](#commands), [keyboard shortcuts](keyboard).
+
 ## Credits
 
 This application is written by incomplete@aixon.co.
@@ -96,6 +98,8 @@ If you have trouble building this application, you can:
 - Open an issue.
 
 Optionally, install the executable `xsel` or `xclip` for the <kbd>Y</kbd> shortcut (copy the selected match to clipboard) to work.
+
+Optionally, install the executable `xdg-open` (provided by package `xdg-utils` on Arch Linux) for the <kbd>Ctrl</kbd>+<kbd>/</kbd> shortcut (send query to Google) to work.
 
 ### Install DevDocs' Docset
 To install DevDocs' docset, invoke:
@@ -213,7 +217,12 @@ Key                                             | Effect                        
 <kbd>Ctrl</kbd>+<kbd>/</kbd>|send query to Google|e.g. <kbd>Ctrl</kbd>+<kbd>/</kbd> on "/pyfoo" will search Google for "Python foo"; need executable `xdg-open`
 
 
-## FAQ
+## FAQ and Troubleshooting
+
+Problem: On KDE, <kbd>Ctrl</kbd>+<kbd>/</kbd> is taking too long to open the browser.
+
+Solution: This application uses `xdg-open` to open the browser. Try [this workaround](https://bugs.kde.org/show_bug.cgi?id=364662#c3).
+
 
 Q: Why does this application display at most 27 matches?
 
