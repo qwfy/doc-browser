@@ -9,7 +9,7 @@ An API documentation browser written in Haskell and QML.
 
 [This one](asset/interface-hoogle.png) is the interface for Hoogle.
 
-More shortcuts available: [commands](#commands), [keyboard shortcuts](keyboard).
+More shortcuts available: [commands](#commands), [keyboard shortcuts](#keyboard).
 
 ## Credits
 
@@ -173,7 +173,7 @@ Theoretically, the Hoogle documentations don't work fully offline yet, but in pr
 
 - When the application starts, you will see a blank screen, you can start typing to search.
 
-- Prefix or suffix a search string with "/py", (eg. "/pyabspath", "abspath/py"), will limit the search to the Python docset provided by DevDocs, more commands are available, see below.
+- Prefix or suffix a search string with "/py", (e.g. "/pyabspath", "abspath/py"), will limit the search to the Python docset provided by DevDocs, more commands are available, see below.
 
 - Number of tabs will peak at 10, open one more tab will close the left-most one.
 
@@ -199,7 +199,7 @@ hh      | Perform search with Hoogle
 Key                                             | Effect                                | Comment
 ----------------------------------------------- | ------------------------------------- | ------
 <kbd>/</kbd>                                    |focus the search box
-<kbd>Ctrl</kbd>+<kbd>I</kbd>                    |focus and clear the search box, but keep the command, if any | eg. before: "/pyfoo"; after: "/py"
+<kbd>Ctrl</kbd>+<kbd>I</kbd>                    |focus and clear the search box, but keep the command, if any | e.g. before: "/pyfoo"; after: "/py"
 <kbd>Enter</kbd>                                |accept query and select the first match|when in the search box
 <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>C</kbd>             |open match 1-9
 <kbd>G</kbd>+<kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>C</kbd>|open match 10-18
