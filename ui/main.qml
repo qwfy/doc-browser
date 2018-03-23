@@ -57,7 +57,7 @@ Window {
         }
     }
 
-    readonly property real leftColumnWidthNormal: 420
+    readonly property real leftColumnWidthNormal: 430
     readonly property real leftColumnWidthHoogle: 700
 
     // =====================================================================
