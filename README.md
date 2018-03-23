@@ -49,8 +49,6 @@ For Hoogle support, this application guides user to download documentation archi
 
 - Configurable
 
-- Display version number
-
 
 ## Current Status
 

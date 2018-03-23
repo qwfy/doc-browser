@@ -76,8 +76,8 @@ Rectangle {
 
             anchors.left: icon.right
             anchors.leftMargin: Style.ewPadding
-            anchors.right: versionInfo.left
-            anchors.rightMargin: Style.ewPadding
+            anchors.right: isHoogle ? parent.right : versionInfo.left
+            anchors.rightMargin: isHoogle ? 0 : Style.ewPadding
             anchors.verticalCenter: parent.verticalCenter
             clip: true
 
@@ -110,11 +110,19 @@ Rectangle {
                     font: Style.matchMetaFont
                     color: root.isSelected ? Style.selectedFg : Style.lightFg
                 }
+                Text {
+                    visible: isHoogle
+                    anchors.leftMargin: 3
+                    text: modelData.version
+                    font: Style.matchMetaFont
+                    color: root.isSelected ? Style.selectedFg : Style.lightFg
+                }
             }
         }
 
         Text {
             id: versionInfo
+            visible: !isHoogle
             anchors.right: parent.right
             anchors.verticalCenter: parent.verticalCenter
             text: modelData.version
