@@ -63,7 +63,7 @@ Then, install the Haskell tool [stack](https://docs.haskellstack.org/en/stable/i
 
 ### Arch Linux
 
-There is a [PKGBUILD](https://aur.archlinux.org/packages/doc-browser/) available on AUR.
+There is a [PKGBUILD](https://aur.archlinux.org/packages/doc-browser-git/) available on AUR.
 
 ### Other Linux Distros
 
