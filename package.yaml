@@ -69,7 +69,6 @@ executables:
     source-dirs: app
     ghc-options: &exe-ghc-options
     - -threaded
-    - -dynamic
     - -rtsopts
     - -with-rtsopts=-N
     - -Wall

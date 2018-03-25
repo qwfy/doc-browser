@@ -57,17 +57,23 @@ It's in early stage, the main interface is in shape and usable, but other aspect
 
 ## Installation
 
-Currently, this application can only be installed from source, and only tested on Linux, and the installation process is pretty rough. This will be improved in future versions.
+First, install the font [Input Mono](http://input.fontbureau.com/), it is free for personal use. (In a later version you can specify the font you want to use)
 
-1. Install the font [Input Mono](http://input.fontbureau.com/), it is free for personal use. (In a later version you can specify the font you want to use)
+Then, install the Haskell tool [stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/).
 
-2. This application uses [Qt 5](http://qt-project.org/), make sure you have it installed. You also need [Qt WebEngine](https://wiki.qt.io/QtWebEngine), install it if it doesn't come with your Qt installation, on Arch Linux, this is provided by the [extra/qt5-webengine](https://www.archlinux.org/packages/extra/x86_64/qt5-webengine/) package.
+### Arch Linux
 
-3. Install the Haskell tool [stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/).
+There is a PKGBUILD available on [AUR](https://aur.archlinux.org/).
 
-4. The build process depends on an executable called `c2hs`, you can install it using your package manager, or use the instruction below.
+### Other Linux distros
 
-5. You may also need an executable called `happy`, if the build process reports that this is missing, install it in a similar manner with c2hs.
+Follow these steps to install from source:
+
+1. This application uses [Qt 5](http://qt-project.org/), make sure you have it installed. You also need [Qt WebEngine](https://wiki.qt.io/QtWebEngine), install it if it doesn't come with your Qt installation, on Arch Linux, this is provided by the [extra/qt5-webengine](https://www.archlinux.org/packages/extra/x86_64/qt5-webengine/) package.
+
+2. The build process depends on an executable called `c2hs`, you can install it using your package manager, or use the instruction below.
+
+3. Install the executables `alex` and `happy` in a similar manner with `c2hs`.
 
 Finally, run these commands in the shell to build and install the application:
 
@@ -79,10 +85,6 @@ cd doc-browser
 # stack install c2hs
 
 stack install
-
-# optionally, install `happy` if the above command complains the lack of `happy`:
-# and run `stack install` again after the installation
-# stack install happy
 
 echo "binary installed to $(stack path --local-bin)"
 ```

@@ -1,7 +1,7 @@
 # Maintainer: Incomplete <incomplete@aixon.co>
 
 pkgname=doc-browser
-pkgdesc="An API documentation browser"
+pkgdesc="An API documentation browser with support for DevDocs and Hoogle"
 # pkgver will be updated with pkgver()
 pkgver=0
 pkgrel=1
@@ -11,11 +11,12 @@ arch=('x86_64')
 
 # An array of packages this package depends on to run
 depends=('qt5-base'
-         'qt5-declarative'
+         'qt5-quickcontrols2'
          'qt5-webengine'
          'pcre'
          'xz'
          'zlib'
+         'openssl'
          'xclip'
          'xdg-utils')
 
