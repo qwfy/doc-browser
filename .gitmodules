@@ -1,0 +1,3 @@
+[submodule "archlinux"]
+	path = archlinux
+	url = https://aur.archlinux.org/doc-browser.git
