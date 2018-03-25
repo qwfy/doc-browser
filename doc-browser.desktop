@@ -1,0 +1,6 @@
+[Desktop Entry]
+Type=Application
+Name=Doc Browser
+# TODO @incomplete: do not hard code the installation path
+Exec=doc_browser_datadir=/usr/share/doc-browser doc-browser
+Categories=Utility
