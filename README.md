@@ -150,6 +150,17 @@ doc-browser --install-hoogle URL NAME
 
 ### Start the Application
 
+If you installed the application from AUR, the recommended way is to start it with the shipped .desktop file.
+
+You can also start it with:
+
+```bash
+doc_browser_datadir=$INSTALL_ROOT/usr/share/doc-browser doc-browser
+# $INSTALL_ROOT is usually just "/"
+```
+
+If you installed from source, start it with:
+
 ```bash
 doc-browser
 ```
