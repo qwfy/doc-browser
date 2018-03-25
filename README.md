@@ -65,7 +65,7 @@ Then, install the Haskell tool [stack](https://docs.haskellstack.org/en/stable/i
 
 There is a [PKGBUILD](https://aur.archlinux.org/packages/doc-browser/) available on AUR.
 
-### Other Linux distros
+### Other Linux Distros
 
 Follow these steps to install from source:
 
