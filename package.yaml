@@ -53,6 +53,8 @@ dependencies:
 - MissingH
 - Hclip
 - open-browser
+- hdaemonize
+- process
 
 library:
   source-dirs: src

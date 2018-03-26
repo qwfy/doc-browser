@@ -180,7 +180,7 @@ To make DevDocs' docsets work fully offline:
 
 (Cache-when-installing will be implemented after session restore is implemented.)
 
-If a MathJax distribution is found at `/usr/share/mathjax`, then the Hoogle documentations will work offline.
+If a MathJax distribution is found at `/usr/share/mathjax`, then the Hoogle documentations will work offline. (If you installed from AUR, you already have it.)
 
 
 ## GUI
@@ -245,4 +245,4 @@ A: If your desired match is not in the top 27 matches, then there is probably so
 
 Q: Why does this application display at most 10 tabs?
 
-A: If too many tabs are displayed, the tab title would be hard to see on many monitors. Instead of wanting more tabs, try open another instance of this application. (There is a restriction if you want to use multiple instances, namely, you should not close the first started one, for the documentation is served via a web server running in the first instance. This restriction will be removed in future versions). The number of maximum tabs will be configurable in future versions, so you can benefit from a large monitor.
+A: If too many tabs are displayed, the tab title would be hard to see on many monitors. Instead of wanting more tabs, try open another instance of this application. The number of maximum tabs will be configurable in future versions, so you can benefit from a large monitor.

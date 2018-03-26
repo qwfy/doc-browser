@@ -4,7 +4,6 @@ module Main (main) where
 
 import Graphics.QML
 
-import Control.Concurrent
 import Control.Monad.STM
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TMVar
@@ -13,6 +12,7 @@ import qualified Data.Text as Text
 import System.Directory
 import System.FilePath
 import System.Hclip
+import System.Process
 import Web.Browser
 
 import qualified Entry
@@ -28,13 +28,8 @@ import Utils
 
 import Paths_doc_browser
 
-
-startGUI :: FilePath -> FilePath -> IO ()
-startGUI configRoot cacheRoot = do
-
-  -- TODO @incomplete: read port from config
-  let port = 7701
-  _serverThreadId <- forkIO $ Server.start port configRoot cacheRoot
+startGUI :: Int -> FilePath -> IO ()
+startGUI port configRoot = do
 
   matchesTVar <- atomically $ newTVar ([] :: [Match.T])
 
@@ -129,6 +124,9 @@ main = do
   createDirectoryIfMissing True $ joinPath [configRoot]
   createDirectoryIfMissing True $ joinPath [cacheRoot]
 
+  -- TODO @incomplete: read port from config
+  let port = 7701
+
   upgradeResult <- Upgrade.startGUI configRoot
   case upgradeResult of
     Upgrade.Abort ->
@@ -136,8 +134,12 @@ main = do
 
     Upgrade.Continue ->
       case opt of
-        Opt.StartGUI ->
-          startGUI configRoot cacheRoot
+        Opt.StartServer startedOK -> do
+          Server.start startedOK port configRoot cacheRoot
+
+        Opt.StartGUI -> do
+          _ <- spawnProcess "doc-browser" ["--server", "--already-started-ok"]
+          startGUI port configRoot
 
         Opt.InstallDevDocs collections ->
           DevDocsMeta.downloadMany configRoot collections

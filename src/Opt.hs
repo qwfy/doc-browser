@@ -2,6 +2,7 @@
 
 module Opt
   ( T(..)
+  , IsStartedOK(..)
   , get
   ) where
 
@@ -10,8 +11,14 @@ import Data.Monoid
 
 data T
   = StartGUI
+  | StartServer IsStartedOK
   | InstallDevDocs [String]
   | InstallHoogle String String
+  deriving (Show)
+
+data IsStartedOK
+  = StartedOK
+  | StartedNotOK
   deriving (Show)
 
 
@@ -26,6 +33,7 @@ optParser =
       startGUIParser
         <|> installDevDocsParser
         <|> installHoogleParser
+        <|> startServerParser
         <|> pure StartGUI
 
 startGUIParser :: Parser T
@@ -33,6 +41,15 @@ startGUIParser =
   flag' StartGUI
     (  long "gui"
     <> help "Start the GUI. This is the default behaviour")
+
+startServerParser :: Parser T
+startServerParser =
+  flag' StartServer
+    (  long "server"
+    <> help "Start the server. All docs are served with this server")
+  <*> flag StartedNotOK StartedOK
+    ( long "already-started-ok"
+    <> help "Don't complain if there is already a server running")
 
 
 installDevDocsParser :: Parser T

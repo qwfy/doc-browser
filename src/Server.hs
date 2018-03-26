@@ -22,17 +22,31 @@ import Text.Regex.PCRE
 
 import System.FilePath
 import System.Directory
+import System.Posix.Daemonize
 
 import Control.Exception
+import System.IO.Error
 
 import Utils
 import qualified DevDocs
 import qualified DevDocsMeta
 import qualified Doc
+import qualified Opt
 
-start :: Int -> FilePath -> FilePath -> IO ()
-start port configRoot cacheRoot =
-  run port (app configRoot cacheRoot)
+start :: Opt.IsStartedOK -> Int -> FilePath -> FilePath -> IO ()
+start startedOK port configRoot cacheRoot = daemonize $ do
+  let handleInUse :: IOException -> IO ()
+      handleInUse e =
+        if isAlreadyInUseError e
+          then
+            case startedOK of
+              Opt.StartedOK ->
+                report ["server already started"]
+              Opt.StartedNotOK ->
+                throwIO e
+          else
+            throwIO e
+  run port (app configRoot cacheRoot) `catchIOError` handleInUse
 
 app :: FilePath
     -> FilePath
@@ -102,6 +116,7 @@ fetchHoogle configRoot path = do
 
 replaceMathJax :: LBS.ByteString -> IO LBS.ByteString
 replaceMathJax source = do
+  -- TODO @incomplete: ability to install another copy
   let distDir = "/usr/share/mathjax"
   hasMathJaxDist <- doesDirectoryExist distDir
   if not hasMathJaxDist
