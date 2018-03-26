@@ -180,8 +180,7 @@ To make DevDocs' docsets work fully offline:
 
 (Cache-when-installing will be implemented after session restore is implemented.)
 
-Theoretically, the Hoogle documentations don't work fully offline yet, but in practice, most of the pages work just fine even when you are offline. (You can also try to open a Hoogle page when you are online, this might let the QtWebEngine cache kick-in, but this is untested)
-
+If a MathJax distribution is found at `/usr/share/mathjax`, then the Hoogle documentations will work offline.
 
 
 ## GUI

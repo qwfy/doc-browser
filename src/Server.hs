@@ -13,10 +13,12 @@ import qualified Data.Binary.Builder as Builder
 import qualified Data.Map.Strict as Map
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Lazy.Char8 as C
+import qualified Data.Array
 import Data.List.Extra
 import Data.String
 import qualified Data.Hash.MD5 as MD5
 import Safe
+import Text.Regex.PCRE
 
 import System.FilePath
 import System.Directory
@@ -57,6 +59,10 @@ app configRoot cacheRoot request respond = do
         let path = joinPath $ cacheRoot:rest
         in Builder.fromLazyByteString <$> LBS.readFile path
 
+      ("abspath" : rest) ->
+        let path = joinPath $ "/":rest
+        in Builder.fromLazyByteString <$> LBS.readFile path
+
       _ ->
         badRequest
 
@@ -90,7 +96,26 @@ fetchHoogle configRoot path = do
           -- TODO @incomplete: Add this file
           else return "404.html"
 
-  Builder.fromLazyByteString <$> LBS.readFile fileToRead
+  LBS.readFile fileToRead >>=
+    replaceMathJax >>=
+      return . Builder.fromLazyByteString
+
+replaceMathJax :: LBS.ByteString -> IO LBS.ByteString
+replaceMathJax source = do
+  let distDir = "/usr/share/mathjax"
+  hasMathJaxDist <- doesDirectoryExist distDir
+  if not hasMathJaxDist
+    then return source
+    else do
+      let str = "src=\"https?://.+/MathJax\\.js(\\?config=[^\"]+)\"" :: LBS.ByteString
+      let regex = makeRegex str :: Regex
+      case matchOnceText regex source of
+        Nothing ->
+          return source
+        Just (before', match', after') -> do
+          let (cfg, _) = match' Data.Array.! 1
+          let localFile = fromString $ joinPath ["/abspath", tail distDir, "MathJax.js"]
+          return $ before' <> "src=\"" <> localFile <> cfg <> "\"" <> after'
 
 fetchDevdocs :: FilePath
              -> FilePath
