@@ -59,8 +59,6 @@ It's in early stage, the main interface is in shape and usable, but other aspect
 
 First, install the font [Input Mono](http://input.fontbureau.com/), it is free for personal use. (In a later version you can specify the font you want to use)
 
-Then, install the Haskell tool [stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/).
-
 ### Arch Linux
 
 There is a [PKGBUILD](https://aur.archlinux.org/packages/doc-browser-git/) available on AUR.
@@ -71,9 +69,11 @@ Follow these steps to install from source:
 
 1. This application uses [Qt 5](http://qt-project.org/), make sure you have it installed. You also need [Qt WebEngine](https://wiki.qt.io/QtWebEngine), install it if it doesn't come with your Qt installation, on Arch Linux, this is provided by the [extra/qt5-webengine](https://www.archlinux.org/packages/extra/x86_64/qt5-webengine/) package.
 
-2. The build process depends on an executable called `c2hs`, you can install it using your package manager, or use the instruction below.
+2. Install the Haskell tool [stack](https://docs.haskellstack.org/en/stable/install_and_upgrade/).
 
-3. Install the executables `alex` and `happy` in a similar manner with `c2hs`.
+3. The build process depends on an executable called `c2hs`, you can install it using your package manager, or use the instruction below.
+
+4. Install the executables `alex` and `happy` in a similar manner with `c2hs`.
 
 Finally, run these commands in the shell to build and install the application:
 
