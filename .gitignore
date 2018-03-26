@@ -3,3 +3,4 @@
 /build-doc-browser-Desktop-Debug
 *.orig
 /*.cabal
+/aur/.SRCINFO
