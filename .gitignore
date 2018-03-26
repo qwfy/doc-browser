@@ -2,3 +2,4 @@
 /dist
 /build-doc-browser-Desktop-Debug
 *.orig
+/*.cabal
