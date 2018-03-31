@@ -30,6 +30,23 @@ Window {
         }
     }
 
+    function togglePageSearch() {
+        pageSearch.visible = ! pageSearch.visible;
+        if (pageSearch.visible) {
+            tabContainer.anchors.top = pageSearch.bottom;
+            tabContainer.anchors.topMargin = Style.nsPadding;
+            pageSearchInput.focus = true;
+        } else {
+            tabContainer.anchors.top = rightColumn.top;
+            tabContainer.anchors.topMargin = 0;
+        }
+    }
+
+    Shortcut {
+        sequence: "Ctrl+f"
+        onActivated: togglePageSearch()
+    }
+
     Shortcut {
         sequence: "Ctrl+/"
         onActivated: google(searchInput.text);
@@ -212,13 +229,67 @@ Window {
         }
 
 
-        TabView {
-            id: tabContainer
-
+        ColumnLayout {
+            id: rightColumn
             anchors.top: parent.top
             anchors.bottom: parent.bottom
             anchors.left: leftColumn.right
             anchors.right: parent.right
+
+            RowLayout {
+                id: pageSearch
+                visible: false
+                clip: true
+                anchors.top: parent.top
+                anchors.topMargin: Style.nsPadding
+                anchors.left: parent.left
+                anchors.right: parent.right
+                Button {
+                    text: "&close"
+                    onClicked: {
+                        togglePageSearch();
+                        Logic.clearPageSearch();
+                    }
+                }
+                Button {
+                    text: "&previous"
+                    onClicked: Logic.searchCurrentPage(pageSearchInput.text, WebEngineView.FindBackward)
+                }
+                Button {
+                    id: pageSearchButtonNext
+                    text: "&next"
+                    onClicked: Logic.searchCurrentPage(pageSearchInput.text)
+                }
+                Rectangle{
+                    border.width: 1
+                    border.color: Style.inputBorder
+                    radius: 3
+                    anchors.left: pageSearchButtonNext.right
+                    anchors.right: parent.right
+                    anchors.top: parent.top
+                    anchors.bottom: parent.bottom
+                    anchors.leftMargin: Style.ewPadding
+                    anchors.rightMargin: Style.ewPadding
+                    TextInput {
+                        id: pageSearchInput
+                        anchors.verticalCenter: parent.verticalCenter
+                        anchors.left: parent.left
+                        anchors.right: parent.right
+                        anchors.leftMargin: Style.ewPadding
+                        anchors.rightMargin: Style.ewPadding
+                        font: Style.searchFont
+                        onAccepted: Logic.searchCurrentPage(text)
+                    }
+                }
+            }
+
+            TabView {
+                id: tabContainer
+                anchors.top: rightColumn.top
+                anchors.left: parent.left
+                anchors.right: parent.right
+                anchors.bottom: parent.bottom
+            }
         }
 
     }

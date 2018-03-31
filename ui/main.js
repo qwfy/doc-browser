@@ -99,6 +99,21 @@ function tabIndexOf(tab) {
     return index;
 }
 
+function clearPageSearch() {
+    searchCurrentPage("");
+}
+
+function searchCurrentPage(txt, opt) {
+    var index = tabContainer.currentIndex;
+    if (index >= 0) {
+        var targetTab = tabContainer.getTab(index);
+        if (opt !== null) {
+            targetTab.item.findText(txt, opt);
+        } else {
+            targetTab.item.findText(txt);
+        }
+    }
+}
 
 // =====================================================================
 // Left column
