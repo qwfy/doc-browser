@@ -105,13 +105,13 @@ function clearPageSearch() {
 
 function searchCurrentPage(txt, opt) {
     var index = tabContainer.currentIndex;
+    var opt = opt !== null ? opt : 0;
     if (index >= 0) {
         var targetTab = tabContainer.getTab(index);
-        if (opt !== null) {
-            targetTab.item.findText(txt, opt);
-        } else {
-            targetTab.item.findText(txt);
-        }
+        targetTab.item.findText(txt, opt,
+            function(found) {
+                if (txt !== "" && !found) pageSearchInputContainer.color = "red";
+            });
     }
 }
 

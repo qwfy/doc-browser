@@ -46,6 +46,7 @@ Window {
         togglePageSearch();
         Logic.clearPageSearch();
         pageSearchInput.focus = false;
+        pageSearchInputContainer.color = "white";
     }
 
     Shortcut {
@@ -264,6 +265,7 @@ Window {
                     onClicked: Logic.searchCurrentPage(pageSearchInput.text)
                 }
                 Rectangle{
+                    id: pageSearchInputContainer
                     border.width: 1
                     border.color: Style.inputBorder
                     radius: 3
@@ -283,6 +285,7 @@ Window {
                         font: Style.searchFont
                         onAccepted: Logic.searchCurrentPage(text)
                         Keys.onEscapePressed: closePaseSearch()
+                        onTextChanged: pageSearchInputContainer.color = "white"
                     }
                 }
             }
