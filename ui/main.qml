@@ -42,6 +42,12 @@ Window {
         }
     }
 
+    function closePaseSearch() {
+        togglePageSearch();
+        Logic.clearPageSearch();
+        pageSearchInput.focus = false;
+    }
+
     Shortcut {
         sequence: "Ctrl+f"
         onActivated: togglePageSearch()
@@ -245,11 +251,8 @@ Window {
                 anchors.left: parent.left
                 anchors.right: parent.right
                 Button {
-                    text: "&close"
-                    onClicked: {
-                        togglePageSearch();
-                        Logic.clearPageSearch();
-                    }
+                    text: "close"
+                    onClicked: closePaseSearch()
                 }
                 Button {
                     text: "&previous"
@@ -279,6 +282,7 @@ Window {
                         anchors.rightMargin: Style.ewPadding
                         font: Style.searchFont
                         onAccepted: Logic.searchCurrentPage(text)
+                        Keys.onEscapePressed: closePaseSearch()
                     }
                 }
             }
