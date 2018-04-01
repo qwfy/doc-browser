@@ -4,8 +4,4 @@ packages:
 - .
 
 extra-deps:
-# hsqml requires this version of Cabal,
-# which inturn requires this version this version of process
-- hsqml-0.3.5.0
-- Cabal-1.24.2.0
-- process-1.4.3.0
+- hsqml-0.3.5.1
