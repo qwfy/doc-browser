@@ -1,6 +1,6 @@
 # NOTE:
 # Currently, unless otherwise stated,
-# all configurations require a restart to take effect.
+# all configuration changes require a restart to take effect.
 # Sorry for the trouble :(
 
 # To configure this application, create the file
@@ -24,7 +24,7 @@ WebEngineZoomFactor: 1.5
 #   ps ux | grep 'doc-browser --server' | grep -v 'grep'
 # and then restart the server with:
 #   doc-browser --server
-# restart of the GUI is not needed.
+# you should also restart the GUI.
 Port: 7701
 
 

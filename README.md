@@ -47,7 +47,7 @@ For Hoogle support, this application guides user to download documentation archi
 
 - DBus interface
 
-- Configurable
+- Configurable (in progress)
 
 
 ## Current Status
