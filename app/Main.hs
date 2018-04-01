@@ -24,12 +24,13 @@ import qualified Server
 import qualified Opt
 import qualified Hoo
 import qualified Upgrade
+import qualified Config
 import Utils
 
 import Paths_doc_browser
 
-startGUI :: Int -> FilePath -> IO ()
-startGUI port configRoot = do
+startGUI :: Int -> FilePath -> Config.T -> IO ()
+startGUI port configRoot config = do
 
   matchesTVar <- atomically $ newTVar ([] :: [Match.T])
 
@@ -59,6 +60,10 @@ startGUI port configRoot = do
     , defMethod' "google"
         (\_obj txt ->
           google . Text.unpack $ txt)
+
+    , defPropertyConst' "webEngineZoomFactor"
+        (\_obj ->
+          return . Text.pack . show . Config.webEngineZoomFactor $ config)
     ]
 
   objectContext <- newObject classContext ()
@@ -119,6 +124,8 @@ main = do
   createDirectoryIfMissing True $ joinPath [configRoot]
   createDirectoryIfMissing True $ joinPath [cacheRoot]
 
+  config <- Config.load configRoot
+
   -- TODO @incomplete: read port from config
   let port = 7701
 
@@ -131,7 +138,7 @@ main = do
       case opt of
         Opt.StartGUI -> do
           _ <- spawnProcess "doc-browser" ["--server", "--already-started-ok"]
-          startGUI port configRoot
+          startGUI port configRoot config
 
         Opt.StartServer startedOK -> do
           Server.start startedOK port configRoot cacheRoot

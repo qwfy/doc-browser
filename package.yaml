@@ -18,6 +18,7 @@ data-files:
 - ui/**/qmldir
 - ui/**/*.png
 - ui/**/SOURCE
+- config.yaml
 
 dependencies:
 - base >= 4.7 && < 5
@@ -56,6 +57,7 @@ dependencies:
 - hdaemonize
 - process
 - time
+- yaml
 
 library:
   source-dirs: src

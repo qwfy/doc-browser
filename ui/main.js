@@ -38,6 +38,7 @@ function matchOpen(indexIn) {
         targetTab.active = true;
         targetTab.item.url = matchContainer.model[index].url;
         targetTab.item.selectedName = matchContainer.model[index].name;
+        targetTab.item.zoomFactor = parseFloat(webEngineZoomFactor);
         targetTab.title = Qt.binding(function(){
             var newIndex = tabIndexOf(targetTab);
             if (newIndex >= 0) {

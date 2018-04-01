@@ -12,6 +12,8 @@ module Utils
   , fireAndForget
   , DownloadError(..)
   , localTime
+  , uppercaseFirst
+  , lowercaseFirst
   ) where
 
 import qualified Network.Wreq as Wreq
@@ -31,6 +33,7 @@ import Network.HTTP.Types.Status
 
 import Data.Time.LocalTime
 import Data.Time.Format
+import Data.Char
 
 import qualified Codec.Archive.Tar as Tar
 import qualified Codec.Compression.Lzma as Lzma
@@ -95,3 +98,11 @@ fireAndForget action = void $ forkIO (void action)
 localTime :: IO String
 localTime =
   formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S %z" <$> getZonedTime
+
+uppercaseFirst :: String -> String
+uppercaseFirst "" = ""
+uppercaseFirst (h:t) = toUpper h : t
+
+lowercaseFirst :: String -> String
+lowercaseFirst "" = ""
+lowercaseFirst (h:t) = toLower h : t
