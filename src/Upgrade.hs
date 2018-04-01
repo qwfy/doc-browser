@@ -11,6 +11,7 @@ import Control.Exception
 import Control.Monad
 
 import Data.Monoid
+import Data.List
 
 import System.FilePath
 import System.Directory
@@ -35,22 +36,28 @@ data UpgradeError
 
 instance Show UpgradeError where
 
-  show (HigherDiskFormat userFormat) = unwords
-    [ "The latest version of the disk format supported by"
-    , "this version of the program is"
-    , show latestDiskFormat ++ ","
-    , "but you have disk format version"
-    , show userFormat ++ "."
-    , "Possible fix: upgrade this program to a newer version."]
+  show (HigherDiskFormat userFormat) = intercalate "\n" $
+    [ unwords
+        [ "The latest version of the disk format supported by"
+        , "this version of the program is"
+        , show latestDiskFormat ++ ","
+        , "but you have disk format version"
+        , show userFormat ++ "."
+        ]
+    , "Possible fix: upgrade this program to a newer version."
+    ]
 
-  show (UnRecognizedDiskFormat userFormat) = unwords
-    [ "You have disk format version"
-    , show userFormat ++ ","
-    , "which this program does not recognize."
+  show (UnRecognizedDiskFormat userFormat) = intercalate "\n" $
+    [ unwords
+        [ "You have disk format version"
+        , show userFormat ++ ","
+        , "which this program does not recognize."
+        ]
     , "Suggested action:"
     , "(1) Have you manually edited the disk format file and got it wrong?"
     , "(2) Update this program to a newer version."
-    , "(3) Open an issue to report the problem."]
+    , "(3) Open an issue to report the problem."
+    ]
 
 instance Exception UpgradeError
 
@@ -133,8 +140,10 @@ appendLog fh msg' = do
           unwords [time, str]
         Lines block ->
           let strs = block |> lines |> map ("--- " <>)
-          in unlines $ (time ++ " ---"):strs
+          in intercalate "\n" $ (time ++ " ---"):strs
+  putStrLn msg
   hPutStrLn fh msg
+  hFlush fh
 
 start :: FilePath -> IO Continue
 start configRoot = do
