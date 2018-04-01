@@ -12,35 +12,35 @@ QtObject {
 
     readonly property font searchFont:
     Qt.font({
-                pixelSize: 24,
+                pointSize: 12,
                 family: "Input Mono"})
 
     readonly property font matchMainFont:
     Qt.font({
-                pixelSize: 20,
+                pointSize: 10,
                 family: "Input Mono, Light",
                 lineHeight: 1})
 
     readonly property font matchMainFontHoogle:
     Qt.font({
-                pixelSize: 20,
+                pointSize: 10,
                 family: "Input Mono, Light",
                 lineHeight: 1})
 
     readonly property font matchMetaFont:
     Qt.font({
-                pixelSize: 16,
+                pointSize: 8,
                 family: "Input Mono, Light",
                 lineHeight: 1})
 
     readonly property font matchVersionFont:
     Qt.font({
-                pixelSize: 12,
+                pointSize: 6,
                 lineHeight: 1})
 
     readonly property font matchShortcutFont:
     Qt.font({
-                pixelSize: 17,
+                pointSize: 8,
                 family: "Input Mono, Light"})
 
     readonly property int ewPadding: 8
