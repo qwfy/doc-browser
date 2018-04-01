@@ -32,9 +32,10 @@ import qualified DevDocs
 import qualified DevDocsMeta
 import qualified Doc
 import qualified Opt
+import qualified Config
 
-start :: Opt.IsStartedOK -> Int -> FilePath -> FilePath -> IO ()
-start startedOK port configRoot cacheRoot = daemonize $ do
+start :: Config.T -> Opt.IsStartedOK -> FilePath -> FilePath -> IO ()
+start config startedOK configRoot cacheRoot = daemonize $ do
   let handleInUse :: IOException -> IO ()
       handleInUse e =
         if isAlreadyInUseError e
@@ -46,7 +47,7 @@ start startedOK port configRoot cacheRoot = daemonize $ do
                 throwIO e
           else
             throwIO e
-  run port (app configRoot cacheRoot) `catchIOError` handleInUse
+  run (Config.port config) (app configRoot cacheRoot) `catchIOError` handleInUse
 
 app :: FilePath
     -> FilePath

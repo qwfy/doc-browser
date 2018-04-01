@@ -15,7 +15,6 @@ import System.Hclip
 import System.Process
 import Web.Browser
 
-import qualified Entry
 import qualified Match
 import qualified Search
 import qualified DevDocs
@@ -29,8 +28,8 @@ import Utils
 
 import Paths_doc_browser
 
-startGUI :: Int -> FilePath -> Config.T -> IO ()
-startGUI port configRoot config = do
+startGUI :: Config.T -> FilePath -> IO ()
+startGUI config configRoot = do
 
   matchesTVar <- atomically $ newTVar ([] :: [Match.T])
 
@@ -79,9 +78,8 @@ startGUI port configRoot config = do
 
   hooMay <- Hoo.findDatabase configRoot
   _searchThreadId <- Search.startThread
-    port
+    config
     configRoot
-    (Entry.toMatch port)
     allEntries
     ((configRoot </>) <$> hooMay)
     querySlot
@@ -126,9 +124,6 @@ main = do
 
   config <- Config.load configRoot
 
-  -- TODO @incomplete: read port from config
-  let port = 7701
-
   upgradeResult <- Upgrade.start configRoot
   case upgradeResult of
     Upgrade.Abort ->
@@ -138,10 +133,10 @@ main = do
       case opt of
         Opt.StartGUI -> do
           _ <- spawnProcess "doc-browser" ["--server", "--already-started-ok"]
-          startGUI port configRoot config
+          startGUI config configRoot
 
         Opt.StartServer startedOK -> do
-          Server.start startedOK port configRoot cacheRoot
+          Server.start config startedOK configRoot cacheRoot
 
         Opt.InstallDevDocs collections ->
           DevDocsMeta.downloadMany configRoot collections

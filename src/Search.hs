@@ -8,6 +8,8 @@ module Search
   , queryToGoogle
   ) where
 
+import Data.Text (Text)
+import qualified Data.Text as Text
 import qualified Data.List
 import qualified Data.Map.Strict as Map
 import qualified Data.Char
@@ -32,6 +34,7 @@ import qualified Entry
 import qualified Match
 import qualified Hoo
 import qualified Doc
+import qualified Config
 import Utils
 
 data Query
@@ -185,13 +188,19 @@ subString :: C.ByteString -> Int -> Int -> C.ByteString
 subString str offset length' =
   str |> C.drop offset |> C.take length'
 
-startThread :: Int -> FilePath -> (Entry.T -> Match.T) -> [Entry.T] -> Maybe FilePath -> TMVar String -> ([Match.T] -> IO ())-> IO ThreadId
-startThread port configRoot entryToMatch entries hooMay querySlot handleMatches =
+prefixHost :: Int -> String -> Text
+prefixHost port path =
+  let host = "http://localhost:" ++ show port
+  in Text.pack $ host </> path
+
+startThread :: Config.T -> FilePath -> [Entry.T] -> Maybe FilePath -> TMVar String -> ([Match.T] -> IO ())-> IO ThreadId
+startThread config configRoot entries hooMay querySlot handleMatches =
   forkIO loop
   where
     loop = forever $ do
       -- TODO @incomplete: make this limit configurable
       let limit = 27
+      let prefixHost' = prefixHost $ Config.port config
       queryStr <- atomically $ takeTMVar querySlot
 
       handleMatches =<<
@@ -201,7 +210,7 @@ startThread port configRoot entryToMatch entries hooMay querySlot handleMatches 
 
             Just (G query) ->
               Search.search entries limit query
-                |> map entryToMatch
+                |> map (Entry.toMatch prefixHost')
                 |> return
 
             Just (H (Hoogle query)) ->
@@ -213,4 +222,4 @@ startThread port configRoot entryToMatch entries hooMay querySlot handleMatches 
                   -- load the database on every search, instead of keeping it in memory,
                   -- this is done deliberately - turns out that it makes the GUI more responsive
                   let version = Doc.Version . takeBaseName $ dbPath
-                  in Hoogle.withDatabase dbPath (\db -> return $ Hoo.search port configRoot version db limit query)
+                  in Hoogle.withDatabase dbPath (\db -> return $ Hoo.search configRoot version db limit query prefixHost')

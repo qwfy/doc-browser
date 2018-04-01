@@ -19,6 +19,7 @@ import Paths_doc_browser
 
 data T = T
   { webEngineZoomFactor :: Float
+  , port :: Int
   } deriving (Show, Generic)
 
 instance FromJSON T where

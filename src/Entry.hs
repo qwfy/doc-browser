@@ -8,6 +8,7 @@ module Entry
   , toMatch
   ) where
 
+import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.ByteString.Char8 as C
 
@@ -33,13 +34,12 @@ instance Ord T where
     (name a, version a)
     (name b, version b)
 
--- TODO @incomplete: use Port or elimate the port parameter
-toMatch :: Int -> T -> Match.T
-toMatch port entry = Match.T
+toMatch :: (String -> Text) -> T -> Match.T
+toMatch prefixHost entry = Match.T
   { Match.name       = Text.pack $ name entry
   , Match.collection = Text.pack . Doc.getCollection . collection $ entry
   , Match.version    = Text.pack . Doc.getVersion . version $ entry
-  , Match.url        = Text.pack $ buildUrl entry port
+  , Match.url        = prefixHost $ buildUrl entry
   , Match.vendor     = Text.pack . show $ Doc.DevDocs
 
   , Match.package_       = Nothing
@@ -47,11 +47,10 @@ toMatch port entry = Match.T
   , Match.typeConstraint = Nothing
   }
 
-buildUrl :: T -> Int -> String
-buildUrl T{collection, version, Entry.path=entryPath} port =
-  let relPath = joinPath
-        [ show Doc.DevDocs
-        , Doc.combineCollectionVersion collection version
-        , entryPath ]
-      host = "http://localhost:" ++ show port
-  in host </> relPath
+buildUrl :: T -> String
+buildUrl T {collection, version, Entry.path = entryPath} =
+  joinPath
+    [ show Doc.DevDocs
+    , Doc.combineCollectionVersion collection version
+    , entryPath
+    ]
