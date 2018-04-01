@@ -234,12 +234,25 @@ Key                                             | Effect                        
 <kbd>Alt</kbd>+<kbd>p</kbd>|find previous in page search
 <kbd>Esc</kbd>|close page search|when in search box
 
+## Configuration
+
+Create the file `XDG_CONFIG/doc-browser/config.yaml` and edit it.
+
+The file is in YAML format, configurable keys and documentations can be found at:
+
+- `/usr/share/doc-browser/config.yaml`, if you installed from AUR
+- `config.yaml` in the root of the source repository, if you installed from source
 
 ## FAQ and Troubleshooting
 
 Problem: On KDE, <kbd>Ctrl</kbd>+<kbd>/</kbd> is taking too long to open the browser.
 
 Solution: This application uses `xdg-open` to open the browser. Try [this workaround](https://bugs.kde.org/show_bug.cgi?id=364662#c3).
+
+
+Problem: The font in the documentation is too big or too small.
+
+Solution: Tweak the configuration `WebEngineZoomFactor`, see the [Configuration](#configuration) section for instruction.
 
 
 Q: Why does this application display at most 27 matches?

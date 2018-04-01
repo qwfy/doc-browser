@@ -1,2 +1,31 @@
+# NOTE:
+# Currently, unless otherwise stated,
+# all configurations require a restart to take effect.
+# Sorry for the trouble :(
+
+# To configure this application, create the file
+#   XDG_CONFIG/doc-browser/config.yaml
+# and then edit the interested configurations there, you don't
+# have to copy this entire file, just copy the keys you are
+# interested in.
+
+
+# Zoom factor for QtWebEngine.
+# ============================================================
+# If the font is too big or too small in the tab, tweak this:
+# - if you don't have HiDPI, try 1
+# - otherwise, try 1.5 or 2, or other values
 WebEngineZoomFactor: 1.5
+
+
+# Serve the documentation using this port.
+# ============================================================
+# For the change to take effect, kill the process given by:
+#   ps ux | grep 'doc-browser --server' | grep -v 'grep'
+# and then restart the server with:
+#   doc-browser --server
+# restart of the GUI is not needed.
 Port: 7701
+
+
+# vim: cc=62
