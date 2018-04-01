@@ -55,6 +55,7 @@ dependencies:
 - open-browser
 - hdaemonize
 - process
+- time
 
 library:
   source-dirs: src

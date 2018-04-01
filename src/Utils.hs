@@ -11,6 +11,7 @@ module Utils
   , unpackXzInto
   , fireAndForget
   , DownloadError(..)
+  , localTime
   ) where
 
 import qualified Network.Wreq as Wreq
@@ -27,6 +28,9 @@ import Control.Concurrent.STM.TMVar
 import Control.Concurrent
 
 import Network.HTTP.Types.Status
+
+import Data.Time.LocalTime
+import Data.Time.Format
 
 import qualified Codec.Archive.Tar as Tar
 import qualified Codec.Compression.Lzma as Lzma
@@ -87,3 +91,7 @@ unpackXzInto archive into = do
 
 fireAndForget :: IO a -> IO ()
 fireAndForget action = void $ forkIO (void action)
+
+localTime :: IO String
+localTime =
+  formatTime defaultTimeLocale "%Y-%m-%d %H:%M:%S %z" <$> getZonedTime

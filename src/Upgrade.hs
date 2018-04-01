@@ -3,27 +3,21 @@
 {-# LANGUAGE MultiWayIf #-}
 
 module Upgrade
-  ( startGUI
+  ( start
   , Continue(..)
   ) where
 
 import Control.Exception
-import Control.Concurrent.Async
-import Control.Monad.STM
-import Control.Concurrent.STM.TVar
 import Control.Monad
 
-import Graphics.QML
-
-import Data.Text (Text)
-import qualified Data.Text as Text
 import Data.Monoid
 
 import System.FilePath
 import System.Directory
+import System.IO
 
 import qualified Doc
-import Paths_doc_browser
+import Utils
 
 
 type DiskFormat = Int
@@ -60,7 +54,7 @@ instance Show UpgradeError where
 
 instance Exception UpgradeError
 
-type Reporter = [String] -> IO ()
+type LineLogger = [String] -> IO ()
 
 
 diskFormatFile configRoot =
@@ -78,8 +72,8 @@ writeDiskFormat :: FilePath -> DiskFormat -> IO ()
 writeDiskFormat configRoot diskFormat =
   writeFile (diskFormatFile configRoot) (show diskFormat)
 
-upgrade :: Reporter -> FilePath -> IO ()
-upgrade report configRoot = do
+upgrade :: LineLogger -> FilePath -> IO ()
+upgrade logLine configRoot = do
   userFormat <- readDiskFormat configRoot
 
   if | userFormat == latestDiskFormat ->
@@ -90,97 +84,87 @@ upgrade report configRoot = do
 
      | otherwise -> do
        let succUserFormat = userFormat + 1
-       report [ "Upgrading disk format from version"
-              , show userFormat
-              , "to"
-              , show succUserFormat]
+       logLine [ "Upgrading disk format from version"
+               , show userFormat
+               , "to"
+               , show succUserFormat]
 
        case userFormat of
          0 ->
-           upgradeFrom0 report configRoot
+           upgradeFrom0 logLine configRoot
          1 ->
-           upgradeFrom1 report configRoot
+           upgradeFrom1 logLine configRoot
          _ ->
            throwIO $ UnRecognizedDiskFormat userFormat
 
        writeDiskFormat configRoot succUserFormat
-       report [ "Done upgrading disk format from version"
-              , show userFormat
-              , "to"
-              , show succUserFormat]
-       upgrade report configRoot
+       logLine [ "Done upgrading disk format from version"
+               , show userFormat
+               , "to"
+               , show succUserFormat]
+       upgrade logLine configRoot
 
-upgradeFrom0 :: Reporter -> FilePath -> IO ()
-upgradeFrom0 report configRoot = do
+upgradeFrom0 :: LineLogger -> FilePath -> IO ()
+upgradeFrom0 logLine configRoot = do
   let oldDevDocsDir = configRoot </> "devdocs"
   let newDevDocsDir = configRoot </> show Doc.DevDocs
   exist <- doesDirectoryExist oldDevDocsDir
   when exist $ do
-    report [ "Renaming directory"
-           , oldDevDocsDir
-           , "to"
-           , newDevDocsDir]
+    logLine [ "Renaming directory"
+            , oldDevDocsDir
+            , "to"
+            , newDevDocsDir]
     renameDirectory oldDevDocsDir newDevDocsDir
 
-upgradeFrom1 :: Reporter -> FilePath -> IO ()
-upgradeFrom1 report configRoot =
+upgradeFrom1 :: LineLogger -> FilePath -> IO ()
+upgradeFrom1 logLine configRoot =
   forM_ [Doc.DevDocs, Doc.Hoogle] (\vendor -> do
     let targetDir = joinPath [configRoot, show vendor]
-    report ["Ensure directory:", targetDir]
+    logLine ["Ensure directory:", targetDir]
     createDirectoryIfMissing True targetDir)
 
-startGUI :: FilePath -> IO Continue
-startGUI configRoot = do
+data Log = Line String | Lines String
 
-  msgVar <- atomically $ newTVar ("" :: Text)
-  msgKey <- newSignalKey :: IO (SignalKey (IO ()))
+appendLog :: Handle -> Log -> IO ()
+appendLog fh msg' = do
+  time <- localTime
+  let msg = case msg' of
+        Line str ->
+          unwords [time, str]
+        Lines block ->
+          let strs = block |> lines |> map ("--- " <>)
+          in unlines $ (time ++ " ---"):strs
+  hPutStrLn fh msg
 
-  classContext <- newClass
-    [ defPropertySigRO' "upgradeMessage" msgKey
-        (\_obj -> readTVarIO msgVar)
-    ]
-
-  objectContext <- newObject classContext ()
-
-  let appendMsg :: String -> IO ()
-      appendMsg msg = do
-        let appendTo old = old <> lineBreak <> "==> " <> Text.pack msg
-              where lineBreak = if old == "" then "" else "<br>"
-        atomically $ modifyTVar msgVar appendTo
-
-  let handleExceptions :: SomeException -> IO Continue
-      handleExceptions e = do
-        appendMsg . show $ e
-        appendMsg . unwords $
-          [ "Upgrade has failed,"
-          , "see the above error message for the reason."
-          , "Please open an issue if you have trouble figuring out what's wrong."]
-        return Abort
-
+start :: FilePath -> IO Continue
+start configRoot = do
   userFormat <- readDiskFormat configRoot
   if userFormat == latestDiskFormat
     then
       return Continue
 
-    else do
-      mainQml <- getDataFileName "ui/disk-upgrade.qml"
-      let engineConfig = defaultEngineConfig
-            { initialDocument = fileDocument mainQml
-            , contextObject = Just $ anyObjRef objectContext
-            }
+    else
+      withFile (configRoot </> "disk-upgrade.log") AppendMode $ \logFileHandle -> do
+        let appendLog' = appendLog logFileHandle
 
-      appendMsg "Start to upgrade disk format"
-      if userFormat < latestDiskFormat
-        then do
-          let upgrade' = do
-                upgrade (appendMsg . unwords) configRoot
-                appendMsg "Upgrade finished successfully. Please close this window to continue."
-                return Continue
-          upgradeResult <- async (upgrade' `catch` handleExceptions)
-          runEngineLoop engineConfig
-          wait upgradeResult
+        let handleExceptions :: SomeException -> IO Continue
+            handleExceptions e = do
+              appendLog' . Lines . show $ e
+              appendLog' . Line . unwords $
+                [ "Upgrade has failed,"
+                , "see the above error message for the reason."
+                , "Please open an issue if you have trouble figuring out what's wrong."]
+              return Abort
 
-        else do
-          upgradeResult <- throwIO (HigherDiskFormat userFormat) `catch` handleExceptions
-          runEngineLoop engineConfig
-          return upgradeResult
+        appendLog' $ Line "Start to upgrade disk format."
+
+        if userFormat < latestDiskFormat
+          then do
+            let upgrade' = do
+                  upgrade (appendLog' . Line. unwords) configRoot
+                  appendLog' $ Line "Upgrade finished successfully."
+                  return Continue
+            upgrade' `catch` handleExceptions
+
+          else
+            throwIO (HigherDiskFormat userFormat) `catch` handleExceptions

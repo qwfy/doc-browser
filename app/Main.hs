@@ -84,6 +84,10 @@ startGUI port configRoot = do
 
   mainQml <- getDataFileName "ui/main.qml"
 
+  -- This flag is required by QtWebEngine
+  -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
+  True <- setQtFlag QtShareOpenGLContexts True
+
   runEngineLoop
     defaultEngineConfig
     { initialDocument = fileDocument mainQml
@@ -106,15 +110,6 @@ google str =
 
 main :: IO ()
 main = do
-
-  -- This flag is required by QtWebEngine
-  -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
-  --
-  -- It is done here because the Upgrade.hs also starts a GUI, and according to
-  -- https://hackage.haskell.org/package/hsqml-0.3.5.0/docs/Graphics-QML-Engine.html#v:setQtFlag
-  -- > Setting flags once the Qt event loop is entered is unsupported and will also cause this function to return False.
-  True <- setQtFlag QtShareOpenGLContexts True
-
   opt <- Opt.get
 
   -- TODO @incomplete: handle the absolute/relative semantic in the type level
@@ -127,19 +122,19 @@ main = do
   -- TODO @incomplete: read port from config
   let port = 7701
 
-  upgradeResult <- Upgrade.startGUI configRoot
+  upgradeResult <- Upgrade.start configRoot
   case upgradeResult of
     Upgrade.Abort ->
       return ()
 
     Upgrade.Continue ->
       case opt of
-        Opt.StartServer startedOK -> do
-          Server.start startedOK port configRoot cacheRoot
-
         Opt.StartGUI -> do
           _ <- spawnProcess "doc-browser" ["--server", "--already-started-ok"]
           startGUI port configRoot
+
+        Opt.StartServer startedOK -> do
+          Server.start startedOK port configRoot cacheRoot
 
         Opt.InstallDevDocs collections ->
           DevDocsMeta.downloadMany configRoot collections
