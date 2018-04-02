@@ -30,34 +30,34 @@ Port: 7701
 
 # Font for input area.
 InputFont:
-  Family: "Input Mono"
+  Family: "Monospace"
   PointSize: 12
 
 # Font for the "main" part of the search result.
 MatchFontMain:
-  Family: "Input Mono"
+  Family: "Monospace"
   PointSize: 10
 
 # Like MatchFontMain, but for Hoogle.
 MatchFontMainHoogle:
-  Family: "Input Mono"
+  Family: "Monospace"
   PointSize: 10
 
 # Font for package, module, and database version.
 # Only used by Hoogle.
 MatchFontMeta:
-  Family: "Input Mono"
+  Family: "Monospace"
   PointSize: 8
 
 # Font for the docset version in the RHS of the match area.
 # Not used by Hoogle
 MatchFontVersion:
-  Family: "sans"
+  Family: "SansSerif"
   PointSize: 6
 
 # Font for the shortcut on the LHS of the match area.
 MatchFontShortcut:
-  Family: "Input Mono"
+  Family: "Monospace"
   PointSize: 8
 
 MatchBgColorNormal:   "#fdf6e3"

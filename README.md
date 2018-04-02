@@ -57,8 +57,6 @@ It's in early stage, the main interface is in shape and usable, but other aspect
 
 ## Installation
 
-This application uses the font [Input Mono](http://input.fontbureau.com/) by default, it is free for personal use, please install it first. See [Configuration](#configuration) if you want to use another font.
-
 ### Arch Linux
 
 There is a [PKGBUILD](https://aur.archlinux.org/packages/doc-browser-git/) available on AUR.
@@ -100,6 +98,7 @@ If you have trouble building this application, you can:
 Optionally, install the executable `xsel` or `xclip` for the <kbd>Y</kbd> shortcut (copy the selected match to clipboard) to work.
 
 Optionally, install the executable `xdg-open` (provided by package `xdg-utils` on Arch Linux) for the <kbd>Ctrl</kbd>+<kbd>/</kbd> shortcut (send query to Google) to work.
+
 
 ### Install DevDocs' Docset
 To install DevDocs' docset, invoke:
@@ -242,6 +241,8 @@ The file is in YAML format, configurable keys and documentations can be found at
 
 - `/usr/share/doc-browser/config.yaml`, if you installed from AUR
 - `config.yaml` in the root of the source repository, if you installed from source
+
+The screenshot uses the font [Input Mono](http://input.fontbureau.com/), it is free for personal use, you can install and config doc browser to use it.
 
 ## FAQ and Troubleshooting
 
