@@ -3,6 +3,7 @@
 
 module Config
   ( T(..)
+  , Font(..)
   , load
   ) where
 
@@ -11,8 +12,6 @@ import Data.Aeson
 import Data.Yaml.Config
 import System.FilePath
 import System.Directory
-
-import Text.Mustache
 
 import GHC.Generics
 
