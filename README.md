@@ -87,7 +87,7 @@ stack install
 echo "binary installed to $(stack path --local-bin)"
 ```
 
-Note, due to a restriction of stack, you shouldn't delete the `.stack-work` directory inside the source code directory you just cloned after the build, for the installed binary still need to access files in it. If you really don't want to depends on this `.stack-wrok` directory, you can copy the `ui` directory of this repository to somewhere, say `/foo/ui`, and then start this application with `doc_browser_datadir=/foo doc-browser` instead of the usual `doc-browser`.
+Note, due to a restriction of stack, you shouldn't delete the `.stack-work` directory inside the source code directory you just cloned after the build, for the installed binary still need to access files in it. If you really don't want to depends on this `.stack-wrok` directory, you can copy the `ui` directory of this repository to somewhere, say `/foo/ui`, and `config.yaml` to `/foo/config.yaml`, and then start this application with `doc_browser_datadir=/foo doc-browser` instead of the usual `doc-browser`.
 
 If you have trouble building this application, you can:
 
@@ -155,7 +155,7 @@ You can also start it with:
 
 ```bash
 doc_browser_datadir=$INSTALL_ROOT/usr/share/doc-browser doc-browser
-# $INSTALL_ROOT is usually just "/"
+# i.e. doc_browser_datadir=/usr/share/doc-browser doc-browser
 ```
 
 If you installed from source, start it with:
