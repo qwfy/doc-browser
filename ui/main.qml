@@ -5,7 +5,7 @@ import QtQuick.Window 2.2
 import QtQuick.Controls 1.4
 import QtLocation 5.3
 
-import "./style"
+import co.aixon.docbrowser 1.0
 import "main.js" as Logic
 import "match.js" as MatchJs
 import "tab.js" as TabJs

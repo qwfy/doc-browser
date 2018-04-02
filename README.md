@@ -38,6 +38,8 @@ For Hoogle support, this application guides user to download documentation archi
 
 - Hoogle integration
 
+- Customizable (in progress)
+
 
 ## Planned (in no particular order)
 
@@ -47,8 +49,6 @@ For Hoogle support, this application guides user to download documentation archi
 
 - DBus interface
 
-- Configurable (in progress)
-
 
 ## Current Status
 
@@ -57,7 +57,7 @@ It's in early stage, the main interface is in shape and usable, but other aspect
 
 ## Installation
 
-First, install the font [Input Mono](http://input.fontbureau.com/), it is free for personal use. (In a later version you can specify the font you want to use)
+This application uses the font [Input Mono](http://input.fontbureau.com/) by default, it is free for personal use, please install it first. See [Configuration](#configuration) if you want to use another font.
 
 ### Arch Linux
 

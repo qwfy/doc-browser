@@ -28,4 +28,47 @@ WebEngineZoomFactor: 1.5
 Port: 7701
 
 
+# Font for input area.
+InputFont:
+  Family: "Input Mono"
+  PointSize: 12
+
+# Font for the "main" part of the search result.
+MatchFontMain:
+  Family: "Input Mono"
+  PointSize: 10
+
+# Like MatchFontMain, but for Hoogle.
+MatchFontMainHoogle:
+  Family: "Input Mono"
+  PointSize: 10
+
+# Font for package, module, and database version.
+# Only used by Hoogle.
+MatchFontMeta:
+  Family: "Input Mono"
+  PointSize: 8
+
+# Font for the docset version in the RHS of the match area.
+# Not used by Hoogle
+MatchFontVersion:
+  Family: "sans"
+  PointSize: 6
+
+# Font for the shortcut on the LHS of the match area.
+MatchFontShortcut:
+  Family: "Input Mono"
+  PointSize: 8
+
+MatchBgColorNormal:   "#fdf6e3"
+MatchBgColorSelected: "#586e75"
+
+MatchFgColorNormal:   "#657b83"
+MatchFgColorSelected: "#fdf6e3"
+
+MatchFgColorLight: "#747f83"
+
+# Border color for the input area in Ctrl+F.
+InputBorderColor: "#586e75"
+
 # vim: cc=62

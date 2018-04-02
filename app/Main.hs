@@ -9,10 +9,13 @@ import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TMVar
 
 import qualified Data.Text as Text
+import Data.List.Extra
 import System.Directory
 import System.FilePath
 import System.Hclip
 import System.Process
+import System.IO.Extra
+import System.Environment
 import Web.Browser
 
 import qualified Match
@@ -24,12 +27,21 @@ import qualified Opt
 import qualified Hoo
 import qualified Upgrade
 import qualified Config
+import qualified Style
 import Utils
 
 import Paths_doc_browser
 
 startGUI :: Config.T -> FilePath -> IO ()
-startGUI config configRoot = do
+startGUI config configRoot = withTempDir $ \qmlModuleDir -> do
+
+  Style.createQml qmlModuleDir config
+  oldQmlPath <- lookupEnv "QML2_IMPORT_PATH"
+  let qmlPath = case trim <$> oldQmlPath of
+        Nothing -> qmlModuleDir
+        Just "" -> qmlModuleDir
+        Just old -> old ++ ":" ++ qmlModuleDir
+  setEnv "QML2_IMPORT_PATH" qmlPath
 
   matchesTVar <- atomically $ newTVar ([] :: [Match.T])
 

@@ -1,6 +1,7 @@
 import QtQuick 2.9
 import QtQuick.Layouts 1.2
-import "./style"
+
+import co.aixon.docbrowser 1.0
 import "match.js" as MatchJs
 import "util.js" as UtilJs
 

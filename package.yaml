@@ -13,11 +13,10 @@ extra-source-files:
 - README.md
 
 data-files:
-- ui/**/*.qml
-- ui/**/*.js
-- ui/**/qmldir
-- ui/**/*.png
-- ui/**/SOURCE
+- ui/*.qml
+- ui/*.js
+- ui/icon/**/*.png
+- ui/icon/**/SOURCE
 - config.yaml
 
 dependencies:
@@ -58,6 +57,7 @@ dependencies:
 - process
 - time
 - yaml
+- stache
 
 library:
   source-dirs: src
