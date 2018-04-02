@@ -155,7 +155,7 @@ You can also start it with:
 
 ```bash
 doc_browser_datadir=$INSTALL_ROOT/usr/share/doc-browser doc-browser
-# i.e. doc_browser_datadir=/usr/share/doc-browser doc-browser
+# e.g. doc_browser_datadir=/usr/share/doc-browser doc-browser
 ```
 
 If you installed from source, start it with:
