@@ -10,7 +10,6 @@ import Data.Monoid
 
 data T
   = StartGUI
-  | StartServer
   | InstallDevDocs [String]
   | InstallHoogle String String
   deriving (Show)
@@ -32,7 +31,6 @@ optParser =
       startGUIParser
         <|> installDevDocsParser
         <|> installHoogleParser
-        <|> startServerParser
         <|> pure StartGUI
 
 startGUIParser :: Parser T
@@ -40,12 +38,6 @@ startGUIParser =
   flag' StartGUI
     (  long "gui"
     <> help "Start the GUI. This is the default behaviour")
-
-startServerParser :: Parser T
-startServerParser =
-  flag' StartServer
-    (  long "server"
-    <> help "Start the server. All docs are served with this server")
 
 installDevDocsParser :: Parser T
 installDevDocsParser =

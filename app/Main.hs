@@ -4,11 +4,13 @@ module Main (main) where
 
 import Graphics.QML
 
+import Control.Monad
 import Control.Monad.STM
 import Control.Concurrent
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TMVar
 
+import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.List.Extra
 import System.Directory
@@ -16,7 +18,6 @@ import System.FilePath
 import System.Hclip
 import System.IO.Extra
 import System.Environment
-import System.Posix.Daemonize
 import Web.Browser
 
 import qualified Match
@@ -33,8 +34,8 @@ import Utils
 
 import Paths_doc_browser
 
-startGUI :: Config.T -> FilePath -> IO ()
-startGUI config configRoot = withTempDir $ \qmlModuleDir -> do
+startGUI :: Config.T -> FilePath -> TMVar String -> IO ()
+startGUI config configRoot summonSlot = withTempDir $ \qmlModuleDir -> do
 
   Style.createQml qmlModuleDir config
   oldQmlPath <- lookupEnv "QML2_IMPORT_PATH"
@@ -50,9 +51,23 @@ startGUI config configRoot = withTempDir $ \qmlModuleDir -> do
   -- instance SignalSuffix (IO ())
   matchesKey <- newSignalKey :: IO (SignalKey (IO ()))
 
+  summonKey <- newSignalKey :: IO (SignalKey (IO ()))
+  summonText <- atomically $ newTVar ("" :: Text)
+
   querySlot <- atomically newEmptyTMVar
 
   classMatch <- Match.defClass
+
+  -- controls the GUI
+  classController <- newClass
+    [ defSignal "summon" summonKey
+
+    , defPropertyRO' "summonText"
+        (\_obj ->
+          readTVarIO summonText)
+    ]
+
+  objectController <- newObject classController ()
 
   classContext <- newClass
     [ defPropertySigRO' "matches" matchesKey
@@ -67,7 +82,7 @@ startGUI config configRoot = withTempDir $ \qmlModuleDir -> do
 
     , defMethod' "setClipboard"
         (\_obj txt ->
-            setClipboard . Text.unpack $ txt)
+          setClipboard . Text.unpack $ txt)
 
     , defMethod' "google"
         (\_obj txt ->
@@ -76,6 +91,10 @@ startGUI config configRoot = withTempDir $ \qmlModuleDir -> do
     , defPropertyConst' "webEngineZoomFactor"
         (\_obj ->
           return . Text.pack . show . Config.webEngineZoomFactor $ config)
+
+    , defPropertyRO' "controller"
+        (\_obj ->
+          return objectController)
     ]
 
   objectContext <- newObject classContext ()
@@ -97,6 +116,13 @@ startGUI config configRoot = withTempDir $ \qmlModuleDir -> do
     ((configRoot </>) <$> hooMay)
     querySlot
     sendMatches
+
+  -- TODO @incomplete: don't block
+  _ <- forkIO . forever $ do
+    atomically $ do
+      query <- takeTMVar summonSlot
+      writeTVar summonText (Text.pack query)
+    fireSignal summonKey objectController
 
   mainQml <- getDataFileName "ui/main.qml"
 
@@ -145,11 +171,9 @@ main = do
     Upgrade.Continue ->
       case opt of
         Opt.StartGUI -> do
-          _ <- forkIO $ Server.start config configRoot cacheRoot
-          startGUI config configRoot
-
-        Opt.StartServer -> do
-          daemonize $ Server.start config configRoot cacheRoot
+          summonSlot <- atomically $ newEmptyTMVar
+          _ <- forkIO $ Server.start config configRoot cacheRoot summonSlot
+          startGUI config configRoot summonSlot
 
         Opt.InstallDevDocs collections ->
           DevDocsMeta.downloadMany configRoot collections

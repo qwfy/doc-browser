@@ -12,7 +12,8 @@ import qualified Data.Text as Text
 import qualified Data.Binary.Builder as Builder
 import qualified Data.Map.Strict as Map
 import qualified Data.ByteString.Lazy as LBS
-import qualified Data.ByteString.Lazy.Char8 as C
+import qualified Data.ByteString.Lazy.Char8 as LC
+import qualified Data.ByteString.Char8 as C
 import qualified Data.Array
 import Data.List.Extra
 import Data.String
@@ -26,6 +27,8 @@ import System.FileLock
 import System.Posix.User
 
 import Control.Exception
+import Control.Monad.STM
+import Control.Concurrent.STM.TMVar
 
 import Utils
 import qualified DevDocs
@@ -33,22 +36,24 @@ import qualified DevDocsMeta
 import qualified Doc
 import qualified Config
 
-start :: Config.T -> FilePath -> FilePath -> IO ()
-start config configRoot cacheRoot = do
-  report ["wait for server slot"]
+start :: Config.T -> FilePath -> FilePath -> TMVar String -> IO ()
+start config configRoot cacheRoot summonSlot = do
+  -- TODO @incomplete: make the lock global
   userId <- getRealUserID
   let lockFilePath = joinPath ["/run/user", show userId, "doc-browser/server.lock"]
   createDirectoryIfMissing True $ takeDirectory lockFilePath
+  report ["wait for server slot"]
   withFileLock lockFilePath Exclusive $ \_lock -> do
     report ["start new server"]
-    run (Config.port config) (app configRoot cacheRoot)
+    run (Config.port config) (app configRoot cacheRoot summonSlot)
 
 app :: FilePath
     -> FilePath
+    -> TMVar String
     -> Request
     -> (Response -> IO ResponseReceived)
     -> IO ResponseReceived
-app configRoot cacheRoot request respond = do
+app configRoot cacheRoot summonSlot request respond = do
   let paths = pathInfo request |> map Text.unpack
 
   let badRequest =
@@ -71,6 +76,15 @@ app configRoot cacheRoot request respond = do
       ("abspath" : rest) ->
         let path = joinPath $ "/":rest
         in Builder.fromLazyByteString <$> LBS.readFile path
+
+      ("summon" : []) ->
+        case queryString request of
+          [("q", Just queryStr)] -> do
+            atomically $ putTMVar summonSlot (C.unpack queryStr)
+            -- TODO @incomplete: return empty, not empty string
+            return $ Builder.fromByteString ""
+          _ ->
+            badRequest
 
       _ ->
         badRequest
@@ -174,7 +188,7 @@ fetchDevdocs configRoot cacheRoot collection version path = do
 -- we won't run into concurrency problems.
 getCached :: FilePath -> LBS.ByteString -> String -> IO LBS.ByteString
 getCached cacheRoot url' ext = do
-  let url = C.unpack url'
+  let url = LC.unpack url'
   let basename = MD5.md5s (MD5.Str url) <.> ext
   let cachedUrl = fromString $ joinPath ["/cache", basename]
   let storage = joinPath [cacheRoot, basename]

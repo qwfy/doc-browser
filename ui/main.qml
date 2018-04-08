@@ -11,9 +11,24 @@ import "match.js" as MatchJs
 import "tab.js" as TabJs
 
 Window {
+    id: rootWindow
     title: "Doc Browser"
     visible: true
     visibility: Window.Maximized
+
+    Connections {
+        target: controller
+        onSummon: {
+            if (controller.summonText !== "") {
+                searchInput.text = controller.summonText;
+                // TODO @incomplete: handle this properly
+                rootWindow.visible = true;
+                rootWindow.visibility = Window.Maximized
+                rootWindow.raise();
+                rootWindow.requestActivate();
+            }
+        }
+    }
 
     Shortcut {
         sequence: "/"
