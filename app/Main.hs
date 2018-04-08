@@ -5,6 +5,7 @@ module Main (main) where
 import Graphics.QML
 
 import Control.Monad.STM
+import Control.Concurrent
 import Control.Concurrent.STM.TVar
 import Control.Concurrent.STM.TMVar
 
@@ -13,9 +14,9 @@ import Data.List.Extra
 import System.Directory
 import System.FilePath
 import System.Hclip
-import System.Process
 import System.IO.Extra
 import System.Environment
+import System.Posix.Daemonize
 import Web.Browser
 
 import qualified Match
@@ -144,11 +145,11 @@ main = do
     Upgrade.Continue ->
       case opt of
         Opt.StartGUI -> do
-          _ <- spawnProcess "doc-browser" ["--server", "--already-started-ok"]
+          _ <- forkIO $ Server.start config configRoot cacheRoot
           startGUI config configRoot
 
-        Opt.StartServer startedOK -> do
-          Server.start config startedOK configRoot cacheRoot
+        Opt.StartServer -> do
+          daemonize $ Server.start config configRoot cacheRoot
 
         Opt.InstallDevDocs collections ->
           DevDocsMeta.downloadMany configRoot collections

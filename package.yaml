@@ -58,6 +58,8 @@ dependencies:
 - time
 - yaml
 - stache
+- filelock
+- unix
 
 library:
   source-dirs: src

@@ -22,32 +22,26 @@ import Text.Regex.PCRE
 
 import System.FilePath
 import System.Directory
-import System.Posix.Daemonize
+import System.FileLock
+import System.Posix.User
 
 import Control.Exception
-import System.IO.Error
 
 import Utils
 import qualified DevDocs
 import qualified DevDocsMeta
 import qualified Doc
-import qualified Opt
 import qualified Config
 
-start :: Config.T -> Opt.IsStartedOK -> FilePath -> FilePath -> IO ()
-start config startedOK configRoot cacheRoot = daemonize $ do
-  let handleInUse :: IOException -> IO ()
-      handleInUse e =
-        if isAlreadyInUseError e
-          then
-            case startedOK of
-              Opt.StartedOK ->
-                report ["server already started"]
-              Opt.StartedNotOK ->
-                throwIO e
-          else
-            throwIO e
-  run (Config.port config) (app configRoot cacheRoot) `catchIOError` handleInUse
+start :: Config.T -> FilePath -> FilePath -> IO ()
+start config configRoot cacheRoot = do
+  report ["wait for server slot"]
+  userId <- getRealUserID
+  let lockFilePath = joinPath ["/run/user", show userId, "doc-browser/server.lock"]
+  createDirectoryIfMissing True $ takeDirectory lockFilePath
+  withFileLock lockFilePath Exclusive $ \_lock -> do
+    report ["start new server"]
+    run (Config.port config) (app configRoot cacheRoot)
 
 app :: FilePath
     -> FilePath
