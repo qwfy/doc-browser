@@ -40,14 +40,13 @@ For Hoogle support, this application guides user to download documentation archi
 
 - Customizable (in progress)
 
+- [HTTP interface](#http-interface), editor integration is easy
 
 ## Planned (in no particular order)
 
 - Persistent tabs across application restarts
 
 - Docsets management
-
-- DBus interface
 
 
 ## Current Status
@@ -243,6 +242,71 @@ The file is in YAML format, configurable keys and documentations can be found at
 - `config.yaml` in the root of the source repository, if you installed from source
 
 The screenshot uses the font [Input Mono](http://input.fontbureau.com/), it is free for personal use, you can install and config doc browser to use it.
+
+## HTTP Interface
+
+You can interact with this application using HTTP request.
+
+All URL should be prefixed with `http://localhost:<port>`, where `<port>` is 7701 if you didn't change it in your configuration.
+
+The status code of a success response is always `200 OK`, others should be treated as failure.
+
+If you use Insomnia, you can import `insomnia.json`, found at the root of this repository.
+
+#### Summon
+
+Bring this application's GUI to front, put `<query string>` in the search box and open the first match.
+
+```
+Request:
+
+    GET /summon?q=<query string>
+
+Response body:
+
+    Empty
+
+Example:
+
+    curl --silent --request GET --url 'http://localhost:7701/summon?q=os.path'
+
+```
+
+
+#### Search
+
+Search `<query string>` and return the result as a JSON array. Documentation of the element of the array can be found at [doc/Match.html#t:T](doc/Match.html#t:T)
+
+```
+Request:
+
+    GET /search?q=<query string>
+
+Response body:
+
+    JSON array
+
+Example:
+
+    curl --silent --request GET --url 'http://localhost:7701/search?q=os.path' | python -m json.tool | head -n 15
+
+    [
+        {
+            "vendor": "DevDocs",
+            "typeConstraint": null,
+            "url": "http://localhost:7701/DevDocs/Python==3.6.4/library/os.path",
+            "collection": "Python",
+            "name": "os.path",
+            "version": "3.6.4",
+            "module": null,
+            "package": null
+        },
+        {
+            "vendor": "DevDocs",
+            "typeConstraint": null,
+            "url": "http://localhost:7701/DevDocs/Python==3.6.4/library/os#os.pathsep",
+```
+
 
 ## FAQ and Troubleshooting
 

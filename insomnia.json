@@ -1,0 +1,81 @@
+{
+	"_type": "export",
+	"__export_format": 3,
+	"__export_date": "2018-04-08T15:25:49.646Z",
+	"__export_source": "insomnia.desktop.app:v5.15.0",
+	"resources": [
+		{
+			"_id": "wrk_8f1db2ce354345e6a94b903012fa7abe",
+			"created": 1523190836815,
+			"description": "",
+			"modified": 1523190836815,
+			"name": "doc-browser",
+			"parentId": null,
+			"_type": "workspace"
+		},
+		{
+			"_id": "env_5f7c6d43799c4fadb80048e8283742a4",
+			"color": null,
+			"created": 1523190836887,
+			"data": {},
+			"isPrivate": false,
+			"modified": 1523190836887,
+			"name": "New Environment",
+			"parentId": "wrk_8f1db2ce354345e6a94b903012fa7abe",
+			"_type": "environment"
+		},
+		{
+			"_id": "jar_1864f3de30b2430ba2bda6550c692b85",
+			"cookies": [],
+			"created": 1523190836890,
+			"modified": 1523190836890,
+			"name": "Default Jar",
+			"parentId": "wrk_8f1db2ce354345e6a94b903012fa7abe",
+			"_type": "cookie_jar"
+		},
+		{
+			"_id": "req_94e54421f34d4910b611a0c00050b9d7",
+			"authentication": {},
+			"body": {},
+			"created": 1523190858869,
+			"description": "",
+			"headers": [],
+			"isPrivate": false,
+			"metaSortKey": -1523190858869,
+			"method": "GET",
+			"modified": 1523201129429,
+			"name": "search",
+			"parameters": [],
+			"parentId": "wrk_8f1db2ce354345e6a94b903012fa7abe",
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingRebuildPath": true,
+			"settingSendCookies": true,
+			"settingStoreCookies": true,
+			"url": "http://localhost:7701/search?q=os.path",
+			"_type": "request"
+		},
+		{
+			"_id": "req_a31b10ee62e94ee383b21001a3d30c5a",
+			"authentication": {},
+			"body": {},
+			"created": 1523191836190,
+			"description": "",
+			"headers": [],
+			"isPrivate": false,
+			"metaSortKey": -1523191836190,
+			"method": "GET",
+			"modified": 1523201117874,
+			"name": "summon",
+			"parameters": [],
+			"parentId": "wrk_8f1db2ce354345e6a94b903012fa7abe",
+			"settingDisableRenderRequestBody": false,
+			"settingEncodeUrl": true,
+			"settingRebuildPath": true,
+			"settingSendCookies": true,
+			"settingStoreCookies": true,
+			"url": "http://localhost:7701/summon?q=os.path",
+			"_type": "request"
+		}
+	]
+}
