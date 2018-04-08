@@ -35,6 +35,7 @@ import qualified Match
 import qualified Hoo
 import qualified Doc
 import qualified Config
+import qualified Slot
 import Utils
 
 data Query
@@ -193,17 +194,29 @@ prefixHost port path =
   let host = "http://localhost:" ++ show port
   in Text.pack $ host </> path
 
-startThread :: Config.T -> FilePath -> [Entry.T] -> Maybe FilePath -> TMVar String -> ([Match.T] -> IO ())-> IO ThreadId
-startThread config configRoot entries hooMay querySlot handleMatches =
+startThread
+  :: Config.T
+  -> FilePath
+  -> [Entry.T]
+  -> Maybe FilePath
+  -> Slot.T
+  -> ([Match.T] -> IO ())
+  -> IO ThreadId
+startThread config configRoot entries hooMay slot handleMatches =
   forkIO loop
   where
     loop = forever $ do
       -- TODO @incomplete: make this limit configurable
       let limit = 27
       let prefixHost' = prefixHost $ Config.port config
-      queryStr <- atomically $ takeTMVar querySlot
+      content <- atomically $ takeTMVar (Slot.query slot)
+      let (queryStr, matchHandler) = case content of
+            Slot.GuiQuery x ->
+              (x, handleMatches)
+            Slot.HttpQuery x httpResultSlot ->
+              (x, \ms -> atomically $ updateTMVar httpResultSlot ms)
 
-      handleMatches =<<
+      matchHandler =<<
         case Search.makeQuery queryStr of
             Nothing ->
               return []

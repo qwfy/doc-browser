@@ -7,6 +7,7 @@ import Network.Wai
 import Network.HTTP.Types
 import Network.Wai.Handler.Warp (run)
 
+import Data.Aeson
 import Data.Monoid
 import qualified Data.Text as Text
 import qualified Data.Binary.Builder as Builder
@@ -35,9 +36,10 @@ import qualified DevDocs
 import qualified DevDocsMeta
 import qualified Doc
 import qualified Config
+import qualified Slot
 
-start :: Config.T -> FilePath -> FilePath -> TMVar String -> IO ()
-start config configRoot cacheRoot summonSlot = do
+start :: Config.T -> FilePath -> FilePath -> Slot.T -> IO ()
+start config configRoot cacheRoot slot = do
   -- TODO @incomplete: make the lock global
   userId <- getRealUserID
   let lockFilePath = joinPath ["/run/user", show userId, "doc-browser/server.lock"]
@@ -45,15 +47,15 @@ start config configRoot cacheRoot summonSlot = do
   report ["wait for server slot"]
   withFileLock lockFilePath Exclusive $ \_lock -> do
     report ["start new server"]
-    run (Config.port config) (app configRoot cacheRoot summonSlot)
+    run (Config.port config) (app configRoot cacheRoot slot)
 
 app :: FilePath
     -> FilePath
-    -> TMVar String
+    -> Slot.T
     -> Request
     -> (Response -> IO ResponseReceived)
     -> IO ResponseReceived
-app configRoot cacheRoot summonSlot request respond = do
+app configRoot cacheRoot slot request respond = do
   let paths = pathInfo request |> map Text.unpack
 
   let badRequest =
@@ -78,13 +80,23 @@ app configRoot cacheRoot summonSlot request respond = do
         in Builder.fromLazyByteString <$> LBS.readFile path
 
       ("summon" : []) ->
-        case queryString request of
-          [("q", Just queryStr)] -> do
-            atomically $ putTMVar summonSlot (C.unpack queryStr)
+        case getQuery request of
+          Nothing ->
+            badRequest
+          Just queryStr -> do
+            atomically $ putTMVar (Slot.summon slot) queryStr
             -- TODO @incomplete: return empty, not empty string
             return $ Builder.fromByteString ""
-          _ ->
+
+      ("search" : []) ->
+        case getQuery request of
+          Nothing ->
             badRequest
+          Just queryStr -> do
+            resultTMVar <- atomically $ newEmptyTMVar
+            atomically $ updateTMVar (Slot.query slot) (Slot.HttpQuery queryStr resultTMVar)
+            matches <- atomically $ takeTMVar resultTMVar
+            return $ Builder.fromLazyByteString $ encode matches
 
       _ ->
         badRequest
@@ -103,6 +115,13 @@ app configRoot cacheRoot summonSlot request respond = do
   let headers = [("Content-Type", contentType)]
   respond (responseBuilder status200 headers builder)
 
+getQuery :: Request -> Maybe String
+getQuery request =
+  case queryString request of
+    [("q", Just queryStr)] ->
+      Just $ C.unpack queryStr
+    _ ->
+      Nothing
 
 fetchHoogle :: FilePath -> FilePath -> IO Builder.Builder
 fetchHoogle configRoot path = do

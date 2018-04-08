@@ -30,12 +30,13 @@ import qualified Hoo
 import qualified Upgrade
 import qualified Config
 import qualified Style
+import qualified Slot
 import Utils
 
 import Paths_doc_browser
 
-startGUI :: Config.T -> FilePath -> TMVar String -> IO ()
-startGUI config configRoot summonSlot = withTempDir $ \qmlModuleDir -> do
+startGUI :: Config.T -> FilePath -> Slot.T -> IO ()
+startGUI config configRoot slot = withTempDir $ \qmlModuleDir -> do
 
   Style.createQml qmlModuleDir config
   oldQmlPath <- lookupEnv "QML2_IMPORT_PATH"
@@ -53,8 +54,6 @@ startGUI config configRoot summonSlot = withTempDir $ \qmlModuleDir -> do
 
   summonKey <- newSignalKey :: IO (SignalKey (IO ()))
   summonText <- atomically $ newTVar ("" :: Text)
-
-  querySlot <- atomically newEmptyTMVar
 
   classMatch <- Match.defClass
 
@@ -78,7 +77,7 @@ startGUI config configRoot summonSlot = withTempDir $ \qmlModuleDir -> do
 
     , defMethod' "search"
         (\_obj txt ->
-          atomically $ updateTMVar querySlot (Text.unpack txt))
+          atomically $ updateTMVar (Slot.query slot) (Slot.GuiQuery $ Text.unpack txt))
 
     , defMethod' "setClipboard"
         (\_obj txt ->
@@ -114,13 +113,13 @@ startGUI config configRoot summonSlot = withTempDir $ \qmlModuleDir -> do
     configRoot
     allEntries
     ((configRoot </>) <$> hooMay)
-    querySlot
+    slot
     sendMatches
 
   -- TODO @incomplete: don't block
   _ <- forkIO . forever $ do
     atomically $ do
-      query <- takeTMVar summonSlot
+      query <- takeTMVar (Slot.summon slot)
       writeTVar summonText (Text.pack query)
     fireSignal summonKey objectController
 
@@ -171,9 +170,9 @@ main = do
     Upgrade.Continue ->
       case opt of
         Opt.StartGUI -> do
-          summonSlot <- atomically $ newEmptyTMVar
-          _ <- forkIO $ Server.start config configRoot cacheRoot summonSlot
-          startGUI config configRoot summonSlot
+          slot <- atomically $ Slot.empty
+          _ <- forkIO $ Server.start config configRoot cacheRoot slot
+          startGUI config configRoot slot
 
         Opt.InstallDevDocs collections ->
           DevDocsMeta.downloadMany configRoot collections

@@ -7,8 +7,10 @@ module Match
   , defClass
   ) where
 
+import Data.Aeson
 import Data.Typeable (Typeable)
 import Data.Text (Text)
+import Data.List.Extra
 import GHC.Generics (Generic)
 import Control.DeepSeq (NFData)
 
@@ -29,6 +31,9 @@ data T = T
   , typeConstraint :: Maybe Text
   } deriving (Eq, Show, Typeable, Generic, NFData)
 
+instance ToJSON T where
+  toJSON = genericToJSON $ defaultOptions
+    {fieldLabelModifier = dropWhileEnd (== '_')}
 
 defClass :: IO (Class T)
 defClass =
