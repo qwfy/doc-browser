@@ -16,11 +16,17 @@ Window {
     visible: true
     visibility: Window.Maximized
 
+    // wait for the Haskell side to return the search result.
+    // purpose: open the first match on HTTP summon
+    property bool waitingForSummonResult: false
+
     Connections {
         target: controller
         onSummon: {
             if (controller.summonText !== "") {
                 searchInput.text = controller.summonText;
+                rootWindow.waitingForSummonResult = true;
+
                 // TODO @incomplete: handle this properly
                 rootWindow.visible = true;
                 rootWindow.visibility = Window.Maximized
@@ -227,6 +233,13 @@ Window {
                         id: matchContainer
 
                         model: matches
+
+                        onModelChanged: {
+                            if (waitingForSummonResult) {
+                                waitingForSummonResult = false;
+                                Logic.matchOpen(0);
+                            }
+                        }
 
                         property int selected: -1
 
