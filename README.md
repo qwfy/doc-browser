@@ -213,7 +213,7 @@ Key                                             | Effect                        
 ----------------------------------------------- | ------------------------------------- | ------
 <kbd>/</kbd>                                    |focus the search box
 <kbd>Ctrl</kbd>+<kbd>I</kbd>                    |focus and clear the search box, but keep the command, if any | e.g. before: "/pyfoo"; after: "/py"
-<kbd>Enter</kbd>                                |accept query and select the first match|when in the search box
+<kbd>Enter</kbd> or <kbd>Down</kbd>             |accept query and select the first match|when in the search box
 <kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>C</kbd>             |open match 1-9
 <kbd>G</kbd>+<kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>C</kbd>|open match 10-18
 <kbd>V</kbd>+<kbd>A</kbd><kbd>S</kbd><kbd>D</kbd><kbd>F</kbd><kbd>W</kbd><kbd>E</kbd><kbd>R</kbd><kbd>T</kbd><kbd>C</kbd>|open match 19-27

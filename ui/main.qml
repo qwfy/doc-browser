@@ -206,7 +206,7 @@ Window {
                 onAccepted: Logic.matchSelect(0)
 
                 Keys.onEscapePressed: focus = false
-                // TODO @incomplete: press Down key to accept
+                Keys.onDownPressed: accepted()
             }
 
 
