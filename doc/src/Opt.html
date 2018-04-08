@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd"><html xmlns="http://www.w3.org/1999/xhtml"><head><link rel="stylesheet" type="text/css" href="style.css" /><script type="text/javascript" src="highlight.js"></script></head><body><pre><span class="hs-pragma">{-# LANGUAGE OverloadedStrings #-}</span><span>
+</span><a name="line-2"></a><span>
+</span><a name="line-3"></a><span class="hs-keyword">module</span><span> </span><span class="hs-identifier">Opt</span><span>
+</span><a name="line-4"></a><span>  </span><span class="hs-special">(</span><span> </span><a href="Opt.html#T"><span class="hs-identifier hs-type">T</span></a><span class="hs-special">(</span><span class="hs-glyph">..</span><span class="hs-special">)</span><span>
+</span><a name="line-5"></a><span>  </span><span class="hs-special">,</span><span> </span><a href="Opt.html#get"><span class="hs-identifier hs-var">get</span></a><span>
+</span><a name="line-6"></a><span>  </span><span class="hs-special">)</span><span> </span><span class="hs-keyword">where</span><span>
+</span><a name="line-7"></a><span>
+</span><a name="line-8"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Options</span><span class="hs-operator">.</span><span class="hs-identifier">Applicative</span><span>
+</span><a name="line-9"></a><span class="hs-keyword">import</span><span> </span><span class="hs-identifier">Data</span><span class="hs-operator">.</span><span class="hs-identifier">Monoid</span><span>
+</span><a name="line-10"></a><span>
+</span><a name="line-11"></a><span class="hs-keyword">data</span><span> </span><a name="T"><a href="Opt.html#T"><span class="hs-identifier">T</span></a></a><span>
+</span><a name="line-12"></a><span>  </span><span class="hs-glyph">=</span><span> </span><a name="StartGUI"><a href="Opt.html#StartGUI"><span class="hs-identifier">StartGUI</span></a></a><span>
+</span><a name="line-13"></a><span>  </span><span class="hs-glyph">|</span><span> </span><a name="InstallDevDocs"><a href="Opt.html#InstallDevDocs"><span class="hs-identifier">InstallDevDocs</span></a></a><span> </span><span class="hs-special">[</span><span class="hs-identifier hs-type">String</span><span class="hs-special">]</span><span>
+</span><a name="line-14"></a><span>  </span><span class="hs-glyph">|</span><span> </span><a name="InstallHoogle"><a href="Opt.html#InstallHoogle"><span class="hs-identifier">InstallHoogle</span></a></a><span> </span><span class="hs-identifier hs-type">String</span><span> </span><span class="hs-identifier hs-type">String</span><span>
+</span><a name="line-15"></a><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Show</span><span class="hs-special">)</span><span>
+</span><a name="line-16"></a><span>
+</span><a name="line-17"></a><span class="hs-keyword">data</span><span> </span><a name="IsStartedOK"><a href="Opt.html#IsStartedOK"><span class="hs-identifier">IsStartedOK</span></a></a><span>
+</span><a name="line-18"></a><span>  </span><span class="hs-glyph">=</span><span> </span><a name="StartedOK"><a href="Opt.html#StartedOK"><span class="hs-identifier">StartedOK</span></a></a><span>
+</span><a name="line-19"></a><span>  </span><span class="hs-glyph">|</span><span> </span><a name="StartedNotOK"><a href="Opt.html#StartedNotOK"><span class="hs-identifier">StartedNotOK</span></a></a><span>
+</span><a name="line-20"></a><span>  </span><span class="hs-keyword">deriving</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-type">Show</span><span class="hs-special">)</span><span>
+</span><a name="line-21"></a><span>
+</span><a name="line-22"></a><span>
+</span><a name="line-23"></a><span class="hs-identifier">optParser</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">ParserInfo</span><span> </span><a href="Opt.html#T"><span class="hs-identifier hs-type">T</span></a><span>
+</span><a name="line-24"></a><a name="optParser"><a href="Opt.html#optParser"><span class="hs-identifier">optParser</span></a></a><span> </span><span class="hs-glyph">=</span><span>
+</span><a name="line-25"></a><span>  </span><span class="hs-identifier hs-var">info</span><span>
+</span><a name="line-26"></a><span>    </span><span class="hs-special">(</span><a href="#local-6989586621679125960"><span class="hs-identifier hs-var">optParser'</span></a><span> </span><span class="hs-operator hs-var">&lt;**&gt;</span><span> </span><span class="hs-identifier hs-var">helper</span><span class="hs-special">)</span><span>
+</span><a name="line-27"></a><span>    </span><span class="hs-special">(</span><span class="hs-identifier hs-var">progDesc</span><span> </span><span class="hs-string">&quot;A documentation browser for developers&quot;</span><span class="hs-special">)</span><span>
+</span><a name="line-28"></a><span>  </span><span class="hs-keyword">where</span><span>
+</span><a name="line-29"></a><span>    </span><span class="hs-identifier">optParser'</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Parser</span><span> </span><a href="Opt.html#T"><span class="hs-identifier hs-type">T</span></a><span>
+</span><a name="line-30"></a><span>    </span><a name="local-6989586621679125960"><a href="#local-6989586621679125960"><span class="hs-identifier">optParser'</span></a></a><span> </span><span class="hs-glyph">=</span><span>
+</span><a name="line-31"></a><span>      </span><a href="Opt.html#startGUIParser"><span class="hs-identifier hs-var">startGUIParser</span></a><span>
+</span><a name="line-32"></a><span>        </span><span class="hs-operator hs-var">&lt;|&gt;</span><span> </span><a href="Opt.html#installDevDocsParser"><span class="hs-identifier hs-var">installDevDocsParser</span></a><span>
+</span><a name="line-33"></a><span>        </span><span class="hs-operator hs-var">&lt;|&gt;</span><span> </span><a href="Opt.html#installHoogleParser"><span class="hs-identifier hs-var">installHoogleParser</span></a><span>
+</span><a name="line-34"></a><span>        </span><span class="hs-operator hs-var">&lt;|&gt;</span><span> </span><span class="hs-identifier hs-var">pure</span><span> </span><a href="Opt.html#StartGUI"><span class="hs-identifier hs-var">StartGUI</span></a><span>
+</span><a name="line-35"></a><span>
+</span><a name="line-36"></a><span class="hs-identifier">startGUIParser</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Parser</span><span> </span><a href="Opt.html#T"><span class="hs-identifier hs-type">T</span></a><span>
+</span><a name="line-37"></a><a name="startGUIParser"><a href="Opt.html#startGUIParser"><span class="hs-identifier">startGUIParser</span></a></a><span> </span><span class="hs-glyph">=</span><span>
+</span><a name="line-38"></a><span>  </span><span class="hs-identifier hs-var">flag'</span><span> </span><a href="Opt.html#StartGUI"><span class="hs-identifier hs-var">StartGUI</span></a><span>
+</span><a name="line-39"></a><span>    </span><span class="hs-special">(</span><span>  </span><span class="hs-identifier hs-var">long</span><span> </span><span class="hs-string">&quot;gui&quot;</span><span>
+</span><a name="line-40"></a><span>    </span><span class="hs-operator hs-var">&lt;&gt;</span><span> </span><span class="hs-identifier hs-var">help</span><span> </span><span class="hs-string">&quot;Start the GUI. This is the default behaviour&quot;</span><span class="hs-special">)</span><span>
+</span><a name="line-41"></a><span>
+</span><a name="line-42"></a><span class="hs-identifier">installDevDocsParser</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Parser</span><span> </span><a href="Opt.html#T"><span class="hs-identifier hs-type">T</span></a><span>
+</span><a name="line-43"></a><a name="installDevDocsParser"><a href="Opt.html#installDevDocsParser"><span class="hs-identifier">installDevDocsParser</span></a></a><span> </span><span class="hs-glyph">=</span><span>
+</span><a name="line-44"></a><span>  </span><span class="hs-identifier hs-var">flag'</span><span> </span><a href="Opt.html#InstallDevDocs"><span class="hs-identifier hs-var">InstallDevDocs</span></a><span>
+</span><a name="line-45"></a><span>    </span><span class="hs-special">(</span><span>  </span><span class="hs-identifier hs-var">long</span><span> </span><span class="hs-string">&quot;install-devdocs&quot;</span><span>
+</span><a name="line-46"></a><span>    </span><span class="hs-operator hs-var">&lt;&gt;</span><span> </span><span class="hs-identifier hs-var">help</span><span> </span><span class="hs-string">&quot;Install DevDocs' docset&quot;</span><span class="hs-special">)</span><span>
+</span><a name="line-47"></a><span>  </span><span class="hs-operator hs-var">&lt;*&gt;</span><span> </span><span class="hs-identifier hs-var">some</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">strArgument</span><span>
+</span><a name="line-48"></a><span>    </span><span class="hs-special">(</span><span>  </span><span class="hs-identifier hs-var">metavar</span><span> </span><span class="hs-string">&quot;DOC&quot;</span><span>
+</span><a name="line-49"></a><span>    </span><span class="hs-operator hs-var">&lt;&gt;</span><span> </span><span class="hs-identifier hs-var">help</span><span> </span><span class="hs-string">&quot;Docset to install, like \&quot;haskell\&quot;, \&quot;python\&quot;&quot;</span><span>
+</span><a name="line-50"></a><span>    </span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><a name="line-51"></a><span>
+</span><a name="line-52"></a><span class="hs-identifier">installHoogleParser</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">Parser</span><span> </span><a href="Opt.html#T"><span class="hs-identifier hs-type">T</span></a><span>
+</span><a name="line-53"></a><a name="installHoogleParser"><a href="Opt.html#installHoogleParser"><span class="hs-identifier">installHoogleParser</span></a></a><span> </span><span class="hs-glyph">=</span><span>
+</span><a name="line-54"></a><span>  </span><span class="hs-identifier hs-var">flag'</span><span> </span><a href="Opt.html#InstallHoogle"><span class="hs-identifier hs-var">InstallHoogle</span></a><span>
+</span><a name="line-55"></a><span>    </span><span class="hs-special">(</span><span>  </span><span class="hs-identifier hs-var">long</span><span> </span><span class="hs-string">&quot;install-hoogle&quot;</span><span>
+</span><a name="line-56"></a><span>    </span><span class="hs-operator hs-var">&lt;&gt;</span><span> </span><span class="hs-identifier hs-var">help</span><span> </span><span class="hs-string">&quot;Generate a Hoogle database from an archive, so it can be queried later&quot;</span><span class="hs-special">)</span><span>
+</span><a name="line-57"></a><span>  </span><span class="hs-operator hs-var">&lt;*&gt;</span><span> </span><span class="hs-identifier hs-var">strArgument</span><span>
+</span><a name="line-58"></a><span>    </span><span class="hs-special">(</span><span>  </span><span class="hs-identifier hs-var">metavar</span><span> </span><span class="hs-string">&quot;URL&quot;</span><span>
+</span><a name="line-59"></a><span>    </span><span class="hs-operator hs-var">&lt;&gt;</span><span> </span><span class="hs-identifier hs-var">help</span><span> </span><span class="hs-special">(</span><span class="hs-identifier hs-var">unwords</span><span>
+</span><a name="line-60"></a><span>        </span><span class="hs-special">[</span><span> </span><span class="hs-string">&quot;The archive to read.&quot;</span><span>
+</span><a name="line-61"></a><span>        </span><span class="hs-special">,</span><span> </span><span class="hs-string">&quot;It can either be a local file or a HTTP link,&quot;</span><span>
+</span><a name="line-62"></a><span>        </span><span class="hs-special">,</span><span> </span><span class="hs-string">&quot;but should be in the format of \&quot;.tar.xz\&quot;.&quot;</span><span>
+</span><a name="line-63"></a><span>        </span><span class="hs-special">,</span><span> </span><span class="hs-string">&quot;It expects the unpacked archive can be consumed by `hoogle generate --local=&lt;unpack_dir&gt;`&quot;</span><span>
+</span><a name="line-64"></a><span>        </span><span class="hs-special">,</span><span> </span><span class="hs-string">&quot;Example: https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz&quot;</span><span>
+</span><a name="line-65"></a><span>        </span><span class="hs-special">]</span><span class="hs-special">)</span><span class="hs-special">)</span><span>
+</span><a name="line-66"></a><span>  </span><span class="hs-operator hs-var">&lt;*&gt;</span><span> </span><span class="hs-identifier hs-var">strArgument</span><span>
+</span><a name="line-67"></a><span>    </span><span class="hs-special">(</span><span>  </span><span class="hs-identifier hs-var">metavar</span><span> </span><span class="hs-string">&quot;NAME&quot;</span><span>
+</span><a name="line-68"></a><span>    </span><span class="hs-operator hs-var">&lt;&gt;</span><span> </span><span class="hs-identifier hs-var">help</span><span> </span><span class="hs-string">&quot;Name of the database and documentation directory. Something like \&quot;lts-10.8\&quot; would be a good choice&quot;</span><span class="hs-special">)</span><span>
+</span><a name="line-69"></a><span>
+</span><a name="line-70"></a><span class="hs-identifier">get</span><span> </span><span class="hs-glyph">::</span><span> </span><span class="hs-identifier hs-type">IO</span><span> </span><a href="Opt.html#T"><span class="hs-identifier hs-type">T</span></a><span>
+</span><a name="line-71"></a><a name="get"><a href="Opt.html#get"><span class="hs-identifier">get</span></a></a><span> </span><span class="hs-glyph">=</span><span> </span><span class="hs-identifier hs-var">execParser</span><span> </span><a href="Opt.html#optParser"><span class="hs-identifier hs-var">optParser</span></a><span>
+</span><a name="line-72"></a></pre></body></html>
