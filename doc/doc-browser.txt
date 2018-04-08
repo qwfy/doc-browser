@@ -7,7 +7,7 @@
 --   Please see the README on Github at
 --   <a>https://github.com/qwfy/doc-browser#readme</a>
 @package doc-browser
-@version 0.2.0
+@version 0.3.0
 
 module Doc
 
