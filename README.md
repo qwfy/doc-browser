@@ -255,6 +255,8 @@ Problem: The font in the documentation is too big or too small.
 
 Solution: Tweak the configuration `WebEngineZoomFactor`, see the [Configuration](#configuration) section for instruction.
 
+Problem: HTTP summon interface doesn't bring the window to front
+Solution: Try the section _Additional settings for Linux_ described in [here](https://kb.froglogic.com/display/KB/Problem+-+Bringing+window+to+foreground+%28Qt%29).
 
 Q: Why does this application display at most 27 matches?
 
