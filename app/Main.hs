@@ -178,4 +178,5 @@ main = do
           DevDocsMeta.downloadMany configRoot collections
 
         Opt.InstallHoogle url collection ->
+          -- TODO @incomplete: change collection to version
           Hoo.install configRoot cacheRoot url collection

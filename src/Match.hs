@@ -16,19 +16,21 @@ import Control.DeepSeq (NFData)
 
 import Graphics.QML
 
--- this is what will be displayed in the search results
 -- the choice of Text is due to that HsQML cannot marshal String
+-- |The search result
+--
+-- Note: when converted to JSON, the "_" suffix in the field name will be dropped.
 data T = T
-  { name       :: Text
-  , url        :: Text
-  , collection :: Text
-  , version    :: Text
-  , vendor     :: Text
+  { name       :: Text -- ^The entry's main content
+  , url        :: Text -- ^The full documentation of this entry can be found at this URL
+  , collection :: Text -- ^See 'Doc.Collection'
+  , version    :: Text -- ^See 'Doc.Version'
+  , vendor     :: Text -- ^See 'Doc.Vendor'
 
   -- hoogle stuff
-  , package_       :: Maybe Text
-  , module_        :: Maybe Text
-  , typeConstraint :: Maybe Text
+  , package_       :: Maybe Text -- ^Hoogle only. The entry's package, without package version
+  , module_        :: Maybe Text -- ^Hoogle only. The entry's module
+  , typeConstraint :: Maybe Text -- ^Hoogle only. The entry's type constraint
   } deriving (Eq, Show, Typeable, Generic, NFData)
 
 instance ToJSON T where
