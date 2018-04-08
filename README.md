@@ -249,7 +249,7 @@ You can interact with this application using HTTP request.
 
 All URL should be prefixed with `http://localhost:<port>`, where `<port>` is 7701 if you didn't change it in your configuration.
 
-The status code of a success response is always `200 OK`, others should be treated as failure.
+The status code of a successful response is always `200 OK`, others should be treated as failure.
 
 If you use Insomnia, you can import `insomnia.json`, found at the root of this repository.
 
@@ -269,13 +269,12 @@ Response body:
 Example:
 
     curl --silent --request GET --url 'http://localhost:7701/summon?q=os.path'
-
 ```
 
 
 #### Search
 
-Search `<query string>` and return the result as a JSON array. Documentation of the element of the array can be found at [doc/Match.html#t:T](doc/Match.html#t:T)
+Search `<query string>` and return the result as a JSON array. Documentation of the element of the array can be found at `doc/Match.html#t:T`
 
 ```
 Request:
