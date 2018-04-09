@@ -1,4 +1,11 @@
+{-# LANGUAGE DataKinds #-}
+{-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE FlexibleInstances #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 
 module Server (start) where
@@ -30,6 +37,9 @@ import System.Posix.User
 import Control.Exception
 import Control.Monad.STM
 import Control.Concurrent.STM.TMVar
+import Control.Monad.IO.Class
+
+import Servant
 
 import Utils
 import qualified DevDocs
@@ -37,6 +47,7 @@ import qualified DevDocsMeta
 import qualified Doc
 import qualified Config
 import qualified Slot
+import qualified Match
 
 start :: Config.T -> FilePath -> FilePath -> Slot.T -> IO ()
 start config configRoot cacheRoot slot = do
@@ -49,13 +60,39 @@ start config configRoot cacheRoot slot = do
     report ["start new server"]
     run (Config.port config) (app configRoot cacheRoot slot)
 
-app :: FilePath
-    -> FilePath
-    -> Slot.T
-    -> Request
-    -> (Response -> IO ResponseReceived)
-    -> IO ResponseReceived
-app configRoot cacheRoot slot request respond = do
+type API
+  =    "summon" :> QueryParam' '[Required] "q" String :> Get '[JSON] ()
+  :<|> "search" :> QueryParam' '[Required] "q" String :> Get '[JSON] [Match.T]
+  :<|> Raw
+
+api :: Proxy API
+api = Proxy
+
+app :: FilePath -> FilePath -> Slot.T -> Application
+app configRoot cacheRoot slot = serve api (server configRoot cacheRoot slot)
+
+server :: FilePath -> FilePath -> Slot.T -> Server API
+server configRoot cacheRoot slot =
+  summon
+  :<|> search
+  :<|> Tagged (serverRaw configRoot cacheRoot slot)
+  where
+    summon :: String -> Servant.Handler ()
+    summon queryStr = liftIO $ do
+      atomically $ putTMVar (Slot.summon slot) queryStr
+
+    search :: String -> Servant.Handler [Match.T]
+    search queryStr = liftIO $ do
+      resultTMVar <- atomically $ newEmptyTMVar
+      atomically $ updateTMVar (Slot.query slot) (Slot.HttpQuery queryStr resultTMVar)
+      atomically $ takeTMVar resultTMVar
+
+serverRaw::
+     FilePath
+  -> FilePath
+  -> Slot.T
+  -> Application
+serverRaw configRoot cacheRoot slot request respond = do
   let paths = pathInfo request |> map Text.unpack
 
   let badRequest =
@@ -79,25 +116,6 @@ app configRoot cacheRoot slot request respond = do
         let path = joinPath $ "/":rest
         in Builder.fromLazyByteString <$> LBS.readFile path
 
-      ("summon" : []) ->
-        case getQuery request of
-          Nothing ->
-            badRequest
-          Just queryStr -> do
-            atomically $ putTMVar (Slot.summon slot) queryStr
-            -- TODO @incomplete: return empty, not empty string
-            return $ Builder.fromByteString ""
-
-      ("search" : []) ->
-        case getQuery request of
-          Nothing ->
-            badRequest
-          Just queryStr -> do
-            resultTMVar <- atomically $ newEmptyTMVar
-            atomically $ updateTMVar (Slot.query slot) (Slot.HttpQuery queryStr resultTMVar)
-            matches <- atomically $ takeTMVar resultTMVar
-            return $ Builder.fromLazyByteString $ encode matches
-
       _ ->
         badRequest
 
@@ -115,13 +133,6 @@ app configRoot cacheRoot slot request respond = do
   let headers = [("Content-Type", contentType)]
   respond (responseBuilder status200 headers builder)
 
-getQuery :: Request -> Maybe String
-getQuery request =
-  case queryString request of
-    [("q", Just queryStr)] ->
-      Just $ C.unpack queryStr
-    _ ->
-      Nothing
 
 fetchHoogle :: FilePath -> FilePath -> IO Builder.Builder
 fetchHoogle configRoot path = do

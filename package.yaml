@@ -59,6 +59,7 @@ dependencies:
 - stache
 - filelock
 - unix
+- servant-server
 
 library:
   source-dirs: src
