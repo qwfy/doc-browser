@@ -10,7 +10,7 @@ category:       Application
 description:    Please see the README on Github at <https://github.com/qwfy/doc-browser#readme>
 
 extra-source-files:
-- README.md
+- README.asciidoc
 
 data-files:
 - ui/*.qml

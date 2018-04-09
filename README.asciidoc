@@ -1,0 +1,400 @@
+:toc: macro
+
+Doc Browser is an API documentation browser with support for DevDocs and Hoogle, written in Haskell and QML.
+
+The GUI looks like this:
+
+image:asset/interface-annotated.png[Main Interface]
+
+link:asset/interface-hoogle.png[This one] is the interface for Hoogle.
+
+toc::[]
+
+== Features
+
+* Native desktop application
+* Works offline
+* Near real-time fuzzy search
+* Easy-to-type shortcuts
+* Hoogle integration
+* Customizable (in progress)
+* link:#http-interface[HTTP interfaces], editor integration is just a HTTP request away
+
+== Current Status
+
+It's in early stage, the main interface is in shape and usable, but
+other aspects, like installing docsets and configuration, lack
+polishing. That being said, I use this application every day.
+
+== Installation
+
+=== Arch Linux
+
+There is a https://aur.archlinux.org/packages/doc-browser-git/[PKGBUILD]
+available on AUR.
+
+=== Other Linux Distros
+
+Follow these steps to install from source:
+
+1.  This application uses http://qt-project.org/[Qt 5], make sure you
+have it installed. You also need https://wiki.qt.io/QtWebEngine[Qt
+WebEngine], install it if it doesn't come with your Qt installation, on
+Arch Linux, this is provided by the
+https://www.archlinux.org/packages/extra/x86_64/qt5-webengine/[extra/qt5-webengine]
+package.
+2.  Install the Haskell tool
+https://docs.haskellstack.org/en/stable/install_and_upgrade/[stack].
+3.  The build process depends on an executable called `c2hs`, you can
+install it using your package manager, or use the instruction below.
+4.  Install the executables `alex` and `happy` in a similar manner with
+`c2hs`.
+
+Finally, run these commands in the shell to build and install the
+application:
+
+[source,bash]
+----
+git clone 'https://github.com/qwfy/doc-browser.git'
+cd doc-browser
+
+# optionally, install `c2hs` if not already installed:
+# stack install c2hs
+
+stack install
+
+echo "binary installed to $(stack path --local-bin)"
+----
+
+Note, due to a restriction of stack, you shouldn't delete the
+`.stack-work` directory inside the source code directory you just cloned
+after the build, for the installed binary still need to access files in
+it. If you really don't want to depends on this `.stack-wrok` directory,
+you can copy the `ui` directory of this repository to somewhere, say
+`/foo/ui`, and `config.yaml` to `/foo/config.yaml`, and then start this
+application with `doc_browser_datadir=/foo doc-browser` instead of the
+usual `doc-browser`.
+
+If you have trouble building this application, you can:
+
+* Is it a dependency problem?
+* Does http://www.gekkou.co.uk/software/hsqml/[this page] help?
+Especially the _Requirements_ and _Installation_ section.
+* Open an issue.
+
+Optionally, install the executable `xsel` or `xclip` for the Y shortcut
+(copy the selected match to clipboard) to work.
+
+Optionally, install the executable `xdg-open` (provided by package
+`xdg-utils` on Arch Linux) for the Ctrl+/ shortcut (send query to
+Google) to work.
+
+=== Install DevDocs' Docset
+
+To install DevDocs' docset, invoke:
+
+[source,bash]
+----
+doc-browser --install-devdocs DOC1 DOC2
+# e.g. doc-browser --install-devdocs python haskell
+----
+
+This will download docsets from devdocs.io, and unpack them to
+`XDG_CONFIG/doc-browser/DevDocs`.
+
+=== Enable Hoogle Support
+
+To support Hoogle, this application creates a Hoogle database from a
+documentation archive, which can be done by these steps:
+
+1.  Find out which documentation archive you want to use. The Hoogle
+support is tested on archives provided by
+https://www.stackage.org[Stackage], like
+https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz[this
+one], which can be found at: https://www.stackage.org/lts-10.8. You can
+use other archives as well, as long as the unpacked archive can be read
+by `hoogle generate --local=dir_to_unpacked_archive`, but this is
+untested.
+2.  Invoke the following installation command, this will unpack the
+archive to `XDG_CONFIG/doc-browser/Hoogle/NAME`, and creates a Hoogle
+database `XDG_CONFIG/doc-browser/Hoogle/NAME.hoo` for it, (doc-browser's
+Hoogle doesn't interfere with your system Hoogle in any way):
+
+[source,bash]
+----
+doc-browser --install-hoogle URL NAME
+# e.g. doc-browser --install-hoogle 'https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz' lts-10.8
+#
+# URL is where to read the archive.
+# It can also be a local file,
+# which I suggest you to use if you have a bad network connection,
+# since the download function included in this program is pretty savage at this stage.
+#
+# NAME shouldn't contain "/".
+#
+# See `doc-browser --help` for more
+#
+# Don't panic if you see a lot of lines that look like this
+# at the begining and the ending of the generation
+# (for the above lts-10.8, there are 43 of these):
+#
+# temporarily relocate x to x.__co.aixon.docbrowser-tempfile__, for x in:
+# /home/user/.config/doc-browser/Hoogle/lts-10.8/prologue.txt
+# ...
+# move x.__co.aixon.docbrowser-tempfile__ back to x, for x in:
+# /home/user/.config/doc-browser/Hoogle/lts-10.8/prologue.txt
+# ...
+#
+# These are necessary to work around a Hoogle issue.
+----
+
+1.  Prefix or suffix a search with "/hh" to query Hoogle, like this:
+`/hh[a]->Int->[a]`.
+
+=== Start the Application
+
+If you installed the application from AUR, the recommended way is to
+start it with the shipped .desktop file.
+
+You can also start it with:
+
+[source,bash]
+----
+doc_browser_datadir=$INSTALL_ROOT/usr/share/doc-browser doc-browser
+# e.g. doc_browser_datadir=/usr/share/doc-browser doc-browser
+----
+
+If you installed from source, start it with:
+
+[source,bash]
+----
+doc-browser
+----
+
+== Offline Support
+
+The documentation files themselves are downloaded to your disk when
+`doc-browser --install-devdocs` or `doc-browser --install-hoogle` is
+invoked, however, to display the documentation, some additional
+Cascading Style Sh*t or JavaScript files are needed, some of these are
+not packaged with the documentation files.
+
+To make DevDocs' docsets work fully offline:
+
+* Start the application after `doc-browser --install-devdocs`
+* Search for anything, and open any match
+* When the tab is opened and the documentation is correctly displayed,
+all necessary files are cached, DevDocs' docsets work offline now
+
+(Cache-when-installing will be implemented after session restore is
+implemented.)
+
+If a MathJax distribution is found at `/usr/share/mathjax`, then the
+Hoogle documentations will work offline. (If you installed from AUR, you
+already have it.)
+
+== GUI
+
+* When the application starts, you will see a blank screen, you can
+start typing to search.
+* Prefix or suffix a search string with "/py", (e.g. "/pyabspath",
+"abspath/py"), will limit the search to the Python docset provided by
+DevDocs, more commands are available, see below.
+* Number of tabs will peak at 10, open one more tab will close the
+left-most one.
+* Various keyboard shortcuts are available, see below.
+
+=== Commands
+
+[cols=",",options="header",]
+|==============================
+|Command |Effect
+|hs |Limit search to Haskell
+|py |Limit search to Python
+|tf |Limit search to TensorFlow
+|np |Limit search to NumPy
+|pd |Limit search to pandas
+|er |Limit search to Erlang
+|mp |Limit search to Matplotlib
+|hh |Perform search with Hoogle
+|==============================
+
+=== Shortcuts
+
+[cols=",",options="header",]
+|=======================================================================
+|Key |Effect |Comment
+|/ |focus the search box
+
+|Ctrl+I |focus and clear the search box, but keep the command, if any
+|e.g. before: "/pyfoo"; after: "/py"
+
+|Enter or Down |accept query and select the first match |when in the
+search box
+
+|ASDFWERTC |open match 1-9
+
+|G+ASDFWERTC |open match 10-18
+
+|V+ASDFWERTC |open match 19-27
+
+|J |select the next match
+
+|K |select the previous match
+
+|Enter |open the selected match |when the selected item has focus
+
+|Tab or Down |select the next match |when the selected item has focus
+
+|Shift+Tab or Up |select the previous match |when the selected item has
+focus
+
+|1234567890 |go to the corresponding tab
+
+|Alt+L |go to the next tab
+
+|Alt+H |go to the previous tab
+
+|Ctrl+W |close the current tab
+
+|Y |copy the selected match to clipboard |need executable `xsel` or
+`xclip`
+
+|Ctrl+/ |send query to Google |e.g. Ctrl+/ on "/pyfoo" will search
+Google for "Python foo"; need executable `xdg-open`
+
+|Ctrl+f |toggle page search
+
+|Alt+n |find next in page search
+
+|Alt+p |find previous in page search
+
+|Esc |close page search |when in search box
+|=======================================================================
+
+== Configuration
+
+Create the file `XDG_CONFIG/doc-browser/config.yaml` and edit it.
+
+The file is in YAML format, configurable keys and documentations can be
+found at:
+
+* `/usr/share/doc-browser/config.yaml`, if you installed from AUR
+* `config.yaml` in the root of the source repository, if you installed
+from source
+
+The screenshot uses the font http://input.fontbureau.com/[Input Mono],
+it is free for personal use, you can install and config doc browser to
+use it.
+
+== HTTP Interface
+
+You can interact with this application using HTTP request.
+
+All URL should be prefixed with `http://localhost:<port>`, where
+`<port>` is 7701 if you didn't change it in your configuration.
+
+The status code of a successful response is always `200 OK`, others
+should be treated as failure.
+
+If you use Insomnia, you can import `insomnia.json`, found at the root
+of this repository.
+
+==== Summon
+
+Bring this application's GUI to front, put `<query string>` in the
+search box and open the first match.
+
+....
+Request: GET /summon?q=<query string>
+
+Response body: Empty
+
+Example:
+
+    curl --silent --request GET --url 'http://localhost:7701/summon?q=os.path'
+....
+
+==== Search
+
+Search `<query string>` and return the result as a JSON array.
+Documentation of the element of the array can be found
+https://qwfy.github.io/doc-browser/doc/Match.html#t:T[here].
+
+....
+Request: GET /search?q=<query string>
+
+Response body: JSON array
+
+Example:
+
+    curl --silent --request GET --url 'http://localhost:7701/search?q=os.path' | python -m json.tool | head -n 15
+
+    [
+        {
+            "vendor": "DevDocs",
+            "typeConstraint": null,
+            "url": "http://localhost:7701/DevDocs/Python==3.6.4/library/os.path",
+            "collection": "Python",
+            "name": "os.path",
+            "version": "3.6.4",
+            "module": null,
+            "package": null
+        },
+        {
+            "vendor": "DevDocs",
+            "typeConstraint": null,
+            "url": "http://localhost:7701/DevDocs/Python==3.6.4/library/os#os.pathsep",
+....
+
+
+== Credits
+
+This application is written by incomplete@aixon.co.
+
+Many thanks to https://github.com/Thibaut[Thibaut Courouble] and
+https://github.com/Thibaut/devdocs/graphs/contributors[other
+contributors] of https://github.com/Thibaut/devdocs[DevDocs], without
+their work, this application wouldn't be possible:
+
+* This application ships with icons collected by DevDocs.
+* This application uses docsets, along with the corresponding style
+sheets, produced by DevDocs.
+
+Many thanks to https://github.com/ndmitchell[Neil Mitchell] for the
+great https://github.com/ndmitchell/hoogle[Hoogle]. The Hoogle support
+receives https://github.com/qwfy/doc-browser/issues/2[helps] from him.
+This application also ships with a little code from the Hoogle project,
+the modified code is licensed under the BSD license.
+
+For Hoogle support, this application guides user to download
+documentation archive from https://www.stackage.org[Stackage].
+
+
+== FAQ and Troubleshooting
+
+Problem: On KDE, Ctrl+/ is taking too long to open the browser.
+
+Solution: This application uses `xdg-open` to open the browser. Try
+https://bugs.kde.org/show_bug.cgi?id=364662#c3[this workaround].
+
+Problem: The font in the documentation is too big or too small.
+
+Solution: Tweak the configuration `WebEngineZoomFactor`, see the
+link:#configuration[Configuration] section for instruction.
+
+Problem: HTTP summon interface doesn't bring the window to front
+Solution: Try the section _Additional settings for Linux_ described in
+https://kb.froglogic.com/display/KB/Problem+-+Bringing+window+to+foreground+%28Qt%29[here].
+
+Q: Why does this application display at most 27 matches?
+
+A: If your desired match is not in the top 27 matches, then there is
+probably something wrong with the search algorithm.
+
+Q: Why does this application display at most 10 tabs?
+
+A: If too many tabs are displayed, the tab title would be hard to see on
+many monitors. Instead of wanting more tabs, try open another instance
+of this application. The number of maximum tabs will be configurable in
+future versions, so you can benefit from a large monitor.
