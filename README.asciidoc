@@ -19,7 +19,8 @@ toc::[]
 * Easy-to-type shortcuts
 * Hoogle integration
 * Customizable (in progress)
-* link:#http-interface[HTTP interfaces], editor integration is just a HTTP request away
+* link:#http-interface[HTTP interfaces]
+* link:https://github.com/qwfy/doc-browser-nvim[Neovim integration]. Editor integration is just a HTTP request away
 
 == Current Status
 
