@@ -274,7 +274,7 @@ Example:
 
 #### Search
 
-Search `<query string>` and return the result as a JSON array. Documentation of the element of the array can be found at `doc/Match.html#t:T`
+Search `<query string>` and return the result as a JSON array. Documentation of the element of the array can be found [here](https://qwfy.github.io/doc-browser/doc/Match.html#t:T).
 
 ```
 Request:

@@ -21,7 +21,7 @@ newtype Collection =
 --
 -- For 'DevDocs', this is the version of the language or the library, e.g. the @3.6.4@ as in @Python 3.6.4@, or the @1.13.0@ as in @NumPy 1.13.0@.
 --
--- For 'Hoogle', this is the @NAME@ parameter in the @doc-browser --install-hoogle@ command
+-- For 'Hoogle', this is the @NAME@ parameter in the @doc-browser --install-hoogle@ command.
 newtype Version =
   Version {getVersion :: String}
   deriving (Eq, Ord)

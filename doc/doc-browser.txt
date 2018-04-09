@@ -33,7 +33,7 @@ Collection :: String -> Collection
 --   <tt>1.13.0</tt> as in <tt>NumPy 1.13.0</tt>.
 --   
 --   For <a>Hoogle</a>, this is the <tt>NAME</tt> parameter in the
---   <tt>doc-browser --install-hoogle</tt> command
+--   <tt>doc-browser --install-hoogle</tt> command.
 newtype Version
 Version :: String -> Version
 [getVersion] :: Version -> String
