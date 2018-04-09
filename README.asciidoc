@@ -83,11 +83,11 @@ If you have trouble building this application, you can:
 Especially the _Requirements_ and _Installation_ section.
 * Open an issue.
 
-Optionally, install the executable `xsel` or `xclip` for the Y shortcut
+Optionally, install the executable `xsel` or `xclip` for the kbd:[Y] shortcut
 (copy the selected match to clipboard) to work.
 
 Optionally, install the executable `xdg-open` (provided by package
-`xdg-utils` on Arch Linux) for the Ctrl+/ shortcut (send query to
+`xdg-utils` on Arch Linux) for the kbd:[Ctrl+/] shortcut (send query to
 Google) to work.
 
 === Install DevDocs' Docset
@@ -349,7 +349,7 @@ documentation archive from https://www.stackage.org[Stackage].
 
 == FAQ and Troubleshooting
 
-Problem: On KDE, Ctrl+/ is taking too long to open the browser.
+Problem: On KDE, kbd:[Ctrl+/] is taking too long to open the browser.
 
 Solution: This application uses `xdg-open` to open the browser. Try
 https://bugs.kde.org/show_bug.cgi?id=364662#c3[this workaround].
