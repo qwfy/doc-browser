@@ -14,14 +14,12 @@ import Network.Wai
 import Network.HTTP.Types
 import Network.Wai.Handler.Warp (run)
 
-import Data.Aeson
 import Data.Monoid
 import qualified Data.Text as Text
 import qualified Data.Binary.Builder as Builder
 import qualified Data.Map.Strict as Map
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Lazy.Char8 as LC
-import qualified Data.ByteString.Char8 as C
 import qualified Data.Array
 import Data.List.Extra
 import Data.String
@@ -68,7 +66,7 @@ api = Proxy
 app :: FilePath -> FilePath -> Slot.T -> Application
 app configRoot cacheRoot slot =
   serve api
-    (publicServer configRoot cacheRoot slot
+    (publicServer slot
      :<|> privateServer configRoot cacheRoot)
 
 
@@ -76,8 +74,8 @@ type PublicAPI
   =    "summon" :> QueryParam' '[Required] "q" String :> Get '[JSON] ()
   :<|> "search" :> QueryParam' '[Required] "q" String :> Get '[JSON] [Match.T]
 
-publicServer :: FilePath -> FilePath -> Slot.T -> Server PublicAPI
-publicServer configRoot cacheRoot slot =
+publicServer :: Slot.T -> Server PublicAPI
+publicServer slot =
   summon
   :<|> search
   where
@@ -107,10 +105,7 @@ privateServer configRoot cacheRoot =
     serveAbspath = serveDirectoryWebApp "/"
 
 
-rawServer ::
-     FilePath
-  -> FilePath
-  -> Application
+rawServer :: FilePath -> FilePath -> Application
 rawServer configRoot cacheRoot request respond = do
   let paths = pathInfo request |> map Text.unpack
 
@@ -136,12 +131,12 @@ rawServer configRoot cacheRoot request respond = do
         | ext == ".js"  = "text/javascript; charset=utf-8"
         | otherwise     = "text/html; charset=utf-8"
 
-  let contentType = maybe
+  let contentType' = maybe
         "text/html; charset=utf-8"
         (mime . takeExtension)
         (lastMay paths)
 
-  let headers = [("Content-Type", contentType)]
+  let headers = [("Content-Type", contentType')]
   respond (responseBuilder status200 headers builder)
 
 
