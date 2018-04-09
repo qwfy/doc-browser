@@ -2,6 +2,7 @@ resolver: lts-11.3
 
 packages:
 - .
+- hoogle
 
 extra-deps:
 - hsqml-0.3.5.1
