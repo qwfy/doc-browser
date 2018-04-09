@@ -60,22 +60,28 @@ start config configRoot cacheRoot slot = do
     report ["start new server"]
     run (Config.port config) (app configRoot cacheRoot slot)
 
-type API
-  =    "summon" :> QueryParam' '[Required] "q" String :> Get '[JSON] ()
-  :<|> "search" :> QueryParam' '[Required] "q" String :> Get '[JSON] [Match.T]
-  :<|> Raw
+type API = PublicAPI :<|> PrivateAPI
 
 api :: Proxy API
 api = Proxy
 
 app :: FilePath -> FilePath -> Slot.T -> Application
-app configRoot cacheRoot slot = serve api (server configRoot cacheRoot slot)
+app configRoot cacheRoot slot =
+  serve api
+    (publicServer configRoot cacheRoot slot
+     :<|> privateServer configRoot cacheRoot slot)
 
-server :: FilePath -> FilePath -> Slot.T -> Server API
-server configRoot cacheRoot slot =
+type PublicAPI
+  =    "summon" :> QueryParam' '[Required] "q" String :> Get '[JSON] ()
+  :<|> "search" :> QueryParam' '[Required] "q" String :> Get '[JSON] [Match.T]
+
+type PrivateAPI
+  = Raw
+
+publicServer :: FilePath -> FilePath -> Slot.T -> Server PublicAPI
+publicServer configRoot cacheRoot slot =
   summon
   :<|> search
-  :<|> Tagged (serverRaw configRoot cacheRoot slot)
   where
     summon :: String -> Servant.Handler ()
     summon queryStr = liftIO $ do
@@ -87,12 +93,15 @@ server configRoot cacheRoot slot =
       atomically $ updateTMVar (Slot.query slot) (Slot.HttpQuery queryStr resultTMVar)
       atomically $ takeTMVar resultTMVar
 
-serverRaw::
+privateServer :: FilePath -> FilePath -> Slot.T -> Server PrivateAPI
+privateServer configRoot cacheRoot slot =
+  Tagged $ rawServer configRoot cacheRoot
+
+rawServer ::
      FilePath
   -> FilePath
-  -> Slot.T
   -> Application
-serverRaw configRoot cacheRoot slot request respond = do
+rawServer configRoot cacheRoot request respond = do
   let paths = pathInfo request |> map Text.unpack
 
   let badRequest =
