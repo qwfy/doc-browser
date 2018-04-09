@@ -1,4 +1,5 @@
 :toc: macro
+:experimental:
 
 Doc Browser is an API documentation browser with support for DevDocs and Hoogle, written in Haskell and QML.
 
@@ -207,70 +208,45 @@ left-most one.
 === Commands
 
 [cols=",",options="header",]
-|==============================
-|Command |Effect
-|hs |Limit search to Haskell
-|py |Limit search to Python
-|tf |Limit search to TensorFlow
-|np |Limit search to NumPy
-|pd |Limit search to pandas
-|er |Limit search to Erlang
-|mp |Limit search to Matplotlib
-|hh |Perform search with Hoogle
-|==============================
+|===
+| Command | Effect
+| hs      | Limit search to Haskell
+| py      | Limit search to Python
+| tf      | Limit search to TensorFlow
+| np      | Limit search to NumPy
+| pd      | Limit search to pandas
+| er      | Limit search to Erlang
+| mp      | Limit search to Matplotlib
+| hh      | Perform search with Hoogle
+|===
 
 === Shortcuts
 
-[cols=",",options="header",]
-|=======================================================================
-|Key |Effect |Comment
-|/ |focus the search box
-
-|Ctrl+I |focus and clear the search box, but keep the command, if any
-|e.g. before: "/pyfoo"; after: "/py"
-
-|Enter or Down |accept query and select the first match |when in the
-search box
-
-|ASDFWERTC |open match 1-9
-
-|G+ASDFWERTC |open match 10-18
-
-|V+ASDFWERTC |open match 19-27
-
-|J |select the next match
-
-|K |select the previous match
-
-|Enter |open the selected match |when the selected item has focus
-
-|Tab or Down |select the next match |when the selected item has focus
-
-|Shift+Tab or Up |select the previous match |when the selected item has
-focus
-
-|1234567890 |go to the corresponding tab
-
-|Alt+L |go to the next tab
-
-|Alt+H |go to the previous tab
-
-|Ctrl+W |close the current tab
-
-|Y |copy the selected match to clipboard |need executable `xsel` or
-`xclip`
-
-|Ctrl+/ |send query to Google |e.g. Ctrl+/ on "/pyfoo" will search
-Google for "Python foo"; need executable `xdg-open`
-
-|Ctrl+f |toggle page search
-
-|Alt+n |find next in page search
-
-|Alt+p |find previous in page search
-
-|Esc |close page search |when in search box
-|=======================================================================
+[cols="3",options="header",]
+|===
+| Key                                                                    | Effect                                                       | Comment
+| kbd:[/]                                                                | focus the search box                                         |
+| kbd:[Ctrl+I]                                                           | focus and clear the search box, but keep the command, if any | e.g. before: "/pyfoo"; after: "/py"
+| kbd:[Enter] or kbd:[Down]                                              | accept query and select the first match                      | when in the search box
+| kbd:[A]kbd:[S]kbd:[D]kbd:[F]kbd:[W]kbd:[E]kbd:[R]kbd:[T]kbd:[C]        | open match 1-9                                               |
+| kbd:[G+A]kbd:[S]kbd:[D]kbd:[F]kbd:[W]kbd:[E]kbd:[R]kbd:[T]kbd:[C]      | open match 10-18                                             |
+| kbd:[V+A]kbd:[S]kbd:[D]kbd:[F]kbd:[W]kbd:[E]kbd:[R]kbd:[T]kbd:[C]      | open match 19-27                                             |
+| kbd:[J]                                                                | select the next match                                        |
+| kbd:[K]                                                                | select the previous match                                    |
+| kbd:[Enter]                                                            | open the selected match                                      | when the selected item has focus
+| kbd:[Tab] or kbd:[Down]                                                | select the next match                                        | when the selected item has focus
+| kbd:[Shift+Tab] or kbd:[Up]                                            | select the previous match                                    | when the selected item has focus
+| kbd:[1]kbd:[2]kbd:[3]kbd:[4]kbd:[5]kbd:[6]kbd:[7]kbd:[8]kbd:[9]kbd:[0] | go to the corresponding tab                                  |
+| kbd:[Alt+L]                                                            | go to the next tab                                           |
+| kbd:[Alt+H]                                                            | go to the previous tab                                       |
+| kbd:[Ctrl+W]                                                           | close the current tab                                        |
+| kbd:[Y]                                                                | copy the selected match to clipboard                         | need executable `xsel` or `xclip`
+| kbd:[Ctrl+/]                                                           | send query to Google                                         | e.g. kbd:[Ctrl+/] on "/pyfoo" will search Google for "Python foo"; need executable `xdg-open`
+| kbd:[Ctrl+f]                                                           | toggle page search                                           |
+| kbd:[Alt+n]                                                            | find next in page search                                     |
+| kbd:[Alt+p]                                                            | find previous in page search                                 |
+| kbd:[Esc]                                                              | close page search                                            | when in search box
+|===
 
 == Configuration
 
@@ -300,7 +276,7 @@ should be treated as failure.
 If you use Insomnia, you can import `insomnia.json`, found at the root
 of this repository.
 
-==== Summon
+=== Summon
 
 Bring this application's GUI to front, put `<query string>` in the
 search box and open the first match.
@@ -315,7 +291,7 @@ Example:
     curl --silent --request GET --url 'http://localhost:7701/summon?q=os.path'
 ....
 
-==== Search
+=== Search
 
 Search `<query string>` and return the result as a JSON array.
 Documentation of the element of the array can be found
