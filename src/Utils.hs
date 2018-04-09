@@ -14,6 +14,8 @@ module Utils
   , localTime
   , uppercaseFirst
   , lowercaseFirst
+  , paragraph
+  , paragraphs
   ) where
 
 import qualified Network.Wreq as Wreq
@@ -106,3 +108,9 @@ uppercaseFirst (h:t) = toUpper h : t
 lowercaseFirst :: String -> String
 lowercaseFirst "" = ""
 lowercaseFirst (h:t) = toLower h : t
+
+paragraph :: [String] -> String
+paragraph = unwords
+
+paragraphs :: [[String]] -> [String]
+paragraphs = map paragraph

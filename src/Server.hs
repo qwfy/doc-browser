@@ -8,7 +8,13 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 
-module Server (start) where
+{-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# OPTIONS_GHC -fno-warn-name-shadowing #-}
+
+module Server
+  ( start
+  , publicApiMarkdown
+  ) where
 
 import Network.Wai
 import Network.HTTP.Types
@@ -36,8 +42,10 @@ import Control.Exception
 import Control.Monad.STM
 import Control.Concurrent.STM.TMVar
 import Control.Monad.IO.Class
+import Control.Lens ((&), (<>~))
 
 import Servant
+import Servant.Docs
 
 import Utils
 import qualified DevDocs
@@ -60,7 +68,7 @@ start config configRoot cacheRoot slot = do
 
 type API = PublicAPI :<|> PrivateAPI
 
-api :: Proxy API
+api :: Proxy Server.API
 api = Proxy
 
 app :: FilePath -> FilePath -> Slot.T -> Application
@@ -70,9 +78,65 @@ app configRoot cacheRoot slot =
      :<|> privateServer configRoot cacheRoot)
 
 
+type Q = QueryParam' '[Required] "q" String
+
+instance ToParam Q where
+  toParam _ =
+    DocQueryParam
+      "q"
+      ["os.path", "/pyos.path", "forM/hh", "etc."]
+      "String to search"
+      Normal
+
+instance ToSample () where
+  toSamples _ = noSamples
+
+instance ToSample Match.T where
+  toSamples _ = samples
+    [ Match.T
+        { Match.vendor         = "DevDocs"
+        , Match.name           = "os.path"
+        , Match.collection     = "Python"
+        , Match.version        = "3.6.4"
+        , Match.url            = "http://localhost:7701/DevDocs/Python==3.6.4/library/os.path"
+        , Match.package_       = Nothing
+        , Match.module_        = Nothing
+        , Match.typeConstraint = Nothing}
+    -- , Match.T
+    --     { Match.vendor         = "DevDocs"
+    --     , Match.name           = "os.PathLike"
+    --     , Match.collection     = "Python"
+    --     , Match.version        = "3.6.4"
+    --     , Match.url            = "http://localhost:7701/DevDocs/Python==3.6.4/library/os#os.PathLike"
+    --     , Match.package_       = Nothing
+    --     , Match.module_        = Nothing
+    --     , Match.typeConstraint = Nothing}
+    ]
+
+type SearchAPI = "search" :> Q :> Get '[JSON] [Match.T]
+
 type PublicAPI
-  =    "summon" :> QueryParam' '[Required] "q" String :> Get '[JSON] ()
-  :<|> "search" :> QueryParam' '[Required] "q" String :> Get '[JSON] [Match.T]
+  =    "summon" :> Q :> Get '[JSON] ()
+  :<|> SearchAPI
+
+publicApi :: Proxy PublicAPI
+publicApi = Proxy
+
+publicApiMarkdown :: String
+publicApiMarkdown =
+  let docOptions = defaultDocOptions
+      docIntro = DocIntro "HTTP API for doc-browser" $ paragraphs
+        [ [ "You can interact with this application using HTTP requests."]
+        , [ "All URL should be prefixed with `http://localhost:<port>`,"
+          , "where `<port>` is 7701 if you didn't change it in your configuration."]
+        , [ "If you are using Insomnia, you can import `insomnia.json`,"
+          , "found at the root of this repository."]
+        , [ "APIs are listed below."]
+        ]
+      extraInfo' = extraInfo (Proxy :: Proxy SearchAPI) $
+        defAction & notes <>~ [DocNote "See Also"
+          ["https://qwfy.github.io/doc-browser/doc/Match.html#t:T"]]
+  in markdown $ docsWith docOptions [docIntro] extraInfo' publicApi
 
 publicServer :: Slot.T -> Server PublicAPI
 publicServer slot =

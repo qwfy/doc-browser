@@ -60,6 +60,8 @@ dependencies:
 - filelock
 - unix
 - servant-server
+- servant-docs
+- lens
 
 library:
   source-dirs: src

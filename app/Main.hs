@@ -180,3 +180,6 @@ main = do
         Opt.InstallHoogle url collection ->
           -- TODO @incomplete: change collection to version
           Hoo.install configRoot cacheRoot url collection
+
+        Opt.PrintPublicAPI ->
+          putStrLn Server.publicApiMarkdown

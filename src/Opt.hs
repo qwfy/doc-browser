@@ -12,6 +12,7 @@ data T
   = StartGUI
   | InstallDevDocs [String]
   | InstallHoogle String String
+  | PrintPublicAPI
   deriving (Show)
 
 data IsStartedOK
@@ -31,6 +32,7 @@ optParser =
       startGUIParser
         <|> installDevDocsParser
         <|> installHoogleParser
+        <|> printPublicAPIParser
         <|> pure StartGUI
 
 startGUIParser :: Parser T
@@ -66,6 +68,12 @@ installHoogleParser =
   <*> strArgument
     (  metavar "NAME"
     <> help "Name of the database and documentation directory. Something like \"lts-10.8\" would be a good choice")
+
+printPublicAPIParser :: Parser T
+printPublicAPIParser =
+  flag' PrintPublicAPI
+    (  long "print-api"
+    <> help "Print the HTTP API")
 
 get :: IO T
 get = execParser optParser
