@@ -69,14 +69,12 @@ app :: FilePath -> FilePath -> Slot.T -> Application
 app configRoot cacheRoot slot =
   serve api
     (publicServer configRoot cacheRoot slot
-     :<|> privateServer configRoot cacheRoot slot)
+     :<|> privateServer configRoot cacheRoot)
+
 
 type PublicAPI
   =    "summon" :> QueryParam' '[Required] "q" String :> Get '[JSON] ()
   :<|> "search" :> QueryParam' '[Required] "q" String :> Get '[JSON] [Match.T]
-
-type PrivateAPI
-  = Raw
 
 publicServer :: FilePath -> FilePath -> Slot.T -> Server PublicAPI
 publicServer configRoot cacheRoot slot =
@@ -93,9 +91,21 @@ publicServer configRoot cacheRoot slot =
       atomically $ updateTMVar (Slot.query slot) (Slot.HttpQuery queryStr resultTMVar)
       atomically $ takeTMVar resultTMVar
 
-privateServer :: FilePath -> FilePath -> Slot.T -> Server PrivateAPI
-privateServer configRoot cacheRoot slot =
-  Tagged $ rawServer configRoot cacheRoot
+
+type PrivateAPI
+  =    "cache" :> Raw
+  :<|> "abspath" :> Raw
+  :<|> Raw
+
+privateServer :: FilePath -> FilePath -> Server PrivateAPI
+privateServer configRoot cacheRoot =
+  serveCache
+  :<|> serveAbspath
+  :<|> Tagged (rawServer configRoot cacheRoot)
+  where
+    serveCache = serveDirectoryWebApp cacheRoot
+    serveAbspath = serveDirectoryWebApp "/"
+
 
 rawServer ::
      FilePath
@@ -116,14 +126,6 @@ rawServer configRoot cacheRoot request respond = do
       (vendor : _) | vendor == show Doc.Hoogle ->
         let path = intercalate "/" paths
         in fetchHoogle configRoot path
-
-      ("cache" : rest) ->
-        let path = joinPath $ cacheRoot:rest
-        in Builder.fromLazyByteString <$> LBS.readFile path
-
-      ("abspath" : rest) ->
-        let path = joinPath $ "/":rest
-        in Builder.fromLazyByteString <$> LBS.readFile path
 
       _ ->
         badRequest
