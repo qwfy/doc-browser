@@ -35,6 +35,8 @@ polishing. That being said, I use this application every day.
 There is a https://aur.archlinux.org/packages/doc-browser-git/[PKGBUILD]
 available on AUR.
 
+Please note, due to a restriction of stack, when invoking `doc-browser` from the command line, please prefix `doc_browser_datadir=/usr/share/doc-browser` to it, like this: `doc_browser_datadir=/usr/share/doc-browser doc-browser`, this ugly situation will be dealt with in the future version. Launching it using the `.desktop` file works correctly.
+
 === Other Linux Distros
 
 Follow these steps to install from source:
