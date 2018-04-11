@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE PatternSynonyms #-}
 
 module Utils
   ( (|>)
@@ -16,6 +17,9 @@ module Utils
   , lowercaseFirst
   , paragraph
   , paragraphs
+  , joinDir
+  , ConfigRoot
+  , CacheRoot
   ) where
 
 import qualified Network.Wreq as Wreq
@@ -36,6 +40,9 @@ import Network.HTTP.Types.Status
 import Data.Time.LocalTime
 import Data.Time.Format
 import Data.Char
+import Data.Foldable
+
+import Path
 
 import qualified Codec.Archive.Tar as Tar
 import qualified Codec.Compression.Lzma as Lzma
@@ -59,10 +66,10 @@ download url = do
     else
       throwE . unwords $ ["error downloading", url, show respStatus]
 
-downloadFile :: String -> FilePath -> ExceptT String IO ()
+downloadFile :: String -> Path a File -> ExceptT String IO ()
 downloadFile url saveTo = do
   bs <- download url
-  lift $ LBS.writeFile saveTo bs
+  lift $ LBS.writeFile (toFilePath saveTo) bs
 
 download' :: String -> IO LBS.ByteString
 download' url = do
@@ -74,10 +81,10 @@ download' url = do
     else
       throwIO $ DownloadError url (show respStatus)
 
-downloadFile' :: String -> FilePath -> IO ()
+downloadFile' :: String -> Path a File -> IO ()
 downloadFile' url saveTo = do
   bs <- download' url
-  LBS.writeFile saveTo bs
+  LBS.writeFile (toFilePath saveTo) bs
 
 -- TODO @incomplete: proper logging
 report = putStrLn . unwords
@@ -87,12 +94,12 @@ updateTMVar slot x = do
   _ <- tryTakeTMVar slot
   putTMVar slot x
 
-unpackXzInto :: FilePath -> FilePath -> IO ()
+unpackXzInto :: Path a File -> Path a Dir -> IO ()
 unpackXzInto archive into = do
-  bs <- LBS.readFile archive
+  bs <- LBS.readFile (toFilePath archive)
   Lzma.decompress bs
     |> Tar.read
-    |> Tar.unpack into
+    |> Tar.unpack (toFilePath into)
 
 fireAndForget :: IO a -> IO ()
 fireAndForget action = void $ forkIO (void action)
@@ -114,3 +121,12 @@ paragraph = unwords
 
 paragraphs :: [[String]] -> [String]
 paragraphs = map paragraph
+
+joinDir :: Path a Dir -> [Path Rel Dir] -> Path a Dir
+joinDir first paths =
+  foldl' (</>) first paths
+
+
+-- TODO @incomplete: newtype these
+type ConfigRoot = Path Abs Dir
+type CacheRoot = Path Abs Dir

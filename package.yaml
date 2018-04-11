@@ -62,6 +62,9 @@ dependencies:
 - servant-server
 - servant-docs
 - lens
+- path
+- path-io
+- exceptions
 
 library:
   source-dirs: src

@@ -13,25 +13,27 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 
 import Safe
-import System.FilePath
-import System.Directory.Extra
 
 import Control.Monad
 import Control.Exception
 
+import Path
+import Path.IO
+import qualified System.FilePath as FilePath
 import qualified Hoogle
 
 import qualified Match
 import qualified Doc
 import Utils
 
-search :: FilePath -> Doc.Version -> Hoogle.Database -> Int -> String -> (String -> Text) -> [Match.T]
+-- TODO @incomplete: correct this version argument, maybe change it to collection?
+search :: ConfigRoot -> Doc.Version -> Hoogle.Database -> Int -> String -> (String -> Text) -> [Match.T]
 search configRoot version db limit query prefixHost =
   Hoogle.searchDatabase db query
   |> take limit
   |> map (toMatch prefixHost configRoot version)
 
-toMatch :: (String -> Text) -> FilePath -> Doc.Version -> Hoogle.Target -> Match.T
+toMatch :: (String -> Text) -> ConfigRoot -> Doc.Version -> Hoogle.Target -> Match.T
 toMatch prefixHost configRoot version target =
   let name' = unHTML . Hoogle.targetItem $ target
       (name, typeConstraint) = maybe
@@ -48,29 +50,28 @@ toMatch prefixHost configRoot version target =
              , Match.typeConstraint = Text.pack <$> typeConstraint
              }
 
-toUrl :: FilePath -> String -> String
-toUrl configRoot prefixedPath =
-  let prefix = "file://" ++ addTrailingPathSeparator configRoot
+toUrl :: ConfigRoot -> String -> String
+toUrl configRoot pathWithProtocol =
+  let prefix = "file://" ++ toFilePath configRoot
       -- TODO @incomplete: This 404 is also 404
-  in fromMaybe "404.html" $ stripPrefix prefix prefixedPath
+  in fromMaybe "404.html" $ stripPrefix prefix pathWithProtocol
 
 
-findDatabase :: FilePath -> IO (Maybe FilePath)
+findDatabase :: ConfigRoot -> IO (Maybe (Path Abs File))
 findDatabase configRoot = do
-  let hoogleDir = joinPath [configRoot, show Doc.Hoogle]
-  exist <- doesDirectoryExist hoogleDir
+  hoogle <- (configRoot </>) <$> parseRelDir (show Doc.Hoogle)
+  exist <- doesDirExist hoogle
   if not exist
     then return Nothing
     else do
-      paths <- listDirectory hoogleDir >>= filterM (doesFileExist . (hoogleDir </>))
-      filter isRecognized paths
+      (_dirs, files) <- listDir hoogle
+      filter isRecognized files
         |> sort
         -- currently, only load the latest
         |> lastMay
-        |> fmap (show Doc.Hoogle </>)
         |> return
   where
-    isRecognized name = takeExtension name == ".hoo"
+    isRecognized name = fileExtension name == ".hoo"
 
 
 -- turn string "print :: Show a => a -> IO ()"
@@ -117,27 +118,30 @@ unHTML = unescapeHTML . innerTextHTML
 
 data RenameDirection = AB | BA
 
-install :: FilePath -> FilePath -> String -> String -> IO ()
-install configRoot cacheRoot url collection = do
+-- TODO @incomplete: replace collection with a proper type
+install :: ConfigRoot -> CacheRoot -> String -> String -> IO ()
+install configRoot cacheRoot url collection'' = do
+  collection <- parseRelFile collection''
+  collection' <- parseRelDir collection''
 
-  let docRoot = configRoot </> show Doc.Hoogle
-  let cachePath = joinPath [cacheRoot, collection] <.> "tar.xz"
+  docRoot <- (configRoot </>) <$> parseRelDir (show Doc.Hoogle)
+  cachePath <- (cacheRoot </> collection) <.> "tar.xz"
   archivePath <- getArchivePath url cachePath
 
-  let unpackPath = joinPath [docRoot, collection]
-  report ["unpacking", archivePath, "into", unpackPath]
+  let unpackPath = docRoot </> collection'
+  report ["unpacking", toFilePath archivePath, "into", toFilePath unpackPath]
   report ["this may take a while"]
   unpackXzInto archivePath unpackPath
 
   let runHoogle = do
-        let dbPath = joinPath [docRoot, collection] <.> "hoo"
-        report ["generating Hoogle database to", dbPath]
+        dbPath <- (docRoot </> collection) <.> "hoo"
+        report ["generating Hoogle database to", toFilePath dbPath]
         -- TODO @incomplete: Do we need to quote dbPath and unpackPath
         -- when passing them to hoogle? The string concatenation scares me.
         Hoogle.hoogle
           [ "generate"
-          , "--database=" ++ dbPath
-          , "--local=" ++ unpackPath
+          , "--database=" ++ toFilePath dbPath
+          , "--local=" ++ toFilePath unpackPath
           ]
 
   let renameTxts direction files = do
@@ -146,10 +150,10 @@ install configRoot cacheRoot url collection = do
           AB -> report ["temporarily relocate x to x." ++ suffix ++ ", for x in:"]
           BA -> report ["move x." ++ suffix ++ " back to x, for x in:"]
         forM_ files (\orig -> do
-          report [orig]
+          report [toFilePath orig]
           case direction of
-            AB -> renameFile orig (orig <.> suffix)
-            BA -> renameFile (orig <.> suffix) orig)
+            AB -> orig <.> suffix >>= renameFile orig
+            BA -> orig <.> suffix >>= (flip renameFile) orig)
 
   let setup = do
         txts <- findTxtButNotHoogleTxt unpackPath
@@ -167,30 +171,36 @@ isHttp str =
   in "http://" `isPrefixOf` lowerStr || "https://" `isPrefixOf` lowerStr
 
 -- TODO @incomplete: verify integrity
+-- TODO @incomplete: replace url with a sum type
+getArchivePath :: String -> Path Abs File -> IO (Path Abs File)
 getArchivePath url cachePath
   | isHttp url = do
     cached <- doesFileExist cachePath
     unless cached $ do
-      report ["downloading", url, "to", cachePath]
+      report ["downloading", url, "to", toFilePath cachePath]
       downloadFile' url cachePath
     return cachePath
   | otherwise =
     -- It's the user's fault if this file does not exist.
-    return url
+    resolveFile' url
 
+-- TODO @incomplete: do this elegently
+findTxtButNotHoogleTxt :: Path Abs Dir -> IO [Path Abs File]
 findTxtButNotHoogleTxt dir = do
-  files <- listFilesRecursive dir
-  return $ filter (\f -> isTxt f && not (isHoogleTxt f)) files
+  (_dirs, files') <- listDirRecur dir
+  let files = map toFilePath files'
+  let wants = filter (\f -> isTxt f && not (isHoogleTxt f)) files
+  mapM parseAbsFile wants
   where
-    isTxt = (== ".txt") . takeExtension
+    isTxt = (== ".txt") . FilePath.takeExtension
     isHoogleTxt path =
-      case reverse . splitDirectories $ path of
+      case reverse . FilePath.splitDirectories $ path of
         (pkgTxt:pkgVer:_) ->
           case stripInfixEnd "-" pkgVer of
             Nothing ->
               False
             Just (pkg, ver) ->
-              let pkg' = takeBaseName pkgTxt
+              let pkg' = FilePath.takeBaseName pkgTxt
                   a = pkg == pkg'
                   b = isVersionNumber ver
               in  isTxt pkgTxt && a && b

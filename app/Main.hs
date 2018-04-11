@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Main (main) where
 
@@ -13,12 +14,12 @@ import Control.Concurrent.STM.TMVar
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.List.Extra
-import System.Directory
-import System.FilePath
 import System.Hclip
-import System.IO.Extra
 import System.Environment
 import Web.Browser
+
+import Path
+import Path.IO
 
 import qualified Match
 import qualified Search
@@ -35,15 +36,15 @@ import Utils
 
 import Paths_doc_browser
 
-startGUI :: Config.T -> FilePath -> Slot.T -> IO ()
-startGUI config configRoot slot = withTempDir $ \qmlModuleDir -> do
+startGUI :: Config.T -> ConfigRoot -> Slot.T -> IO ()
+startGUI config configRoot slot = withSystemTempDir "doc-browser-qml-modules" $ \qmlModuleDir -> do
 
   Style.createQml qmlModuleDir config
   oldQmlPath <- lookupEnv "QML2_IMPORT_PATH"
   let qmlPath = case trim <$> oldQmlPath of
-        Nothing -> qmlModuleDir
-        Just "" -> qmlModuleDir
-        Just old -> old ++ ":" ++ qmlModuleDir
+        Nothing -> toFilePath qmlModuleDir
+        Just "" -> toFilePath qmlModuleDir
+        Just old -> old ++ ":" ++ toFilePath qmlModuleDir
   setEnv "QML2_IMPORT_PATH" qmlPath
 
   matchesTVar <- atomically $ newTVar ([] :: [Match.T])
@@ -112,7 +113,7 @@ startGUI config configRoot slot = withTempDir $ \qmlModuleDir -> do
     config
     configRoot
     allEntries
-    ((configRoot </>) <$> hooMay)
+    hooMay
     slot
     sendMatches
 
@@ -154,11 +155,11 @@ main = do
   opt <- Opt.get
 
   -- TODO @incomplete: handle the absolute/relative semantic in the type level
-  configRoot <- makeAbsolute =<< getXdgDirectory XdgConfig "doc-browser"
-  cacheRoot <- makeAbsolute =<< getXdgDirectory XdgCache "doc-browser"
+  configRoot <- getXdgDir XdgConfig (Just [reldir|doc-browser|])
+  cacheRoot <- getXdgDir XdgCache (Just [reldir|doc-browser|])
 
-  createDirectoryIfMissing True $ joinPath [configRoot]
-  createDirectoryIfMissing True $ joinPath [cacheRoot]
+  createDirIfMissing True configRoot
+  createDirIfMissing True cacheRoot
 
   config <- Config.load configRoot
 

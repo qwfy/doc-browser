@@ -13,21 +13,22 @@ import Text.Mustache.Compile.TH (mustache)
 import qualified Data.Text.Lazy.IO as LTIO
 import Data.List.Extra
 
-import System.FilePath
-import System.Directory
+import Path
+import qualified System.FilePath as FilePath
+import qualified System.Directory as Directory
 
 import qualified Config
 
-createQml :: FilePath -> Config.T -> IO ()
-createQml parent config = do
+createQml :: Path Abs Dir -> Config.T -> IO ()
+createQml parentDir config = do
   let (warnings, qml) = renderMustacheW template (toJSON config)
   unless (null warnings) (print ("WARNING", warnings))
 
   let parts = ["co", "aixon", "docbrowser"]
-  let dirPath = joinPath $ parent:parts
-  createDirectoryIfMissing True dirPath
-  LTIO.writeFile (dirPath </> "Style.qml") qml
-  writeFile (dirPath </> "qmldir") $ unlines
+  let dirPath = FilePath.joinPath $ toFilePath parentDir : parts
+  Directory.createDirectoryIfMissing True dirPath
+  LTIO.writeFile (dirPath FilePath.</> "Style.qml") qml
+  writeFile (dirPath FilePath.</> "qmldir") $ unlines
     [ "module " ++ intercalate "." parts
     , "singleton Style 1.0 Style.qml"
     ]

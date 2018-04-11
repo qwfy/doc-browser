@@ -1,6 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE MultiWayIf #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Upgrade
   ( start
@@ -13,9 +14,9 @@ import Control.Monad
 import Data.Monoid
 import Data.List
 
-import System.FilePath
-import System.Directory
 import System.IO
+import Path
+import Path.IO
 
 import qualified Doc
 import Utils
@@ -65,21 +66,21 @@ type LineLogger = [String] -> IO ()
 
 
 diskFormatFile configRoot =
-  configRoot </> "disk-format"
+  configRoot </> [relfile|disk-format|]
 
-readDiskFormat :: FilePath -> IO DiskFormat
+readDiskFormat :: ConfigRoot -> IO DiskFormat
 readDiskFormat configRoot = do
   let formatFile = diskFormatFile configRoot
   exist <- doesFileExist formatFile
   if not exist
     then return 0
-    else read <$> readFile formatFile
+    else read <$> readFile (toFilePath formatFile)
 
-writeDiskFormat :: FilePath -> DiskFormat -> IO ()
+writeDiskFormat :: ConfigRoot -> DiskFormat -> IO ()
 writeDiskFormat configRoot diskFormat =
-  writeFile (diskFormatFile configRoot) (show diskFormat)
+  writeFile (toFilePath $ diskFormatFile configRoot) (show diskFormat)
 
-upgrade :: LineLogger -> FilePath -> IO ()
+upgrade :: LineLogger -> ConfigRoot -> IO ()
 upgrade logLine configRoot = do
   userFormat <- readDiskFormat configRoot
 
@@ -111,24 +112,24 @@ upgrade logLine configRoot = do
                , show succUserFormat]
        upgrade logLine configRoot
 
-upgradeFrom0 :: LineLogger -> FilePath -> IO ()
+upgradeFrom0 :: LineLogger -> ConfigRoot -> IO ()
 upgradeFrom0 logLine configRoot = do
-  let oldDevDocsDir = configRoot </> "devdocs"
-  let newDevDocsDir = configRoot </> show Doc.DevDocs
-  exist <- doesDirectoryExist oldDevDocsDir
+  let oldDevDocsDir = configRoot </> [reldir|devdocs|]
+  newDevDocsDir <- (configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
+  exist <- doesDirExist oldDevDocsDir
   when exist $ do
     logLine [ "Renaming directory"
-            , oldDevDocsDir
+            , toFilePath oldDevDocsDir
             , "to"
-            , newDevDocsDir]
-    renameDirectory oldDevDocsDir newDevDocsDir
+            , toFilePath newDevDocsDir]
+    renameDir oldDevDocsDir newDevDocsDir
 
-upgradeFrom1 :: LineLogger -> FilePath -> IO ()
+upgradeFrom1 :: LineLogger -> ConfigRoot -> IO ()
 upgradeFrom1 logLine configRoot =
   forM_ [Doc.DevDocs, Doc.Hoogle] (\vendor -> do
-    let targetDir = joinPath [configRoot, show vendor]
-    logLine ["Ensure directory:", targetDir]
-    createDirectoryIfMissing True targetDir)
+    targetDir <- (configRoot </>) <$> (parseRelDir $ show vendor)
+    logLine ["Ensure directory:", toFilePath targetDir]
+    createDirIfMissing True targetDir)
 
 data Log = Line String | Lines String
 
@@ -145,7 +146,7 @@ appendLog fh msg' = do
   hPutStrLn fh msg
   hFlush fh
 
-start :: FilePath -> IO Continue
+start :: ConfigRoot -> IO Continue
 start configRoot = do
   userFormat <- readDiskFormat configRoot
   if userFormat == latestDiskFormat
@@ -153,7 +154,7 @@ start configRoot = do
       return Continue
 
     else
-      withFile (configRoot </> "disk-upgrade.log") AppendMode $ \logFileHandle -> do
+      withFile (toFilePath $ configRoot </> [relfile|disk-upgrade.log|]) AppendMode $ \logFileHandle -> do
         let appendLog' = appendLog logFileHandle
 
         let handleExceptions :: SomeException -> IO Continue

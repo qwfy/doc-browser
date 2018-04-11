@@ -17,6 +17,7 @@ import qualified Data.Array
 import qualified Data.Tuple
 import qualified Data.Maybe
 import qualified Data.ByteString.Char8 as C
+import Data.Bits ((.|.))
 
 import Control.Monad
 import Control.Concurrent
@@ -24,8 +25,9 @@ import Control.Monad.STM
 import Control.Concurrent.STM.TMVar
 
 import Text.Regex.PCRE
-import Data.Bits ((.|.))
-import System.FilePath
+
+import Path
+import qualified System.FilePath as FilePath
 
 import Control.Applicative ((<|>))
 import qualified Hoogle
@@ -192,13 +194,13 @@ subString str offset length' =
 prefixHost :: Int -> String -> Text
 prefixHost port path =
   let host = "http://localhost:" ++ show port
-  in Text.pack $ host </> path
+  in Text.pack $ host FilePath.</> path
 
 startThread
   :: Config.T
-  -> FilePath
+  -> ConfigRoot
   -> [Entry.T]
-  -> Maybe FilePath
+  -> Maybe (Path Abs File)
   -> Slot.T
   -> ([Match.T] -> IO ())
   -> IO ThreadId
@@ -234,5 +236,6 @@ startThread config configRoot entries hooMay slot handleMatches =
                 Just dbPath ->
                   -- load the database on every search, instead of keeping it in memory,
                   -- this is done deliberately - turns out that it makes the GUI more responsive
-                  let version = Doc.Version . takeBaseName $ dbPath
-                  in Hoogle.withDatabase dbPath (\db -> return $ Hoo.search configRoot version db limit query prefixHost')
+                  -- TODO @incomplete: handle this properly
+                  let version = Doc.Version . FilePath.takeBaseName . toFilePath $ dbPath
+                  in Hoogle.withDatabase (toFilePath dbPath) (\db -> return $ Hoo.search configRoot version db limit query prefixHost')

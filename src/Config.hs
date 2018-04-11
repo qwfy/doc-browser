@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Config
   ( T(..)
@@ -10,8 +11,9 @@ module Config
 import Data.Text (Text)
 import Data.Aeson
 import Data.Yaml.Config
-import System.FilePath
-import System.Directory
+
+import Path
+import Path.IO
 
 import GHC.Generics
 
@@ -56,14 +58,14 @@ instance FromJSON Font where
 
 instance ToJSON Font
 
-load :: FilePath -> IO T
+load :: ConfigRoot -> IO T
 load configRoot = do
-  let basename = "config.yaml"
+  let basename = [relfile|config.yaml|]
   let userConfig = configRoot </> basename
-  defaultConfig <- getDataFileName basename
+  defaultConfig <- getDataFileName (toFilePath basename)
   userConfigExist <- doesFileExist userConfig
   let configs =
         if userConfigExist
-          then [userConfig, defaultConfig]
+          then [toFilePath userConfig, defaultConfig]
           else [defaultConfig]
   loadYamlSettings configs [] ignoreEnv

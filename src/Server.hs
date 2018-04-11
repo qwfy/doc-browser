@@ -7,6 +7,7 @@
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
@@ -33,10 +34,13 @@ import qualified Data.Hash.MD5 as MD5
 import Safe
 import Text.Regex.PCRE
 
-import System.FilePath
-import System.Directory
 import System.FileLock
 import System.Posix.User
+
+import Path
+import Path.IO
+import qualified System.FilePath as FilePath
+import qualified System.Directory as Directory
 
 import Control.Exception
 import Control.Monad.STM
@@ -55,14 +59,16 @@ import qualified Config
 import qualified Slot
 import qualified Match
 
-start :: Config.T -> FilePath -> FilePath -> Slot.T -> IO ()
+start :: Config.T -> ConfigRoot -> CacheRoot -> Slot.T -> IO ()
 start config configRoot cacheRoot slot = do
   -- TODO @incomplete: make the lock global
   userId <- getRealUserID
-  let lockFilePath = joinPath ["/run/user", show userId, "doc-browser/server.lock"]
-  createDirectoryIfMissing True $ takeDirectory lockFilePath
+  lockFilePath <- do
+    a <- parseRelDir $ show userId
+    return $ [absdir|/run/user|] </> a </> [relfile|doc-browser/server.lock|]
+  createDirIfMissing True $ parent lockFilePath
   report ["wait for server slot"]
-  withFileLock lockFilePath Exclusive $ \_lock -> do
+  withFileLock (toFilePath lockFilePath) Exclusive $ \_lock -> do
     report ["start new server"]
     run (Config.port config) (app configRoot cacheRoot slot)
 
@@ -71,7 +77,7 @@ type API = PublicAPI :<|> PrivateAPI
 api :: Proxy Server.API
 api = Proxy
 
-app :: FilePath -> FilePath -> Slot.T -> Application
+app :: ConfigRoot -> CacheRoot -> Slot.T -> Application
 app configRoot cacheRoot slot =
   serve api
     (publicServer slot
@@ -159,17 +165,17 @@ type PrivateAPI
   :<|> "abspath" :> Raw
   :<|> Raw
 
-privateServer :: FilePath -> FilePath -> Server PrivateAPI
+privateServer :: ConfigRoot -> CacheRoot -> Server PrivateAPI
 privateServer configRoot cacheRoot =
   serveCache
   :<|> serveAbspath
   :<|> Tagged (rawServer configRoot cacheRoot)
   where
-    serveCache = serveDirectoryWebApp cacheRoot
+    serveCache = serveDirectoryWebApp (toFilePath cacheRoot)
     serveAbspath = serveDirectoryWebApp "/"
 
 
-rawServer :: FilePath -> FilePath -> Application
+rawServer :: ConfigRoot -> CacheRoot -> Application
 rawServer configRoot cacheRoot request respond = do
   let paths = pathInfo request |> map Text.unpack
 
@@ -181,7 +187,7 @@ rawServer configRoot cacheRoot request respond = do
       (vendor : cv : rest) | vendor == show Doc.DevDocs ->
         let (collection, version) = Doc.breakCollectionVersion cv
             path = intercalate "/" rest
-        in fetchDevdocs configRoot cacheRoot collection version path
+        in parseRelFile path >>= fetchDevdocs configRoot cacheRoot collection version
       (vendor : _) | vendor == show Doc.Hoogle ->
         let path = intercalate "/" paths
         in fetchHoogle configRoot path
@@ -197,23 +203,24 @@ rawServer configRoot cacheRoot request respond = do
 
   let contentType' = maybe
         "text/html; charset=utf-8"
-        (mime . takeExtension)
+        (mime . FilePath.takeExtension)
         (lastMay paths)
 
   let headers = [("Content-Type", contentType')]
   respond (responseBuilder status200 headers builder)
 
 
-fetchHoogle :: FilePath -> FilePath -> IO Builder.Builder
+-- TODO @incomplete: replace FilePath with Path a b?
+fetchHoogle :: ConfigRoot -> FilePath -> IO Builder.Builder
 fetchHoogle configRoot path = do
-  let filePath = joinPath [configRoot, path]
+  let filePath = FilePath.joinPath [toFilePath configRoot, path]
   fileToRead <- do
-    isFile <- doesFileExist filePath
+    isFile <- Directory.doesFileExist filePath
     if isFile
       then return filePath
       else do
-        let indexHtml = filePath </> "index.html"
-        indexExist <- doesFileExist indexHtml
+        let indexHtml = filePath FilePath.</> "index.html"
+        indexExist <- Directory.doesFileExist indexHtml
         if indexExist
           then return indexHtml
           -- TODO @incomplete: Add this file
@@ -227,7 +234,7 @@ replaceMathJax :: LBS.ByteString -> IO LBS.ByteString
 replaceMathJax source = do
   -- TODO @incomplete: ability to install another copy
   let distDir = "/usr/share/mathjax"
-  hasMathJaxDist <- doesDirectoryExist distDir
+  hasMathJaxDist <- Directory.doesDirectoryExist distDir
   if not hasMathJaxDist
     then return source
     else do
@@ -238,22 +245,19 @@ replaceMathJax source = do
           return source
         Just (before', match', after') -> do
           let (cfg, _) = match' Data.Array.! 1
-          let localFile = fromString $ joinPath ["/abspath", tail distDir, "MathJax.js"]
+          let localFile = fromString $ FilePath.joinPath ["/abspath", tail distDir, "MathJax.js"]
           return $ before' <> "src=\"" <> localFile <> cfg <> "\"" <> after'
 
-fetchDevdocs :: FilePath
-             -> FilePath
+fetchDevdocs :: ConfigRoot
+             -> CacheRoot
              -> Doc.Collection
              -> Doc.Version
-             -> String
+             -> Path Rel File
              -> IO Builder.Builder
 fetchDevdocs configRoot cacheRoot collection version path = do
-  let filePath = joinPath
-        [ configRoot
-        , DevDocs.getDocFile collection version path
-        ]
+  filePath <- (configRoot </>) <$> DevDocs.getDocFile collection version path
 
-  content <- Builder.fromLazyByteString <$> LBS.readFile filePath
+  content <- Builder.fromLazyByteString <$> LBS.readFile (toFilePath filePath)
 
   cssUrl <- getCached cacheRoot "https://devdocs.io/application.css" "css"
   let css = "<link rel='stylesheet' href='" <> cssUrl <> "'>"
@@ -286,12 +290,12 @@ fetchDevdocs configRoot cacheRoot collection version path = do
 
 -- Since we have only one web server running on the entire OS,
 -- we won't run into concurrency problems.
-getCached :: FilePath -> LBS.ByteString -> String -> IO LBS.ByteString
+getCached :: CacheRoot -> LBS.ByteString -> String -> IO LBS.ByteString
 getCached cacheRoot url' ext = do
   let url = LC.unpack url'
-  let basename = MD5.md5s (MD5.Str url) <.> ext
-  let cachedUrl = fromString $ joinPath ["/cache", basename]
-  let storage = joinPath [cacheRoot, basename]
+  basename <- parseRelFile (MD5.md5s (MD5.Str url)) >>= (<.> ext)
+  let cachedUrl = fromString . toFilePath $ [absdir|/cache|] </> basename
+  let storage = cacheRoot </> basename
   cached <- doesFileExist storage
   if cached
     then
@@ -300,7 +304,7 @@ getCached cacheRoot url' ext = do
       dlRes <- try $ downloadFile' url storage :: IO (Either SomeException ())
       case dlRes of
         Right () -> do
-          report ["cached url:", url, "to:", storage]
+          report ["cached url:", url, "to:", toFilePath storage]
           return cachedUrl
         Left e -> do
           report ["error caching:", url, show e]

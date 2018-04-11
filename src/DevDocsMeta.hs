@@ -15,6 +15,8 @@ import qualified Codec.Compression.GZip as GZip
 import qualified Codec.Archive.Tar as Tar
 import Control.Monad.Trans.Except
 
+import Path
+
 import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as Text
@@ -23,8 +25,6 @@ import qualified Data.List
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Map.Strict as Map
-
-import System.FilePath
 
 import Utils
 import qualified Doc
@@ -107,15 +107,16 @@ toDownloadUrl Meta{metaSlug} =
 
 -- TODO @incomplete: exception handling
 -- TODO @incomplete: untar to a temp directory
-untgz :: LBS.ByteString -> FilePath -> IO ()
+untgz :: LBS.ByteString -> Path Abs Dir -> IO ()
 untgz bs filePath =
   let decompressed = GZip.decompress bs
-  in Tar.unpack filePath (Tar.read decompressed)
+  in Tar.unpack (toFilePath filePath) (Tar.read decompressed)
 
 -- TODO @incomplete: multithreads and proxy
-downloadMany :: FilePath -> [String] -> IO ()
+downloadMany :: Path Abs Dir -> [String] -> IO ()
 downloadMany unpackTo' wants = do
-  report ["downloading", show $ length wants, "docsets to", unpackTo]
+  unpackTo <- (unpackTo' </>) <$> (parseRelDir $ show Doc.DevDocs)
+  report ["downloading", show $ length wants, "docsets to", toFilePath unpackTo]
 
   metaJsonR <- runExceptT $ getMetaJson metaJsonUrl
   case metaJsonR of
@@ -123,12 +124,11 @@ downloadMany unpackTo' wants = do
       report [e]
     Right metas ->
       let matches = findRecent metas wants
-      in mapM_ downloadOne matches
+      in mapM_ (downloadOne unpackTo) matches
   where
-    unpackTo = joinPath [unpackTo', show Doc.DevDocs]
-    downloadOne (Left e) =
+    downloadOne _ (Left e) =
       report [e]
-    downloadOne (Right meta@Meta{metaName, metaRelease}) = do
+    downloadOne unpackTo (Right meta@Meta{metaName, metaRelease}) = do
       let url = toDownloadUrl meta
       let docId = Data.List.intercalate "-"
             [ Text.unpack metaName
@@ -145,8 +145,8 @@ downloadMany unpackTo' wants = do
           let collectionHome = Doc.combineCollectionVersion
                 (Doc.Collection . Text.unpack $ metaName)
                 (Doc.Version . Text.unpack $ fromMaybe "" metaRelease)
-          let dir = joinPath [unpackTo, collectionHome]
-          report ["unpacking", docId, "to", dir]
+          dir <- (unpackTo </>) <$> (parseRelDir collectionHome)
+          report ["unpacking", docId, "to", toFilePath dir]
           untgz bs dir
           report ["installed", docId]
 
