@@ -138,8 +138,7 @@ install configRoot cacheRoot url collection'' = do
   archivePath <- getArchivePath url cachePath
 
   let unpackPath = docRoot </> collection'
-  report ["unpacking", toFilePath archivePath, "into", toFilePath unpackPath]
-  report ["this may take a while"]
+  report ["unpacking", toFilePath archivePath, "into", toFilePath unpackPath ++ ",", "this may take a while"]
   unpackXzInto archivePath unpackPath
 
   let runHoogle = do

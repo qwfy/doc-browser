@@ -20,6 +20,7 @@ module Server
 import Network.Wai
 import Network.HTTP.Types
 import Network.Wai.Handler.Warp (run)
+import Network.Wai.Middleware.RequestLogger
 
 import Data.Monoid
 import qualified Data.Text as Text
@@ -58,9 +59,11 @@ import qualified Doc
 import qualified Config
 import qualified Slot
 import qualified Match
+import qualified Opt
 
-start :: Config.T -> ConfigRoot -> CacheRoot -> Slot.T -> IO ()
-start config configRoot cacheRoot slot = do
+
+start :: Opt.Logging -> Config.T -> ConfigRoot -> CacheRoot -> Slot.T -> IO ()
+start logging config configRoot cacheRoot slot = do
   -- TODO @incomplete: make the lock global
   userId <- getRealUserID
   lockFilePath <- do
@@ -70,7 +73,10 @@ start config configRoot cacheRoot slot = do
   report ["wait for server slot"]
   withFileLock (toFilePath lockFilePath) Exclusive $ \_lock -> do
     report ["start new server"]
-    run (Config.port config) (app configRoot cacheRoot slot)
+    let middleware = case logging of
+          Opt.NoLog -> id
+          Opt.Log -> logStdout
+    run (Config.port config) (middleware $ app configRoot cacheRoot slot)
 
 type API = PublicAPI :<|> PrivateAPI
 

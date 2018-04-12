@@ -3,6 +3,7 @@
 module Opt
   ( T(..)
   , get
+  , Logging(..)
   ) where
 
 import Options.Applicative
@@ -11,11 +12,16 @@ import Data.Monoid
 import qualified Doc
 
 data T
-  = StartGUI
+  = StartGUI Logging
   | InstallDevDocs [Doc.Collection]
   | InstallHoogle String Doc.Collection
   | PrintPublicAPI
   deriving (Show)
+
+data Logging
+  = NoLog
+  | Log
+  deriving(Show)
 
 data IsStartedOK
   = StartedOK
@@ -35,13 +41,16 @@ optParser =
         <|> installDevDocsParser
         <|> installHoogleParser
         <|> printPublicAPIParser
-        <|> pure StartGUI
+        <|> pure (StartGUI NoLog)
 
 startGUIParser :: Parser T
 startGUIParser =
   flag' StartGUI
     (  long "gui"
     <> help "Start the GUI. This is the default behaviour")
+  <*> flag NoLog Log
+    (  long "debug"
+    <> help "Write some debug information to stdout, I'm sorry if you need this")
 
 installDevDocsParser :: Parser T
 installDevDocsParser =

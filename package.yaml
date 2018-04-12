@@ -29,6 +29,7 @@ dependencies:
 - bytestring
 - warp
 - wai
+- wai-extra
 - binary
 - http-types
 - network-uri

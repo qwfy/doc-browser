@@ -170,9 +170,9 @@ main = do
 
     Upgrade.Continue ->
       case opt of
-        Opt.StartGUI -> do
+        Opt.StartGUI logging -> do
           slot <- atomically $ Slot.empty
-          _ <- forkIO $ Server.start config configRoot cacheRoot slot
+          _ <- forkIO $ Server.start logging config configRoot cacheRoot slot
           startGUI config configRoot slot
 
         Opt.InstallDevDocs collections ->
