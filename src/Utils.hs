@@ -18,8 +18,8 @@ module Utils
   , paragraph
   , paragraphs
   , joinDir
-  , ConfigRoot
-  , CacheRoot
+  , ConfigRoot(..)
+  , CacheRoot(..)
   ) where
 
 import qualified Network.Wreq as Wreq
@@ -126,7 +126,5 @@ joinDir :: Path a Dir -> [Path Rel Dir] -> Path a Dir
 joinDir first paths =
   foldl' (</>) first paths
 
-
--- TODO @incomplete: newtype these
-type ConfigRoot = Path Abs Dir
-type CacheRoot = Path Abs Dir
+newtype ConfigRoot = ConfigRoot {getConfigRoot :: Path Abs Dir}
+newtype CacheRoot = CacheRoot {getCacheRoot :: Path Abs Dir}

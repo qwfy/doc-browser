@@ -155,11 +155,11 @@ main = do
   opt <- Opt.get
 
   -- TODO @incomplete: handle the absolute/relative semantic in the type level
-  configRoot <- getXdgDir XdgConfig (Just [reldir|doc-browser|])
-  cacheRoot <- getXdgDir XdgCache (Just [reldir|doc-browser|])
+  configRoot <- ConfigRoot <$> getXdgDir XdgConfig (Just [reldir|doc-browser|])
+  cacheRoot <- CacheRoot <$> getXdgDir XdgCache (Just [reldir|doc-browser|])
 
-  createDirIfMissing True configRoot
-  createDirIfMissing True cacheRoot
+  createDirIfMissing True $ getConfigRoot configRoot
+  createDirIfMissing True $ getCacheRoot cacheRoot
 
   config <- Config.load configRoot
 
@@ -176,7 +176,7 @@ main = do
           startGUI config configRoot slot
 
         Opt.InstallDevDocs collections ->
-          DevDocsMeta.downloadMany configRoot collections
+          DevDocsMeta.downloadMany (getConfigRoot configRoot) collections
 
         Opt.InstallHoogle url collection ->
           -- TODO @incomplete: change collection to version

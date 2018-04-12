@@ -171,7 +171,7 @@ privateServer configRoot cacheRoot =
   :<|> serveAbspath
   :<|> Tagged (rawServer configRoot cacheRoot)
   where
-    serveCache = serveDirectoryWebApp (toFilePath cacheRoot)
+    serveCache = serveDirectoryWebApp (toFilePath $ getCacheRoot cacheRoot)
     serveAbspath = serveDirectoryWebApp "/"
 
 
@@ -213,7 +213,7 @@ rawServer configRoot cacheRoot request respond = do
 -- TODO @incomplete: replace FilePath with Path a b?
 fetchHoogle :: ConfigRoot -> FilePath -> IO Builder.Builder
 fetchHoogle configRoot path = do
-  let filePath = FilePath.joinPath [toFilePath configRoot, path]
+  let filePath = FilePath.joinPath [toFilePath $ getConfigRoot configRoot, path]
   fileToRead <- do
     isFile <- Directory.doesFileExist filePath
     if isFile
@@ -255,7 +255,7 @@ fetchDevdocs :: ConfigRoot
              -> Path Rel File
              -> IO Builder.Builder
 fetchDevdocs configRoot cacheRoot collection version path = do
-  filePath <- (configRoot </>) <$> DevDocs.getDocFile collection version path
+  filePath <- (getConfigRoot configRoot </>) <$> DevDocs.getDocFile collection version path
 
   content <- Builder.fromLazyByteString <$> LBS.readFile (toFilePath filePath)
 
@@ -295,7 +295,7 @@ getCached cacheRoot url' ext = do
   let url = LC.unpack url'
   basename <- parseRelFile (MD5.md5s (MD5.Str url)) >>= (<.> ext)
   let cachedUrl = fromString . toFilePath $ [absdir|/cache|] </> basename
-  let storage = cacheRoot </> basename
+  let storage = getCacheRoot cacheRoot </> basename
   cached <- doesFileExist storage
   if cached
     then

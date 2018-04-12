@@ -52,14 +52,14 @@ toMatch prefixHost configRoot version target =
 
 toUrl :: ConfigRoot -> String -> String
 toUrl configRoot pathWithProtocol =
-  let prefix = "file://" ++ toFilePath configRoot
+  let prefix = "file://" ++ toFilePath (getConfigRoot configRoot)
       -- TODO @incomplete: This 404 is also 404
   in fromMaybe "404.html" $ stripPrefix prefix pathWithProtocol
 
 
 findDatabase :: ConfigRoot -> IO (Maybe (Path Abs File))
 findDatabase configRoot = do
-  hoogle <- (configRoot </>) <$> parseRelDir (show Doc.Hoogle)
+  hoogle <- (getConfigRoot configRoot </>) <$> parseRelDir (show Doc.Hoogle)
   exist <- doesDirExist hoogle
   if not exist
     then return Nothing
@@ -124,8 +124,8 @@ install configRoot cacheRoot url collection'' = do
   collection <- parseRelFile collection''
   collection' <- parseRelDir collection''
 
-  docRoot <- (configRoot </>) <$> parseRelDir (show Doc.Hoogle)
-  cachePath <- (cacheRoot </> collection) <.> "tar.xz"
+  docRoot <- (getConfigRoot configRoot </>) <$> parseRelDir (show Doc.Hoogle)
+  cachePath <- (getCacheRoot cacheRoot </> collection) <.> "tar.xz"
   archivePath <- getArchivePath url cachePath
 
   let unpackPath = docRoot </> collection'

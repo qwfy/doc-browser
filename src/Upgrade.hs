@@ -66,7 +66,7 @@ type LineLogger = [String] -> IO ()
 
 
 diskFormatFile configRoot =
-  configRoot </> [relfile|disk-format|]
+  getConfigRoot configRoot </> [relfile|disk-format|]
 
 readDiskFormat :: ConfigRoot -> IO DiskFormat
 readDiskFormat configRoot = do
@@ -114,8 +114,8 @@ upgrade logLine configRoot = do
 
 upgradeFrom0 :: LineLogger -> ConfigRoot -> IO ()
 upgradeFrom0 logLine configRoot = do
-  let oldDevDocsDir = configRoot </> [reldir|devdocs|]
-  newDevDocsDir <- (configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
+  let oldDevDocsDir = getConfigRoot configRoot </> [reldir|devdocs|]
+  newDevDocsDir <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
   exist <- doesDirExist oldDevDocsDir
   when exist $ do
     logLine [ "Renaming directory"
@@ -127,7 +127,7 @@ upgradeFrom0 logLine configRoot = do
 upgradeFrom1 :: LineLogger -> ConfigRoot -> IO ()
 upgradeFrom1 logLine configRoot =
   forM_ [Doc.DevDocs, Doc.Hoogle] (\vendor -> do
-    targetDir <- (configRoot </>) <$> (parseRelDir $ show vendor)
+    targetDir <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show vendor)
     logLine ["Ensure directory:", toFilePath targetDir]
     createDirIfMissing True targetDir)
 
@@ -154,7 +154,7 @@ start configRoot = do
       return Continue
 
     else
-      withFile (toFilePath $ configRoot </> [relfile|disk-upgrade.log|]) AppendMode $ \logFileHandle -> do
+      withFile (toFilePath $ getConfigRoot configRoot </> [relfile|disk-upgrade.log|]) AppendMode $ \logFileHandle -> do
         let appendLog' = appendLog logFileHandle
 
         let handleExceptions :: SomeException -> IO Continue

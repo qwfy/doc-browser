@@ -61,7 +61,7 @@ instance ToJSON Font
 load :: ConfigRoot -> IO T
 load configRoot = do
   let basename = [relfile|config.yaml|]
-  let userConfig = configRoot </> basename
+  let userConfig = getConfigRoot configRoot </> basename
   defaultConfig <- getDataFileName (toFilePath basename)
   userConfigExist <- doesFileExist userConfig
   let configs =

@@ -45,7 +45,7 @@ instance Aeson.FromJSON IndexList where
 -- scan devdocs' root, return collections and versions
 scan :: ConfigRoot -> IO [(Doc.Collection, Doc.Version)]
 scan configRoot = do
-  dir <- (configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
+  dir <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
   (dirs, _) <- listDir dir
   return $ map (Doc.breakCollectionVersion . toFilePath) dirs
 
@@ -63,7 +63,7 @@ load configRoot collection version = do
   indexJson <- do
     a <- parseRelDir $ show Doc.DevDocs
     b <- parseRelDir $ dirName
-    return $ configRoot </> a </> b </> [relfile|index.json|]
+    return $ getConfigRoot configRoot </> a </> b </> [relfile|index.json|]
   bs <- LBS.readFile . toFilePath $ indexJson
   let Just (IndexList indices) = Aeson.decode' bs
   return $ map indexToEntry indices
