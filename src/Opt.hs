@@ -16,6 +16,7 @@ data T
   | InstallDevDocs [Doc.Collection]
   | InstallHoogle String Doc.Collection
   | PrintPublicAPI
+  | PrintDefaultConfig
   deriving (Show)
 
 data Logging
@@ -41,6 +42,7 @@ optParser =
         <|> installDevDocsParser
         <|> installHoogleParser
         <|> printPublicAPIParser
+        <|> printDefaultConfigParser
         <|> pure (StartGUI NoLog)
 
 startGUIParser :: Parser T
@@ -85,6 +87,12 @@ printPublicAPIParser =
   flag' PrintPublicAPI
     (  long "print-api"
     <> help "Print the HTTP API")
+
+printDefaultConfigParser :: Parser T
+printDefaultConfigParser =
+  flag' PrintDefaultConfig
+    (  long "print-default-config"
+    <> help "Print the default configuration, which has detailed documentation")
 
 get :: IO T
 get = execParser optParser

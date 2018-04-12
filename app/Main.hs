@@ -14,6 +14,8 @@ import Control.Concurrent.STM.TMVar
 import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.List.Extra
+import qualified Data.ByteString.Char8 as Char8
+
 import System.Hclip
 import System.Environment
 import Web.Browser
@@ -183,3 +185,6 @@ main = do
 
         Opt.PrintPublicAPI ->
           putStrLn Server.publicApiMarkdown
+
+        Opt.PrintDefaultConfig ->
+          Char8.putStrLn Embeded.configYaml
