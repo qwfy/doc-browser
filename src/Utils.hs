@@ -18,6 +18,7 @@ module Utils
   , paragraph
   , paragraphs
   , joinDir
+  , hasExtension
   , ConfigRoot(..)
   , CacheRoot(..)
   ) where
@@ -29,6 +30,7 @@ import qualified Control.Lens as Lens
 import Control.Monad
 import Control.Monad.Trans.Except
 import Control.Monad.Trans.Class
+import Control.Monad.Catch
 import Control.Exception
 
 import Control.Monad.STM
@@ -125,6 +127,11 @@ paragraphs = map paragraph
 joinDir :: Path a Dir -> [Path Rel Dir] -> Path a Dir
 joinDir first paths =
   foldl' (</>) first paths
+
+hasExtension :: MonadThrow m => Path a File -> String -> m Bool
+hasExtension path ext = do
+  newPath <- path -<.> ext
+  return $ newPath == path
 
 newtype ConfigRoot = ConfigRoot {getConfigRoot :: Path Abs Dir}
 newtype CacheRoot = CacheRoot {getCacheRoot :: Path Abs Dir}

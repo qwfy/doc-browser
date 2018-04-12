@@ -32,19 +32,19 @@ import qualified Upgrade
 import qualified Config
 import qualified Style
 import qualified Slot
+import qualified Embeded
 import Utils
 
-import Paths_doc_browser
-
 startGUI :: Config.T -> ConfigRoot -> Slot.T -> IO ()
-startGUI config configRoot slot = withSystemTempDir "doc-browser-qml-modules" $ \qmlModuleDir -> do
+startGUI config configRoot slot = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
+  Embeded.extractUIDirInto guiDir
 
-  Style.createQml qmlModuleDir config
+  Style.createQml guiDir config
   oldQmlPath <- lookupEnv "QML2_IMPORT_PATH"
   let qmlPath = case trim <$> oldQmlPath of
-        Nothing -> toFilePath qmlModuleDir
-        Just "" -> toFilePath qmlModuleDir
-        Just old -> old ++ ":" ++ toFilePath qmlModuleDir
+        Nothing -> toFilePath guiDir
+        Just "" -> toFilePath guiDir
+        Just old -> old ++ ":" ++ toFilePath guiDir
   setEnv "QML2_IMPORT_PATH" qmlPath
 
   matchesTVar <- atomically $ newTVar ([] :: [Match.T])
@@ -124,7 +124,7 @@ startGUI config configRoot slot = withSystemTempDir "doc-browser-qml-modules" $ 
       writeTVar summonText (Text.pack query)
     fireSignal summonKey objectController
 
-  mainQml <- getDataFileName "ui/main.qml"
+  let mainQml = guiDir </> [relfile|ui/main.qml|]
 
   -- This flag is required by QtWebEngine
   -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
@@ -132,7 +132,7 @@ startGUI config configRoot slot = withSystemTempDir "doc-browser-qml-modules" $ 
 
   runEngineLoop
     defaultEngineConfig
-    { initialDocument = fileDocument mainQml
+    { initialDocument = fileDocument $ toFilePath mainQml
     , contextObject = Just $ anyObjRef objectContext
     }
 

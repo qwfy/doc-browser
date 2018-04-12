@@ -66,6 +66,7 @@ dependencies:
 - path
 - path-io
 - exceptions
+- file-embed
 
 library:
   source-dirs: src
