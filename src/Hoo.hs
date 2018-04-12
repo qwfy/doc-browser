@@ -145,8 +145,6 @@ install configRoot cacheRoot url collection'' = do
   let runHoogle = do
         dbPath <- (docRoot </> collection) <.> "hoo"
         report ["generating Hoogle database to", toFilePath dbPath]
-        -- TODO @incomplete: Do we need to quote dbPath and unpackPath
-        -- when passing them to hoogle? The string concatenation scares me.
         Hoogle.hoogle
           [ "generate"
           , "--database=" ++ toFilePath dbPath
