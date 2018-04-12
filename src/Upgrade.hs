@@ -10,23 +10,33 @@ module Upgrade
 
 import Control.Exception
 import Control.Monad
+import Control.Concurrent.Async
+import Control.Concurrent.STM
 
+import Data.Text (Text)
+import qualified Data.Text as Text
 import Data.Monoid
 import Data.List
 
 import System.IO
+import qualified System.FilePath as FilePath
+
 import Path
 import Path.IO
 
+import Graphics.QML
+
 import qualified Doc
+import qualified Hoo
 import Utils
 
 
+-- TODO @incomplete: replace this with a sum type, so that exhaustive check works
 type DiskFormat = Int
 
 -- This needs to be manually increased when incompatible changes are made to the disk format.
 latestDiskFormat :: DiskFormat
-latestDiskFormat = 2
+latestDiskFormat = 3
 
 -- What should the main program do when the upgrader's window is closed.
 data Continue = Continue | Abort
@@ -102,6 +112,8 @@ upgrade logLine configRoot = do
            upgradeFrom0 logLine configRoot
          1 ->
            upgradeFrom1 logLine configRoot
+         2 ->
+           upgradeFrom2 logLine configRoot
          _ ->
            throwIO $ UnRecognizedDiskFormat userFormat
 
@@ -131,10 +143,24 @@ upgradeFrom1 logLine configRoot =
     logLine ["Ensure directory:", toFilePath targetDir]
     createDirIfMissing True targetDir)
 
+upgradeFrom2 :: LineLogger -> ConfigRoot -> IO ()
+upgradeFrom2 logLine configRoot = do
+  databaseFiles <- Hoo.findDatabases configRoot
+  forM_ databaseFiles $ \databaseFile -> do
+    docDir <- parseAbsDir $ (FilePath.dropExtension $ fromAbsFile databaseFile)
+    exist <- doesDirExist docDir
+    when exist $ do
+      logLine ["Removing old Hoogle database:", toFilePath databaseFile]
+      tryRemoveFile databaseFile
+      databaseFile -<.> "warn" >>= tryRemoveFile
+      logLine ["Creating new Hoogle database for documentations located at:", toFilePath docDir ++ ",", "this may take a while"]
+      Hoo.installFromDir docDir
+      logLine ["Hoogle database generated"]
+
 data Log = Line String | Lines String
 
-appendLog :: Handle -> Log -> IO ()
-appendLog fh msg' = do
+appendLog :: Handle -> (String -> IO ()) -> Log -> IO ()
+appendLog fh writeGui msg' = do
   time <- localTime
   let msg = case msg' of
         Line str ->
@@ -144,10 +170,11 @@ appendLog fh msg' = do
           in intercalate "\n" $ (time ++ " ---"):strs
   putStrLn msg
   hPutStrLn fh msg
+  writeGui msg
   hFlush fh
 
-start :: ConfigRoot -> IO Continue
-start configRoot = do
+start :: ConfigRoot -> Path a Dir -> IO Continue
+start configRoot guiDir = do
   userFormat <- readDiskFormat configRoot
   if userFormat == latestDiskFormat
     then
@@ -155,7 +182,10 @@ start configRoot = do
 
     else
       withFile (toFilePath $ getConfigRoot configRoot </> [relfile|disk-upgrade.log|]) AppendMode $ \logFileHandle -> do
-        let appendLog' = appendLog logFileHandle
+
+        (withGui, guiWriter) <- setupGui guiDir
+
+        let appendLog' = appendLog logFileHandle guiWriter
 
         let handleExceptions :: SomeException -> IO Continue
             handleExceptions e = do
@@ -166,15 +196,49 @@ start configRoot = do
                 , "Please open an issue if you have trouble figuring out what's wrong."]
               return Abort
 
-        appendLog' $ Line "Start to upgrade disk format."
+        let doit = do
+              appendLog' $ Line "Start to upgrade disk format."
+              if userFormat < latestDiskFormat
+                then do
+                  let upgrade' = do
+                        upgrade (appendLog' . Line. unwords) configRoot
+                        appendLog' $ Line "Upgrade finished successfully."
+                        return Continue
+                  upgrade' `catch` handleExceptions
 
-        if userFormat < latestDiskFormat
-          then do
-            let upgrade' = do
-                  upgrade (appendLog' . Line. unwords) configRoot
-                  appendLog' $ Line "Upgrade finished successfully."
-                  return Continue
-            upgrade' `catch` handleExceptions
+                else
+                  throwIO (HigherDiskFormat userFormat) `catch` handleExceptions
 
-          else
-            throwIO (HigherDiskFormat userFormat) `catch` handleExceptions
+        withGui doit
+
+setupGui :: Path a Dir -> IO (IO Continue -> IO Continue, String -> IO ())
+setupGui guiDir = do
+  msgsVar <- atomically $ newTVar ("" :: Text)
+  msgsKey <- newSignalKey :: IO (SignalKey (IO ()))
+
+  classContext <- newClass
+    [ defPropertySigRO' "messages" msgsKey
+        (\_obj -> readTVarIO msgsVar)
+    ]
+
+  objectContext <- newObject classContext ()
+
+  let write :: String -> IO ()
+      write str' = do
+        let str = Text.pack str'
+        atomically $ modifyTVar msgsVar (\old -> if Text.null old then str else old <> "\n" <> str)
+        fireSignal msgsKey objectContext
+
+  let mainQml = guiDir </> [relfile|ui/disk-upgrade.qml|]
+
+  let engineConfig = defaultEngineConfig
+        { initialDocument = fileDocument $ toFilePath mainQml
+        , contextObject = Just $ anyObjRef objectContext
+        }
+
+  let withGui action = do
+        done <- async action
+        runEngineLoop engineConfig
+        wait done
+
+  return (withGui, write)

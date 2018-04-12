@@ -21,6 +21,8 @@ module Utils
   , hasExtension
   , ConfigRoot(..)
   , CacheRoot(..)
+  , tryRemoveFile
+  , extractAp
   ) where
 
 import qualified Network.Wreq as Wreq
@@ -39,12 +41,15 @@ import Control.Concurrent
 
 import Network.HTTP.Types.Status
 
+import System.IO.Error
+
 import Data.Time.LocalTime
 import Data.Time.Format
 import Data.Char
 import Data.Foldable
 
 import Path
+import Path.IO
 
 import qualified Codec.Archive.Tar as Tar
 import qualified Codec.Compression.Lzma as Lzma
@@ -135,3 +140,12 @@ hasExtension path ext = do
 
 newtype ConfigRoot = ConfigRoot {getConfigRoot :: Path Abs Dir}
 newtype CacheRoot = CacheRoot {getCacheRoot :: Path Abs Dir}
+
+tryRemoveFile :: Path a File -> IO ()
+tryRemoveFile path = System.IO.Error.catchIOError (removeFile path) $
+    \ e -> unless (isDoesNotExistError e) $ ioError e
+
+extractAp :: (a -> b -> IO c) -> IO a -> b -> IO c
+extractAp f ma b = do
+  a <- ma
+  f a b

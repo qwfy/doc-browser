@@ -37,17 +37,8 @@ import qualified Slot
 import qualified Embeded
 import Utils
 
-startGUI :: Config.T -> ConfigRoot -> Slot.T -> IO ()
-startGUI config configRoot slot = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
-  Embeded.extractUIDirInto guiDir
-
-  Style.createQml guiDir config
-  oldQmlPath <- lookupEnv "QML2_IMPORT_PATH"
-  let qmlPath = case trim <$> oldQmlPath of
-        Nothing -> toFilePath guiDir
-        Just "" -> toFilePath guiDir
-        Just old -> old ++ ":" ++ toFilePath guiDir
-  setEnv "QML2_IMPORT_PATH" qmlPath
+startGUI :: Config.T -> ConfigRoot -> Path a Dir -> Slot.T -> IO ()
+startGUI config configRoot guiDir slot = do
 
   matchesTVar <- atomically $ newTVar ([] :: [Match.T])
 
@@ -128,10 +119,6 @@ startGUI config configRoot slot = withSystemTempDir "doc-browser-gui-" $ \guiDir
 
   let mainQml = guiDir </> [relfile|ui/main.qml|]
 
-  -- This flag is required by QtWebEngine
-  -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
-  True <- setQtFlag QtShareOpenGLContexts True
-
   runEngineLoop
     defaultEngineConfig
     { initialDocument = fileDocument $ toFilePath mainQml
@@ -153,7 +140,8 @@ google str =
       fireAndForget $ openBrowser url
 
 main :: IO ()
-main = do
+main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
+
   opt <- Opt.get
 
   -- TODO @incomplete: handle the absolute/relative semantic in the type level
@@ -165,7 +153,22 @@ main = do
 
   config <- Config.load configRoot
 
-  upgradeResult <- Upgrade.start configRoot
+  -- GUI setup
+  Embeded.extractUIDirInto guiDir
+
+  Style.createQml guiDir config
+  oldQmlPath <- lookupEnv "QML2_IMPORT_PATH"
+  let qmlPath = case trim <$> oldQmlPath of
+        Nothing -> toFilePath guiDir
+        Just "" -> toFilePath guiDir
+        Just old -> old ++ ":" ++ toFilePath guiDir
+  setEnv "QML2_IMPORT_PATH" qmlPath
+  -- This flag is required by QtWebEngine
+  -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
+
+  True <- setQtFlag QtShareOpenGLContexts True
+
+  upgradeResult <- Upgrade.start configRoot guiDir
   case upgradeResult of
     Upgrade.Abort ->
       return ()
@@ -175,7 +178,7 @@ main = do
         Opt.StartGUI logging -> do
           slot <- atomically $ Slot.empty
           _ <- forkIO $ Server.start logging config configRoot cacheRoot slot
-          startGUI config configRoot slot
+          startGUI config configRoot guiDir slot
 
         Opt.InstallDevDocs collections ->
           DevDocsMeta.downloadMany (getConfigRoot configRoot) collections

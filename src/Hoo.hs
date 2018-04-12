@@ -3,7 +3,9 @@
 module Hoo
   ( search
   , findDatabase
+  , findDatabases
   , install
+  , installFromDir
   ) where
 
 import Data.List.Extra
@@ -68,16 +70,22 @@ getPackageVersion configRoot target collection = do
 
 findDatabase :: ConfigRoot -> IO (Maybe (Path Abs File))
 findDatabase configRoot = do
+  databaseFiles <- findDatabases configRoot
+  databaseFiles
+    -- currently, only load the latest
+    |> sort
+    |> lastMay
+    |> return
+
+findDatabases :: ConfigRoot -> IO ([Path Abs File])
+findDatabases configRoot = do
   hoogle <- (getConfigRoot configRoot </>) <$> parseRelDir (show Doc.Hoogle)
   exist <- doesDirExist hoogle
   if not exist
-    then return Nothing
+    then return []
     else do
       (_dirs, files) <- listDir hoogle
       filter isRecognized files
-        |> sort
-        -- currently, only load the latest
-        |> lastMay
         |> return
   where
     isRecognized name = fileExtension name == ".hoo"
@@ -141,8 +149,12 @@ install configRoot cacheRoot url collection'' = do
   report ["unpacking", toFilePath archivePath, "into", toFilePath unpackPath ++ ",", "this may take a while"]
   unpackXzInto archivePath unpackPath
 
+  installFromDir unpackPath
+
+installFromDir :: Path Abs Dir -> IO ()
+installFromDir unpackPath = do
   let runHoogle = do
-        dbPath <- (docRoot </> collection) <.> "hoo"
+        dbPath <- extractAp (<.>) (parseAbsFile . FilePath.dropTrailingPathSeparator . fromAbsDir $ unpackPath) "hoo"
         report ["generating Hoogle database to", toFilePath dbPath]
         Hoogle.hoogle
           [ "generate"
