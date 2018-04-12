@@ -9,6 +9,7 @@ import co.aixon.docbrowser 1.0
 import "main.js" as Logic
 import "match.js" as MatchJs
 import "tab.js" as TabJs
+import "util.js" as UtilJs
 
 Window {
     id: rootWindow
@@ -47,6 +48,35 @@ Window {
             var match = matchContainer.model[matchContainer.selected];
             if (match) {
                 setClipboard(match.name);
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "m"
+        onActivated: {
+            var match = matchContainer.model[matchContainer.selected];
+            if (match) {
+                if (UtilJs.isString(match.module_) && match.module_ !== "") {
+                    setClipboard(match.module_);
+                }
+            }
+        }
+    }
+
+    Shortcut {
+        sequence: "p"
+        onActivated: {
+            var match = matchContainer.model[matchContainer.selected];
+            if (match) {
+                if (UtilJs.isString(match.package_) && match.package_ !== "") {
+                    var t = match.package_;
+                    if (match.version !== "") {
+                        t += "-";
+                        t += match.version;
+                    }
+                    setClipboard(t);
+                }
             }
         }
     }
@@ -314,6 +344,7 @@ Window {
                         onAccepted: Logic.searchCurrentPage(text)
                         Keys.onEscapePressed: closePaseSearch()
                         onTextChanged: pageSearchInputContainer.color = "white"
+                        selectByMouse: true
                     }
                 }
             }

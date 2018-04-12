@@ -244,6 +244,8 @@ left-most one.
 | kbd:[Alt+H]                                                            | go to the previous tab                                       |
 | kbd:[Ctrl+W]                                                           | close the current tab                                        |
 | kbd:[Y]                                                                | copy the selected match to clipboard                         | need executable `xsel` or `xclip`
+| kbd:[M]                                                                | copy the module of the selected match to clipboard           | only for Hoogle. need executable `xsel` or `xclip`
+| kbd:[P]                                                                | copy the package of the selected match to clipboard          | only for Hoogle. need executable `xsel` or `xclip`
 | kbd:[Ctrl+/]                                                           | send query to Google                                         | e.g. kbd:[Ctrl+/] on "/pyfoo" will search Google for "Python foo"; need executable `xdg-open`
 | kbd:[Ctrl+f]                                                           | toggle page search                                           |
 | kbd:[Alt+n]                                                            | find next in page search                                     |
