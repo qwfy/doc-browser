@@ -18,8 +18,10 @@ data Vendor
 -- For 'Hoogle', this is the @COLLECTION@ parameter in the @doc-browser --install-hoogle@ command.
 newtype Collection =
   Collection {getCollection :: String}
-  deriving (Show, Eq, Ord)
+  deriving (Eq, Ord)
 
+instance Show Collection where
+  show (Collection x) = x
 
 -- |Version of the collection
 --

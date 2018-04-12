@@ -236,6 +236,5 @@ startThread config configRoot entries hooMay slot handleMatches =
                 Just dbPath ->
                   -- load the database on every search, instead of keeping it in memory,
                   -- this is done deliberately - turns out that it makes the GUI more responsive
-                  -- TODO @incomplete: handle this properly
-                  let version = Doc.Version . FilePath.takeBaseName . toFilePath $ dbPath
-                  in Hoogle.withDatabase (toFilePath dbPath) (\db -> return $ Hoo.search configRoot version db limit query prefixHost')
+                  let collection = Doc.Collection . FilePath.takeBaseName . toFilePath $ dbPath
+                  in Hoogle.withDatabase (toFilePath dbPath) (\db -> return $ Hoo.search configRoot collection db limit query prefixHost')

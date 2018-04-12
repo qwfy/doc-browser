@@ -105,6 +105,12 @@ Rectangle {
                     color: root.isSelected ? Style.selectedFg : Style.lightFg
                 }
                 Text {
+                    visible: modelData.version !== ""
+                    text: modelData.version
+                    font: Style.matchMetaFont
+                    color: root.isSelected ? Style.selectedFg : Style.lightFg
+                }
+                Text {
                     visible: UtilJs.isString(modelData.module_)
                     anchors.leftMargin: 3
                     text: modelData.module_
@@ -114,7 +120,7 @@ Rectangle {
                 Text {
                     visible: isHoogle
                     anchors.leftMargin: 3
-                    text: modelData.version
+                    text: modelData.collection
                     font: Style.matchMetaFont
                     color: root.isSelected ? Style.selectedFg : Style.lightFg
                 }

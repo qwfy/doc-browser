@@ -13,7 +13,7 @@ import qualified Doc
 data T
   = StartGUI
   | InstallDevDocs [Doc.Collection]
-  | InstallHoogle String String
+  | InstallHoogle String Doc.Collection
   | PrintPublicAPI
   deriving (Show)
 
@@ -67,9 +67,9 @@ installHoogleParser =
         , "It expects the unpacked archive can be consumed by `hoogle generate --local=<unpack_dir>`"
         , "Example: https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz"
         ]))
-  <*> strArgument
-    (  metavar "NAME"
-    <> help "Name of the database and documentation directory. Something like \"lts-10.8\" would be a good choice")
+  <*> (Doc.Collection <$> strArgument
+    (  metavar "COLLECTION"
+    <> help "Name of the database and documentation directory. Something like \"lts-10.8\" would be a good choice"))
 
 printPublicAPIParser :: Parser T
 printPublicAPIParser =

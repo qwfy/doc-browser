@@ -26,36 +26,45 @@ import qualified Match
 import qualified Doc
 import Utils
 
--- TODO @incomplete: correct this version argument, maybe change it to collection?
-search :: ConfigRoot -> Doc.Version -> Hoogle.Database -> Int -> String -> (String -> Text) -> [Match.T]
-search configRoot version db limit query prefixHost =
+search :: ConfigRoot -> Doc.Collection -> Hoogle.Database -> Int -> String -> (String -> Text) -> [Match.T]
+search configRoot collection db limit query prefixHost =
   Hoogle.searchDatabase db query
   |> take limit
-  |> map (toMatch prefixHost configRoot version)
+  |> map (toMatch prefixHost configRoot collection)
 
-toMatch :: (String -> Text) -> ConfigRoot -> Doc.Version -> Hoogle.Target -> Match.T
-toMatch prefixHost configRoot version target =
+toMatch :: (String -> Text) -> ConfigRoot -> Doc.Collection -> Hoogle.Target -> Match.T
+toMatch prefixHost configRoot collection target =
   let name' = unHTML . Hoogle.targetItem $ target
       (name, typeConstraint) = maybe
         (name', Nothing)
         (\(a, b) -> (a, Just b))
         (splitTypeConstraint name')
-  in Match.T { Match.collection = "Haskell"
-             , Match.version = Text.pack $ Doc.getVersion version
+  in Match.T { Match.collection = Text.pack $ Doc.getCollection collection
+             , Match.version = maybe "" Text.pack $ getPackageVersion configRoot target collection
              , Match.name = Text.pack name
-             , Match.url = prefixHost . toUrl configRoot . Hoogle.targetURL $ target
+             , Match.url = prefixHost . removeProtocolAndLeading configRoot . Hoogle.targetURL $ target
              , Match.vendor = Text.pack . show $ Doc.Hoogle
              , Match.package_ = Text.pack . fst <$> Hoogle.targetPackage target
              , Match.module_ = Text.pack . fst <$> Hoogle.targetModule target
              , Match.typeConstraint = Text.pack <$> typeConstraint
              }
 
-toUrl :: ConfigRoot -> String -> String
-toUrl configRoot pathWithProtocol =
+removeProtocolAndLeading :: ConfigRoot -> String -> String
+removeProtocolAndLeading configRoot pathWithProtocol =
   let prefix = "file://" ++ toFilePath (getConfigRoot configRoot)
-      -- TODO @incomplete: This 404 is also 404
-  in fromMaybe "404.html" $ stripPrefix prefix pathWithProtocol
+  in fromMaybe pathWithProtocol $ stripPrefix prefix pathWithProtocol
 
+getPackageVersion :: ConfigRoot -> Hoogle.Target -> Doc.Collection -> Maybe String
+getPackageVersion configRoot target collection = do
+  (package, url') <- Hoogle.targetPackage target
+  -- TODO @incomplete: this dropWhile is not cross platform
+  let url = dropWhile (== '/') $ removeProtocolAndLeading configRoot url'
+  let urls = FilePath.splitDirectories url
+  case urls of
+    (vnd : coll : pkgVer : _) | vnd == show Doc.Hoogle, Doc.Collection coll == collection ->
+      pkgVer `isPkgVerOfPkg` package
+    _ ->
+      Nothing
 
 findDatabase :: ConfigRoot -> IO (Maybe (Path Abs File))
 findDatabase configRoot = do
@@ -119,10 +128,10 @@ unHTML = unescapeHTML . innerTextHTML
 data RenameDirection = AB | BA
 
 -- TODO @incomplete: replace collection with a proper type
-install :: ConfigRoot -> CacheRoot -> String -> String -> IO ()
+install :: ConfigRoot -> CacheRoot -> String -> Doc.Collection -> IO ()
 install configRoot cacheRoot url collection'' = do
-  collection <- parseRelFile collection''
-  collection' <- parseRelDir collection''
+  collection <- parseRelFile $ Doc.getCollection collection''
+  collection' <- parseRelDir $ Doc.getCollection collection''
 
   docRoot <- (getConfigRoot configRoot </>) <$> parseRelDir (show Doc.Hoogle)
   cachePath <- (getCacheRoot cacheRoot </> collection) <.> "tar.xz"
@@ -196,16 +205,20 @@ findTxtButNotHoogleTxt dir = do
     isHoogleTxt path =
       case reverse . FilePath.splitDirectories $ path of
         (pkgTxt:pkgVer:_) ->
-          case stripInfixEnd "-" pkgVer of
-            Nothing ->
-              False
-            Just (pkg, ver) ->
-              let pkg' = FilePath.takeBaseName pkgTxt
-                  a = pkg == pkg'
-                  b = isVersionNumber ver
-              in  isTxt pkgTxt && a && b
+          isTxt pkgTxt && (isJust $ pkgVer `isPkgVerOfPkg` FilePath.takeBaseName pkgTxt)
         _ ->
           False
+
+isPkgVerOfPkg :: String -> String -> Maybe String
+pkgVer `isPkgVerOfPkg` wantPkg =
+  case stripInfixEnd "-" pkgVer of
+    Nothing ->
+      Nothing
+    Just (pkg, ver) ->
+      case (pkg == wantPkg) && (isVersionNumber ver) of
+        True -> Just ver
+        False -> Nothing
+  where
     isVersionNumber str =
       let numbers = "0123456789"
           goodChars = "." ++ numbers

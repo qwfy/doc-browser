@@ -120,13 +120,13 @@ use other archives as well, as long as the unpacked archive can be read
 by `hoogle generate --local=dir_to_unpacked_archive`, but this is
 untested.
 2.  Invoke the following installation command, this will unpack the
-archive to `XDG_CONFIG/doc-browser/Hoogle/NAME`, and creates a Hoogle
-database `XDG_CONFIG/doc-browser/Hoogle/NAME.hoo` for it, (doc-browser's
+archive to `XDG_CONFIG/doc-browser/Hoogle/COLLECTION`, and creates a Hoogle
+database `XDG_CONFIG/doc-browser/Hoogle/COLLECTION.hoo` for it, (doc-browser's
 Hoogle doesn't interfere with your system Hoogle in any way):
 
 [source,bash]
 ----
-doc-browser --install-hoogle URL NAME
+doc-browser --install-hoogle URL COLLECTION
 # e.g. doc-browser --install-hoogle 'https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz' lts-10.8
 #
 # URL is where to read the archive.
@@ -134,7 +134,7 @@ doc-browser --install-hoogle URL NAME
 # which I suggest you to use if you have a bad network connection,
 # since the download function included in this program is pretty savage at this stage.
 #
-# NAME shouldn't contain "/".
+# COLLECTION shouldn't contain "/".
 #
 # See `doc-browser --help` for more
 #
