@@ -8,9 +8,11 @@ module Opt
 import Options.Applicative
 import Data.Monoid
 
+import qualified Doc
+
 data T
   = StartGUI
-  | InstallDevDocs [String]
+  | InstallDevDocs [Doc.Collection]
   | InstallHoogle String String
   | PrintPublicAPI
   deriving (Show)
@@ -46,7 +48,7 @@ installDevDocsParser =
   flag' InstallDevDocs
     (  long "install-devdocs"
     <> help "Install DevDocs' docset")
-  <*> some (strArgument
+  <*> some (Doc.Collection <$> strArgument
     (  metavar "DOC"
     <> help "Docset to install, like \"haskell\", \"python\""
     ))

@@ -82,8 +82,8 @@ getMetaJson url = do
   bs <- download url
   ExceptT . return $ Aeson.eitherDecode bs
 
-findRecent :: [Meta] -> [String] -> [Either String Meta]
-findRecent metas = map find
+findRecent :: [Meta] -> [Doc.Collection] -> [Either String Meta]
+findRecent metas = map (find . Doc.getCollection)
   where
     metaSortKey Meta{metaRelease, metaVersion, metaMtime} =
       (metaRelease, metaVersion, metaMtime)
@@ -113,17 +113,17 @@ untgz bs filePath =
   in Tar.unpack (toFilePath filePath) (Tar.read decompressed)
 
 -- TODO @incomplete: multithreads and proxy
-downloadMany :: Path Abs Dir -> [String] -> IO ()
-downloadMany unpackTo' wants = do
+downloadMany :: Path Abs Dir -> [Doc.Collection] -> IO ()
+downloadMany unpackTo' collections = do
   unpackTo <- (unpackTo' </>) <$> (parseRelDir $ show Doc.DevDocs)
-  report ["downloading", show $ length wants, "docsets to", toFilePath unpackTo]
+  report ["downloading", show $ length collections, "docsets to", toFilePath unpackTo]
 
   metaJsonR <- runExceptT $ getMetaJson metaJsonUrl
   case metaJsonR of
     Left e ->
       report [e]
     Right metas ->
-      let matches = findRecent metas wants
+      let matches = findRecent metas collections
       in mapM_ (downloadOne unpackTo) matches
   where
     downloadOne _ (Left e) =
