@@ -70,15 +70,6 @@ stack install
 echo "binary installed to $(stack path --local-bin)"
 ----
 
-Note, due to a restriction of stack, you shouldn't delete the
-`.stack-work` directory inside the source code directory you just cloned
-after the build, for the installed binary still need to access files in
-it. If you really don't want to depends on this `.stack-wrok` directory,
-you can copy the `ui` directory of this repository to somewhere, say
-`/foo/ui`, and `config.yaml` to `/foo/config.yaml`, and then start this
-application with `doc_browser_datadir=/foo doc-browser` instead of the
-usual `doc-browser`.
-
 If you have trouble building this application, you can:
 
 * Is it a dependency problem?
@@ -157,15 +148,12 @@ doc-browser --install-hoogle URL COLLECTION
 
 === Start the Application
 
-If you installed the application from AUR, the recommended way is to
-start it with the shipped .desktop file.
-
-You can also start it with:
+If you installed the application from AUR, you can either start it with
+the shipped .desktop file, or with:
 
 [source,bash]
 ----
-doc_browser_datadir=$INSTALL_ROOT/usr/share/doc-browser doc-browser
-# e.g. doc_browser_datadir=/usr/share/doc-browser doc-browser
+doc-browser
 ----
 
 If you installed from source, start it with:
@@ -260,9 +248,8 @@ Create the file `XDG_CONFIG/doc-browser/config.yaml` and edit it.
 The file is in YAML format, configurable keys and documentations can be
 found at:
 
-* `/usr/share/doc-browser/config.yaml`, if you installed from AUR
-* `config.yaml` in the root of the source repository, if you installed
-from source
+* `doc-browser --print-default-config`
+* or `config.yaml` in the root of the source repository
 
 The screenshot uses the font http://input.fontbureau.com/[Input Mono],
 it is free for personal use, you can install and config doc browser to
