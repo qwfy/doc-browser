@@ -162,16 +162,18 @@ installFromDir unpackPath = do
           , "--local=" ++ toFilePath unpackPath
           ]
 
-  let renameTxts direction files = do
-        let suffix = "__co.aixon.docbrowser-tempfile__"
-        case direction of
-          AB -> report ["temporarily relocate x to x." ++ suffix ++ ", for x in:"]
-          BA -> report ["move x." ++ suffix ++ " back to x, for x in:"]
-        forM_ files (\orig -> do
-          report [toFilePath orig]
+  let renameTxts direction files
+        | null files = return ()
+        | otherwise = do
+          let suffix = "__co.aixon.docbrowser-tempfile__"
           case direction of
-            AB -> orig <.> suffix >>= renameFile orig
-            BA -> orig <.> suffix >>= (flip renameFile) orig)
+            AB -> report ["temporarily relocate x to x." ++ suffix ++ ", for x in:"]
+            BA -> report ["move x." ++ suffix ++ " back to x, for x in:"]
+          forM_ files (\orig -> do
+            report [toFilePath orig]
+            case direction of
+              AB -> orig <.> suffix >>= renameFile orig
+              BA -> orig <.> suffix >>= (flip renameFile) orig)
 
   let setup = do
         txts <- findTxtButNotHoogleTxt unpackPath
