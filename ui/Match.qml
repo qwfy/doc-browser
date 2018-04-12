@@ -69,7 +69,7 @@ Rectangle {
             anchors.left: shortcut.right
             anchors.leftMargin: Style.ewPadding
             anchors.verticalCenter: parent.verticalCenter
-            source: MatchJs.icon(modelData.collection)
+            source: MatchJs.icon(modelData.vendor, modelData.collection)
         }
 
         Column {
@@ -105,15 +105,15 @@ Rectangle {
                     color: root.isSelected ? Style.selectedFg : Style.lightFg
                 }
                 Text {
-                    visible: modelData.version !== ""
-                    text: modelData.version
+                    visible: UtilJs.isString(modelData.module_)
+                    anchors.leftMargin: 3
+                    text: modelData.module_
                     font: Style.matchMetaFont
                     color: root.isSelected ? Style.selectedFg : Style.lightFg
                 }
                 Text {
-                    visible: UtilJs.isString(modelData.module_)
-                    anchors.leftMargin: 3
-                    text: modelData.module_
+                    visible: isHoogle && modelData.version !== ""
+                    text: modelData.version
                     font: Style.matchMetaFont
                     color: root.isSelected ? Style.selectedFg : Style.lightFg
                 }
