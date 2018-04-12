@@ -12,13 +12,6 @@ description:    Please see the README on Github at <https://github.com/qwfy/doc-
 extra-source-files:
 - README.asciidoc
 
-data-files:
-- ui/*.qml
-- ui/*.js
-- ui/icon/**/*.png
-- ui/icon/**/SOURCE
-- config.yaml
-
 dependencies:
 - base >= 4.7 && < 5
 - filepath
