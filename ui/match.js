@@ -42,10 +42,11 @@ function shortcutColor(index) {
 function icon(vendor, collection) {
     if (vendor === "DevDocs") {
         var l = collection.toLowerCase();
-        if (l === "c++") {
-            l = "cpp"
-        }
         l = l.replace(/-/g, '_');
+        l = l.replace(/ /g, '_');
+        if (l === "c++") l = "cpp";
+        if (l === "nginx_lua_module") l = "nginx";
+        if (l === "löve") l = "love";
         return "icon/" + l + "/16@2x.png";
     } else if (vendor === "Hoogle") {
         return "icon/" + "haskell" + "/16@2x.png";
