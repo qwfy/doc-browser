@@ -7,44 +7,7 @@
 --   Please see the README on Github at
 --   <a>https://github.com/qwfy/doc-browser#readme</a>
 @package doc-browser
-@version 0.3.0
-
-module Doc
-
--- | Vendor of a docset
-data Vendor
-
--- | Docset provided by devdocs.io
-DevDocs :: Vendor
-
--- | Docset provided by an archive, from which a Hoogle database can be
---   generated
-Hoogle :: Vendor
-
--- | To which language or library does this entry belong
-newtype Collection
-Collection :: String -> Collection
-[getCollection] :: Collection -> String
-
--- | Version of the collection
---   
---   For <a>DevDocs</a>, this is the version of the language or the
---   library, e.g. the <tt>3.6.4</tt> as in <tt>Python 3.6.4</tt>, or the
---   <tt>1.13.0</tt> as in <tt>NumPy 1.13.0</tt>.
---   
---   For <a>Hoogle</a>, this is the <tt>NAME</tt> parameter in the
---   <tt>doc-browser --install-hoogle</tt> command.
-newtype Version
-Version :: String -> Version
-[getVersion] :: Version -> String
-combineCollectionVersion :: Collection -> Version -> String
-breakCollectionVersion :: String -> (Collection, Version)
-instance GHC.Classes.Ord Doc.Version
-instance GHC.Classes.Eq Doc.Version
-instance GHC.Classes.Ord Doc.Collection
-instance GHC.Classes.Eq Doc.Collection
-instance GHC.Classes.Eq Doc.Vendor
-instance GHC.Show.Show Doc.Vendor
+@version 0.4.0
 
 module Match
 
@@ -85,35 +48,6 @@ instance GHC.Show.Show Match.T
 instance GHC.Classes.Eq Match.T
 instance Data.Aeson.Types.ToJSON.ToJSON Match.T
 
-module Entry
-data T
-T :: Collection -> Version -> String -> FilePath -> ByteString -> T
-[collection] :: T -> Collection
-[version] :: T -> Version
-[name] :: T -> String
-[path] :: T -> FilePath
-[nameLower] :: T -> ByteString
-toMatch :: (String -> Text) -> T -> T
-instance GHC.Classes.Eq Entry.T
-instance GHC.Classes.Ord Entry.T
-
-module DevDocs
-loadAll :: FilePath -> IO [T]
-getDocFile :: Collection -> Version -> FilePath -> FilePath
-instance GHC.Generics.Generic DevDocs.Index
-instance GHC.Show.Show DevDocs.Index
-instance Data.Aeson.Types.FromJSON.FromJSON DevDocs.IndexList
-instance Data.Aeson.Types.FromJSON.FromJSON DevDocs.Index
-
-module Opt
-data T
-StartGUI :: T
-InstallDevDocs :: [String] -> T
-InstallHoogle :: String -> String -> T
-get :: IO T
-instance GHC.Show.Show Opt.IsStartedOK
-instance GHC.Show.Show Opt.T
-
 module Slot
 data T
 T :: TMVar Query -> TMVar String -> T
@@ -128,41 +62,146 @@ module Utils
 (|>) :: () => t1 -> (t1 -> t2) -> t2
 infixl 0 |>
 download :: String -> ExceptT String IO ByteString
-downloadFile :: String -> FilePath -> ExceptT String IO ()
+downloadFile :: String -> Path a File -> ExceptT String IO ()
 download' :: String -> IO ByteString
-downloadFile' :: String -> FilePath -> IO ()
+downloadFile' :: String -> Path a File -> IO ()
 report :: [String] -> IO ()
 updateTMVar :: TMVar a -> a -> STM ()
-unpackXzInto :: FilePath -> FilePath -> IO ()
+unpackXzInto :: Path a File -> Path a Dir -> IO ()
 fireAndForget :: IO a -> IO ()
 data DownloadError
 DownloadError :: String -> String -> DownloadError
 localTime :: IO String
 uppercaseFirst :: String -> String
 lowercaseFirst :: String -> String
+paragraph :: [String] -> String
+paragraphs :: [[String]] -> [String]
+joinDir :: Path a Dir -> [Path Rel Dir] -> Path a Dir
+hasExtension :: MonadThrow m => Path a File -> String -> m Bool
+newtype ConfigRoot
+ConfigRoot :: Path Abs Dir -> ConfigRoot
+[getConfigRoot] :: ConfigRoot -> Path Abs Dir
+newtype CacheRoot
+CacheRoot :: Path Abs Dir -> CacheRoot
+[getCacheRoot] :: CacheRoot -> Path Abs Dir
+tryRemoveFile :: Path a File -> IO ()
+extractAp :: (a -> b -> IO c) -> IO a -> b -> IO c
 instance GHC.Show.Show Utils.DownloadError
 instance GHC.Exception.Exception Utils.DownloadError
 
+module Embeded
+configYaml :: ByteString
+extractUIDirInto :: Path a Dir -> IO ()
+
+module Doc
+
+-- | Vendor of a docset
+data Vendor
+
+-- | Docset provided by devdocs.io
+DevDocs :: Vendor
+
+-- | Docset provided by an archive, from which a Hoogle database can be
+--   generated
+Hoogle :: Vendor
+
+-- | Collection of the entry
+--   
+--   For <a>DevDocs</a>, this is the language or library that this entry
+--   belongs to.
+--   
+--   For <a>Hoogle</a>, this is the <tt>COLLECTION</tt> parameter in the
+--   <tt>doc-browser --install-hoogle</tt> command.
+data Collection
+getCollection :: Collection -> String
+parseCollection :: MonadThrow m => String -> m Collection
+collection :: QuasiQuoter
+
+-- | Version of the collection
+--   
+--   For <a>DevDocs</a>, this is the version of the language or the
+--   library, e.g. the <tt>3.6.4</tt> as in <tt>Python 3.6.4</tt>, or the
+--   <tt>1.13.0</tt> as in <tt>NumPy 1.13.0</tt>.
+--   
+--   For <a>Hoogle</a>, this is the version of the package as specified in
+--   their cabal file.
+newtype Version
+Version :: String -> Version
+[getVersion] :: Version -> String
+combineCollectionVersion :: Collection -> Version -> String
+breakCollectionVersion :: MonadThrow m => Path a Dir -> m (Collection, Version)
+data InvalidCollection
+instance GHC.Show.Show Doc.InvalidCollectionVersion
+instance GHC.Classes.Ord Doc.Version
+instance GHC.Classes.Eq Doc.Version
+instance GHC.Show.Show Doc.InvalidCollection
+instance Data.Data.Data Doc.Collection
+instance GHC.Classes.Ord Doc.Collection
+instance GHC.Classes.Eq Doc.Collection
+instance GHC.Classes.Eq Doc.Vendor
+instance GHC.Show.Show Doc.Vendor
+instance GHC.Exception.Exception Doc.InvalidCollectionVersion
+instance GHC.Exception.Exception Doc.InvalidCollection
+instance GHC.Show.Show Doc.Collection
+instance Data.Aeson.Types.FromJSON.FromJSON Doc.Collection
+
+module Opt
+data T
+StartGUI :: Logging -> T
+InstallDevDocs :: [Collection] -> T
+InstallHoogle :: String -> Collection -> T
+PrintPublicAPI :: T
+PrintDefaultConfig :: T
+get :: IO T
+data Logging
+NoLog :: Logging
+Log :: Logging
+instance GHC.Show.Show Opt.IsStartedOK
+instance GHC.Show.Show Opt.T
+instance GHC.Show.Show Opt.Logging
+
+module Hoo
+search :: ConfigRoot -> Collection -> Database -> Int -> String -> (String -> Text) -> [T]
+findDatabase :: ConfigRoot -> IO (Maybe (Path Abs File))
+findDatabases :: ConfigRoot -> IO ([Path Abs File])
+install :: ConfigRoot -> CacheRoot -> String -> Collection -> IO ()
+installFromDir :: Path Abs Dir -> IO ()
+
 module Upgrade
-start :: FilePath -> IO Continue
+start :: ConfigRoot -> Path a Dir -> IO Continue
 data Continue
 Continue :: Continue
 Abort :: Continue
 instance GHC.Show.Show Upgrade.UpgradeError
 instance GHC.Exception.Exception Upgrade.UpgradeError
 
-module Hoo
-search :: FilePath -> Version -> Database -> Int -> String -> (String -> Text) -> [T]
-findDatabase :: FilePath -> IO (Maybe FilePath)
-install :: FilePath -> FilePath -> String -> String -> IO ()
+module Entry
+data T
+T :: Collection -> Version -> String -> FilePath -> ByteString -> T
+[collection] :: T -> Collection
+[version] :: T -> Version
+[name] :: T -> String
+[path] :: T -> FilePath
+[nameLower] :: T -> ByteString
+toMatch :: (String -> Text) -> T -> T
+instance GHC.Classes.Eq Entry.T
+instance GHC.Classes.Ord Entry.T
 
 module DevDocsMeta
-downloadMany :: FilePath -> [String] -> IO ()
+downloadMany :: ConfigRoot -> [Collection] -> IO ()
 printTypeMap :: IO ()
 typeMap :: Map Collection String
 instance GHC.Generics.Generic DevDocsMeta.Meta
 instance GHC.Show.Show DevDocsMeta.Meta
 instance Data.Aeson.Types.FromJSON.FromJSON DevDocsMeta.Meta
+
+module DevDocs
+loadAll :: ConfigRoot -> IO [T]
+getDocFile :: MonadThrow m => Collection -> Version -> Path Rel File -> m (Path Rel File)
+instance GHC.Generics.Generic DevDocs.Index
+instance GHC.Show.Show DevDocs.Index
+instance Data.Aeson.Types.FromJSON.FromJSON DevDocs.IndexList
+instance Data.Aeson.Types.FromJSON.FromJSON DevDocs.Index
 
 module Config
 data T
@@ -185,7 +224,7 @@ data Font
 Font :: Text -> Float -> Font
 [family] :: Font -> Text
 [pointSize] :: Font -> Float
-load :: FilePath -> IO T
+load :: ConfigRoot -> IO T
 instance GHC.Generics.Generic Config.T
 instance GHC.Show.Show Config.T
 instance GHC.Generics.Generic Config.Font
@@ -196,15 +235,19 @@ instance Data.Aeson.Types.FromJSON.FromJSON Config.Font
 instance Data.Aeson.Types.ToJSON.ToJSON Config.Font
 
 module Style
-createQml :: FilePath -> T -> IO ()
+createQml :: Path Abs Dir -> T -> IO ()
 
 module Server
-start :: T -> FilePath -> FilePath -> T -> IO ()
+start :: Logging -> T -> ConfigRoot -> CacheRoot -> T -> IO ()
+publicApiMarkdown :: String
+instance Servant.Docs.Internal.ToParam Server.Q
+instance Servant.Docs.Internal.ToSample ()
+instance Servant.Docs.Internal.ToSample Match.T
 
 module Search
 search :: [T] -> Int -> GeneralQuery -> [T]
 makeQuery :: String -> Maybe Query
-startThread :: T -> FilePath -> [T] -> Maybe FilePath -> T -> ([T] -> IO ()) -> IO ThreadId
+startThread :: T -> ConfigRoot -> [T] -> Maybe (Path Abs File) -> T -> ([T] -> IO ()) -> IO ThreadId
 queryToGoogle :: Query -> String
 instance GHC.Show.Show Search.Query
 instance GHC.Show.Show Search.HoogleQuery
