@@ -190,10 +190,10 @@ rawServer configRoot cacheRoot request respond = do
 
   builder <-
     case paths of
-      (vendor : cv : rest) | vendor == show Doc.DevDocs ->
-        let (collection, version) = Doc.breakCollectionVersion cv
-            path = intercalate "/" rest
-        in parseRelFile path >>= fetchDevdocs configRoot cacheRoot collection version
+      (vendor : cv : rest) | vendor == show Doc.DevDocs -> do
+        (collection, version) <- parseRelDir cv >>= Doc.breakCollectionVersion
+        let path = intercalate "/" rest
+        parseRelFile path >>= fetchDevdocs configRoot cacheRoot collection version
       (vendor : _) | vendor == show Doc.Hoogle ->
         let path = intercalate "/" paths
         in fetchHoogle configRoot path

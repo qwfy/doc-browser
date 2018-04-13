@@ -63,7 +63,7 @@ getPackageVersion configRoot target collection = do
   let url = dropWhile (== '/') $ removeProtocolAndLeading configRoot url'
   let urls = FilePath.splitDirectories url
   case urls of
-    (vnd : coll : pkgVer : _) | vnd == show Doc.Hoogle, Doc.Collection coll == collection ->
+    (vnd : coll : pkgVer : _) | vnd == show Doc.Hoogle, coll == show collection ->
       pkgVer `isPkgVerOfPkg` package
     _ ->
       Nothing

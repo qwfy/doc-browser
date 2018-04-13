@@ -1,5 +1,6 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Search
   ( search
@@ -83,13 +84,13 @@ makeQuery str =
 
 
 shortcuts = Map.fromList
-  [ ("hs", Doc.Collection "Haskell")
-  , ("py", Doc.Collection "Python")
-  , ("tf", Doc.Collection "TensorFlow")
-  , ("np", Doc.Collection "NumPy")
-  , ("pd", Doc.Collection "pandas")
-  , ("er", Doc.Collection "Erlang")
-  , ("mp", Doc.Collection "Matplotlib")
+  [ ("hs", [Doc.collection|Haskell|])
+  , ("py", [Doc.collection|Python|])
+  , ("tf", [Doc.collection|TensorFlow|])
+  , ("np", [Doc.collection|NumPy|])
+  , ("pd", [Doc.collection|pandas|])
+  , ("er", [Doc.collection|Erlang|])
+  , ("mp", [Doc.collection|Matplotlib|])
   ]
 
 queryToGoogle :: Query -> String
@@ -99,8 +100,8 @@ queryToGoogle (G (Limited abbr str)) =
   case Map.lookup abbr shortcuts of
     Nothing ->
       str
-    Just (Doc.Collection collection) ->
-      unwords [collection, str]
+    Just collection ->
+      unwords [show collection, str]
 
 filterEntry :: GeneralQuery -> [Entry.T] -> [Entry.T]
 filterEntry (Global _) es = es
@@ -233,8 +234,8 @@ startThread config configRoot entries hooMay slot handleMatches =
                 Nothing ->
                   -- TODO @incomplete: warn user about the lack of a hoogle database
                   return []
-                Just dbPath ->
+                Just dbPath -> do
                   -- load the database on every search, instead of keeping it in memory,
                   -- this is done deliberately - turns out that it makes the GUI more responsive
-                  let collection = Doc.Collection . FilePath.takeBaseName . toFilePath $ dbPath
-                  in Hoogle.withDatabase (toFilePath dbPath) (\db -> return $ Hoo.search configRoot collection db limit query prefixHost')
+                  collection <- Doc.parseCollection . FilePath.takeBaseName . toFilePath $ dbPath
+                  Hoogle.withDatabase (toFilePath dbPath) (\db -> return $ Hoo.search configRoot collection db limit query prefixHost')

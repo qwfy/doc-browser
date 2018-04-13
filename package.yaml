@@ -60,6 +60,7 @@ dependencies:
 - path-io
 - exceptions
 - file-embed
+- template-haskell
 
 library:
   source-dirs: src

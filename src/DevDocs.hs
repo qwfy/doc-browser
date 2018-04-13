@@ -47,7 +47,7 @@ scan :: ConfigRoot -> IO [(Doc.Collection, Doc.Version)]
 scan configRoot = do
   dir <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
   (dirs, _) <- listDir dir
-  return $ map (Doc.breakCollectionVersion . toFilePath) dirs
+  mapM Doc.breakCollectionVersion dirs
 
 
 loadAll :: ConfigRoot -> IO [Entry.T]

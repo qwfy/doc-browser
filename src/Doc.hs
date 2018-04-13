@@ -1,7 +1,32 @@
-module Doc where
+{-# LANGUAGE LambdaCase #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
-import System.FilePath
+module Doc
+  ( Vendor(..)
+  , Collection
+  , getCollection
+  , parseCollection
+  , collection
+  , Version(..)
+  , combineCollectionVersion
+  , breakCollectionVersion
+  , InvalidCollection
+  ) where
+
+import Control.Exception
+import Control.Monad.Catch
+
+import Data.Aeson
 import Data.List.Extra
+import qualified Data.Text as Text
+
+import qualified System.FilePath as FilePath
+import Path
+
+import Language.Haskell.TH.Quote
+import Data.Data
+
+import Utils
 
 
 -- |Vendor of a docset
@@ -18,10 +43,44 @@ data Vendor
 -- For 'Hoogle', this is the @COLLECTION@ parameter in the @doc-browser --install-hoogle@ command.
 newtype Collection =
   Collection {getCollection :: String}
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Data, Typeable)
 
 instance Show Collection where
   show (Collection x) = x
+
+data InvalidCollection
+  = InvalidCollection String
+  deriving (Show)
+
+instance Exception InvalidCollection
+
+instance FromJSON Collection where
+  parseJSON = withText "Collection" parse
+    where
+      parse txt =
+        case parseCollection (Text.unpack txt) of
+          Left e -> fail $ show e
+          Right coll -> return coll
+
+cvSep = "=="
+
+parseCollection :: MonadThrow m => String -> m Collection
+parseCollection str =
+  if cvSep `isInfixOf` str
+    then throwM $ InvalidCollection str
+    else return . Collection . replace "/" "-" $ str
+
+collection :: QuasiQuoter
+collection = QuasiQuoter
+  { quoteExp = q
+  , quotePat = undefined
+  , quoteType = undefined
+  , quoteDec = undefined
+  }
+  where
+    q str = do
+      coll <- parseCollection str
+      dataToExpQ (const Nothing) coll
 
 -- |Version of the collection
 --
@@ -32,15 +91,23 @@ newtype Version =
   Version {getVersion :: String}
   deriving (Eq, Ord)
 
+data InvalidCollectionVersion
+  = InvalidCollectionVersion String
+  deriving (Show)
 
--- TODO @incomplete: handle multiple occurrences of "=="
+instance Exception InvalidCollectionVersion
+
 combineCollectionVersion :: Collection -> Version -> String
 combineCollectionVersion (Collection c) (Version v) =
   c ++ "==" ++ v
 
--- TODO @incomplete: this should be a Maybe
-breakCollectionVersion :: String -> (Collection, Version)
+breakCollectionVersion :: MonadThrow m => Path a Dir -> m (Collection, Version)
 breakCollectionVersion cv =
-  let (c, v') = breakOn "==" . takeFileName $ cv
-      v = drop (length "==") v'
-  in (Collection c, Version v)
+  toFilePath cv
+    |> FilePath.dropTrailingPathSeparator
+    |> FilePath.takeFileName
+    |> stripInfix cvSep
+    |> \case
+          Nothing -> throwM $ InvalidCollectionVersion (toFilePath cv)
+          Just ("", _) -> throwM $ InvalidCollectionVersion (toFilePath cv)
+          Just (c, v) -> return (Collection c, Version v)

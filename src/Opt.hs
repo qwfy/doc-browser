@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 module Opt
   ( T(..)
@@ -54,12 +55,18 @@ startGUIParser =
     (  long "debug"
     <> help "Write some debug information to stdout, I'm sorry if you need this")
 
+readCollection :: ReadM Doc.Collection
+readCollection = eitherReader $ \str' ->
+  case Doc.parseCollection str' of
+    Left e -> Left $ show e
+    Right x -> Right x
+
 installDevDocsParser :: Parser T
 installDevDocsParser =
   flag' InstallDevDocs
     (  long "install-devdocs"
     <> help "Install DevDocs' docset")
-  <*> some (Doc.Collection <$> strArgument
+  <*> some (argument readCollection
     (  metavar "DOC"
     <> help "Docset to install, like \"haskell\", \"python\""
     ))
@@ -78,7 +85,7 @@ installHoogleParser =
         , "It expects the unpacked archive can be consumed by `hoogle generate --local=<unpack_dir>`"
         , "Example: https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz"
         ]))
-  <*> (Doc.Collection <$> strArgument
+  <*> (argument readCollection
     (  metavar "COLLECTION"
     <> help "Name of the database and documentation directory. Something like \"lts-10.8\" would be a good choice"))
 

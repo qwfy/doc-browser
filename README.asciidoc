@@ -125,8 +125,6 @@ doc-browser --install-hoogle URL COLLECTION
 # which I suggest you to use if you have a bad network connection,
 # since the download function included in this program is pretty savage at this stage.
 #
-# COLLECTION shouldn't contain "/".
-#
 # See `doc-browser --help` for more
 #
 # Don't panic if you see a lot of lines that look like this

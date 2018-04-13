@@ -12,7 +12,7 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.ByteString.Char8 as C
 
-import System.FilePath
+import qualified System.FilePath as FilePath
 
 import qualified Match
 import qualified Doc
@@ -49,7 +49,7 @@ toMatch prefixHost entry = Match.T
 
 buildUrl :: T -> String
 buildUrl T {collection, version, Entry.path = entryPath} =
-  joinPath
+  FilePath.joinPath
     [ show Doc.DevDocs
     , Doc.combineCollectionVersion collection version
     , entryPath
