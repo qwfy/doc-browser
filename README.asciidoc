@@ -25,8 +25,8 @@ toc::[]
 == Current Status
 
 It's in early stage, the main interface is in shape and usable, but
-other aspects, like installing docsets and configuration, lack
-polishing. That being said, I use this application every day.
+other aspects, like installing docsets, lack polishing.
+That being said, I use this application every day.
 
 == Installation
 
@@ -35,18 +35,13 @@ polishing. That being said, I use this application every day.
 There is a https://aur.archlinux.org/packages/doc-browser-git/[PKGBUILD]
 available on AUR.
 
-Please note, due to a restriction of stack, when invoking `doc-browser` from the command line, please prefix `doc_browser_datadir=/usr/share/doc-browser` to it, like this: `doc_browser_datadir=/usr/share/doc-browser doc-browser`, this ugly situation will be dealt with in the future version. Launching it using the `.desktop` file works correctly.
-
 === Other Linux Distros
 
 Follow these steps to install from source:
 
 1.  This application uses http://qt-project.org/[Qt 5], make sure you
 have it installed. You also need https://wiki.qt.io/QtWebEngine[Qt
-WebEngine], install it if it doesn't come with your Qt installation, on
-Arch Linux, this is provided by the
-https://www.archlinux.org/packages/extra/x86_64/qt5-webengine/[extra/qt5-webengine]
-package.
+WebEngine], install it if it doesn't come with your Qt installation.
 2.  Install the Haskell tool
 https://docs.haskellstack.org/en/stable/install_and_upgrade/[stack].
 3.  The build process depends on an executable called `c2hs`, you can
@@ -141,7 +136,7 @@ doc-browser --install-hoogle URL COLLECTION
 # These are necessary to work around a Hoogle issue.
 ----
 
-1.  Prefix or suffix a search with "/hh" to query Hoogle, like this:
+3.  Prefix or suffix a search with "/hh" to query Hoogle, like this:
 `/hh[a]->Int->[a]`.
 
 === Start the Application
