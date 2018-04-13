@@ -126,9 +126,10 @@ instance ToSample Match.T where
     ]
 
 type SearchAPI = "search" :> Q :> Get '[JSON] [Match.T]
+type SummonAPI = "summon" :> Q :> Get '[JSON] ()
 
 type PublicAPI
-  =    "summon" :> Q :> Get '[JSON] ()
+  =    SummonAPI
   :<|> SearchAPI
 
 publicApi :: Proxy PublicAPI
@@ -145,10 +146,13 @@ publicApiMarkdown =
           , "found at the root of this repository."]
         , [ "APIs are listed below."]
         ]
-      extraInfo' = extraInfo (Proxy :: Proxy SearchAPI) $
-        defAction & notes <>~ [DocNote "See Also"
-          ["https://qwfy.github.io/doc-browser/doc/Match.html#t:T"]]
-  in markdown $ docsWith docOptions [docIntro] extraInfo' publicApi
+      extraInfoSearch = extraInfo (Proxy :: Proxy SearchAPI) $
+        defAction & notes <>~ [DocNote "Function"
+          ["Search doc-browser with the given string, and return the search result as a JSON array. Detailed documentation of the type of the element of the returned array can be found at: https://qwfy.github.io/doc-browser/doc/Match.html#t:T"]]
+      extraInfoSummon = extraInfo (Proxy :: Proxy SummonAPI) $
+        defAction & notes <>~ [DocNote "Function"
+          ["Bring the doc-browser GUI to front, and search it with the given string."]]
+  in markdown $ docsWith docOptions [docIntro] (extraInfoSearch <> extraInfoSummon) publicApi
 
 publicServer :: Slot.T -> Server PublicAPI
 publicServer slot =

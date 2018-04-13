@@ -10,9 +10,9 @@ APIs are listed below.
 
 ## GET /search
 
-### See Also
+### Function
 
-https://qwfy.github.io/doc-browser/doc/Match.html#t:T
+Search doc-browser with the given string, and return the search result as a JSON array. Detailed documentation of the type of the element of the returned array can be found at: https://qwfy.github.io/doc-browser/doc/Match.html#t:T
 
 ### GET Parameters:
 
@@ -50,6 +50,10 @@ https://qwfy.github.io/doc-browser/doc/Match.html#t:T
     ```
 
 ## GET /summon
+
+### Function
+
+Bring the doc-browser GUI to front, and search it with the given string.
 
 ### GET Parameters:
 
