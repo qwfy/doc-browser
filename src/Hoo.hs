@@ -198,7 +198,7 @@ getArchivePath url cachePath
     cached <- doesFileExist cachePath
     unless cached $ do
       report ["downloading", url, "to", toFilePath cachePath]
-      downloadFile' url cachePath
+      downloadFile url cachePath
     return cachePath
   | otherwise =
     -- It's the user's fault if this file does not exist.

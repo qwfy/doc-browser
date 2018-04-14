@@ -4,14 +4,12 @@
 module Utils
   ( (|>)
   , download
+  , downloadJSON
   , downloadFile
-  , download'
-  , downloadFile'
   , report
   , updateTMVar
   , unpackXzInto
   , fireAndForget
-  , DownloadError(..)
   , localTime
   , uppercaseFirst
   , lowercaseFirst
@@ -23,15 +21,14 @@ module Utils
   , CacheRoot(..)
   , tryRemoveFile
   , extractAp
+  , reportExceptions
   ) where
 
-import qualified Network.Wreq as Wreq
+import Network.Wreq
 import qualified Data.ByteString.Lazy as LBS
-import qualified Control.Lens as Lens
+import Control.Lens ((^.))
 
 import Control.Monad
-import Control.Monad.Trans.Except
-import Control.Monad.Trans.Class
 import Control.Monad.Catch
 import Control.Exception
 
@@ -43,6 +40,7 @@ import Network.HTTP.Types.Status
 
 import System.IO.Error
 
+import Data.Aeson
 import Data.Time.LocalTime
 import Data.Time.Format
 import Data.Char
@@ -63,34 +61,24 @@ data DownloadError
 
 instance Exception DownloadError
 
-download :: String -> ExceptT String IO LBS.ByteString
+download :: String -> IO LBS.ByteString
 download url = do
-  resp <- lift $ Wreq.get url
-  let respStatus = resp Lens.^. Wreq.responseStatus
+  resp <- get url
+  let respStatus = resp ^. responseStatus
   if respStatus == status200
-    then
-      return $ resp Lens.^. Wreq.responseBody
-    else
-      throwE . unwords $ ["error downloading", url, show respStatus]
+    then return $ resp ^. responseBody
+    else throwIO $ DownloadError url (show respStatus)
 
-downloadFile :: String -> Path a File -> ExceptT String IO ()
+downloadJSON :: FromJSON a => String -> IO a
+downloadJSON url = do
+  bs <- download url
+  case eitherDecode' bs of
+    Left err -> throwIO $ DownloadError url err
+    Right a -> return a
+
+downloadFile :: String -> Path a File -> IO ()
 downloadFile url saveTo = do
   bs <- download url
-  lift $ LBS.writeFile (toFilePath saveTo) bs
-
-download' :: String -> IO LBS.ByteString
-download' url = do
-  resp <- Wreq.get url
-  let respStatus = resp Lens.^. Wreq.responseStatus
-  if respStatus == status200
-    then
-      return $ resp Lens.^. Wreq.responseBody
-    else
-      throwIO $ DownloadError url (show respStatus)
-
-downloadFile' :: String -> Path a File -> IO ()
-downloadFile' url saveTo = do
-  bs <- download' url
   LBS.writeFile (toFilePath saveTo) bs
 
 -- TODO @incomplete: proper logging
@@ -149,3 +137,6 @@ extractAp :: (a -> b -> IO c) -> IO a -> b -> IO c
 extractAp f ma b = do
   a <- ma
   f a b
+
+reportExceptions :: SomeException -> IO ()
+reportExceptions e = report [show e]

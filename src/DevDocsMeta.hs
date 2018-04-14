@@ -14,7 +14,9 @@ import GHC.Generics (Generic)
 
 import qualified Codec.Compression.GZip as GZip
 import qualified Codec.Archive.Tar as Tar
-import Control.Monad.Trans.Except
+
+import Control.Monad
+import Control.Exception
 
 import Path
 
@@ -27,8 +29,8 @@ import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Map.Strict as Map
 
-import Utils
 import qualified Doc
+import Utils
 
 metaJsonUrl = "https://devdocs.io/docs.json"
 
@@ -68,20 +70,11 @@ instance Aeson.FromJSON Meta where
 
 printTypeMap :: IO ()
 printTypeMap = do
-  metasR <- runExceptT $ getMetaJson metaJsonUrl
-  case metasR of
-    Left err ->
-      report ["error decoding json:", err]
-    Right metas -> do
-      let showMeta Meta{metaName, metaType} =
-            Text.concat ["  , ([Doc.collection|", Text.pack $ show metaName, "|], \"", metaType, "\")"]
-      mapM_ TextIO.putStrLn (Data.List.nub $ map showMeta metas)
-      TextIO.putStrLn "  ]"
-
-getMetaJson :: String -> ExceptT String IO [Meta]
-getMetaJson url = do
-  bs <- download url
-  ExceptT . return $ Aeson.eitherDecode bs
+  metas <- downloadJSON metaJsonUrl
+  let showMeta Meta{metaName, metaType} =
+        Text.concat ["  , ([Doc.collection|", Text.pack $ show metaName, "|], \"", metaType, "\")"]
+  mapM_ TextIO.putStrLn (Data.List.nub $ map showMeta metas)
+  TextIO.putStrLn "  ]"
 
 findRecent :: [Meta] -> [Doc.Collection] -> [Either String Meta]
 findRecent metas = map find
@@ -120,40 +113,28 @@ downloadMany configRoot collections = do
   unpackTo <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
   report ["downloading", show $ length collections, "docsets to", toFilePath unpackTo]
 
-  metaJsonR <- runExceptT $ getMetaJson metaJsonUrl
-  case metaJsonR of
-    Left e ->
-      report [e]
-    Right metas ->
-      let matches = findRecent metas collections
-      in mapM_ (downloadOne unpackTo) matches
+  metas <- downloadJSON metaJsonUrl
+  let matches = findRecent metas collections
+  forM_ matches (\x -> downloadOne unpackTo x `catch` reportExceptions)
+
   where
-    downloadOne _ (Left e) =
-      report [e]
+    downloadOne _ (Left e) = fail e
     downloadOne unpackTo (Right meta@Meta{metaName, metaRelease}) = do
       let url = toDownloadUrl meta
       let docId = Data.List.intercalate "-"
             [ show metaName
             , maybe "<no version>" Text.unpack metaRelease]
-      report [ "downloading"
-             , docId
-             , "from"
-             , url ]
-      result <- runExceptT $ download url
-      case result of
-        Left e ->
-          report [e]
-        Right bs -> do
-          let collectionHome = Doc.combineCollectionVersion
-                metaName
-                (Doc.Version . Text.unpack $ fromMaybe "" metaRelease)
-          dir <- (unpackTo </>) <$> (parseRelDir collectionHome)
-          report ["unpacking", docId, "to", toFilePath dir]
-          untgz bs dir
-          report ["installed", docId]
+      report ["downloading", docId , "from", url]
+      bs <- download url
+      let collectionHome = Doc.combineCollectionVersion
+            metaName
+            (Doc.Version . Text.unpack $ fromMaybe "" metaRelease)
+      dir <- (unpackTo </>) <$> (parseRelDir collectionHome)
+      report ["unpacking", docId, "to", toFilePath dir]
+      untgz bs dir
+      report ["installed", docId]
 
 typeMap :: Map.Map Doc.Collection String
-
 typeMap = Map.fromList
   [ ([Doc.collection|Angular|], "angular")
   , ([Doc.collection|Angular.js|], "angularjs")

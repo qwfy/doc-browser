@@ -311,7 +311,7 @@ getCached cacheRoot url' ext = do
     then
       return cachedUrl
     else do
-      dlRes <- try $ downloadFile' url storage :: IO (Either SomeException ())
+      dlRes <- try $ downloadFile url storage :: IO (Either SomeException ())
       case dlRes of
         Right () -> do
           report ["cached url:", url, "to:", toFilePath storage]
