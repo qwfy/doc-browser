@@ -91,6 +91,7 @@ shortcuts = Map.fromList
   , ("pd", [Doc.collection|pandas|])
   , ("er", [Doc.collection|Erlang|])
   , ("mp", [Doc.collection|Matplotlib|])
+  , ("go", [Doc.collection|Go|])
   ]
 
 queryToGoogle :: Query -> String
