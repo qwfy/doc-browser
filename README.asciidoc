@@ -26,7 +26,7 @@ toc::[]
 
 It's in early stage, the main interface is in shape and usable, but
 other aspects, like installing docsets, lack polishing.
-That being said, I use this application every day.
+That being said, I use this application every day and happy with it.
 
 == Installation
 
@@ -48,6 +48,9 @@ https://docs.haskellstack.org/en/stable/install_and_upgrade/[stack].
 install it using your package manager, or use the instruction below.
 4.  Install the executables `alex` and `happy` in a similar manner with
 `c2hs`.
+5.  Install other dependencies mentioned in the `depends` section and
+`makedepends` section in https://github.com/qwfy/doc-browser/blob/master/aur/PKGBUILD[this file].
+You don't need to install mathjax if you don't use Hoogle.
 
 Finally, run these commands in the shell to build and install the
 application:
@@ -293,8 +296,13 @@ Solution: Tweak the configuration `WebEngineZoomFactor`, see the
 link:#configuration[Configuration] section for instruction.
 
 Problem: HTTP summon interface doesn't bring the window to front
+
 Solution: Try the section _Additional settings for Linux_ described in
 https://kb.froglogic.com/display/KB/Problem+-+Bringing+window+to+foreground+%28Qt%29[here].
+
+Problem: (China users only) Installation of docsets hangs/open documentation shows blank screen.
+
+Solution: devdocs.io or cloudflare.com is blocked by GFW, please use a VPN.
 
 Q: Why does this application display at most 27 matches?
 
