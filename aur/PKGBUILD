@@ -11,7 +11,7 @@ arch=('x86_64')
 
 # An array of packages this package depends on to run
 depends=('qt5-base'
-         'qt5-quickcontrols2'
+         'qt5-quickcontrols'
          'qt5-webengine'
          'pcre'
          'xz'
