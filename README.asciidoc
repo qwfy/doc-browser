@@ -174,9 +174,6 @@ To make DevDocs' docsets work fully offline:
 * When the tab is opened and the documentation is correctly displayed,
 all necessary files are cached, DevDocs' docsets work offline now
 
-(Cache-when-installing will be implemented after session restore is
-implemented.)
-
 If a MathJax distribution is found at `/usr/share/mathjax`, then the
 Hoogle documentations will work offline. (If you installed from AUR, you
 already have it.)
@@ -204,6 +201,7 @@ left-most one.
 | pd      | Limit search to pandas
 | er      | Limit search to Erlang
 | mp      | Limit search to Matplotlib
+| go      | Limit search to Go
 | hh      | Perform search with Hoogle
 |===
 

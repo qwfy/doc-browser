@@ -1,13 +1,16 @@
+# To configure this application, create the file
+#   XDG_CONFIG/doc-browser/config.yaml
+# which is usually
+#   /home/<your user name>/.config/doc-browser/config.yaml
+# and then edit the interested configurations there, you don't
+# have to copy all keys to that file, just copy the keys you
+# are interested in is sufficient.
+
+
 # NOTE:
 # Currently, unless otherwise stated,
 # all configuration changes require a restart to take effect.
 # Sorry for the trouble :(
-
-# To configure this application, create the file
-#   XDG_CONFIG/doc-browser/config.yaml
-# and then edit the interested configurations there, you don't
-# have to copy all keys to that file, just copy the keys you
-# are interested in.
 
 
 # Zoom factor for QtWebEngine.
