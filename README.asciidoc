@@ -37,20 +37,24 @@ available on AUR.
 
 === Other Linux Distros
 
+You can build this application from source, which isn't a pleasant
+experience. Packaging for popular OSes/package managers are welcome.
+
 Follow these steps to install from source:
 
 1.  This application uses http://qt-project.org/[Qt 5], make sure you
-have it installed. You also need https://wiki.qt.io/QtWebEngine[Qt
-WebEngine], install it if it doesn't come with your Qt installation.
+have it installed. You also need https://wiki.qt.io/QtWebEngine[QtWebEngine],
+install it if it doesn't come with your Qt installation.
 2.  Install the Haskell tool
 https://docs.haskellstack.org/en/stable/install_and_upgrade/[stack].
-3.  The build process depends on an executable called `c2hs`, you can
-install it using your package manager, or use the instruction below.
-4.  Install the executables `alex` and `happy` in a similar manner with
-`c2hs`.
-5.  Install other dependencies mentioned in the `depends` section and
-`makedepends` section in https://github.com/qwfy/doc-browser/blob/master/aur/PKGBUILD[this file].
-You don't need to install mathjax if you don't use Hoogle.
+3.  The build process depends on several executables: `c2hs`, `alex`
+and `happy`, you can either install it using your package manager,
+or use the instruction given below.
+4.  Install other dependencies mentioned in the `depends` section in
+https://github.com/qwfy/doc-browser/blob/master/aur/PKGBUILD[this file],
+the package name for your package manager may be different with the provided one.
+You can either install them now, or later in a trial-and-error manner.
+You don't need to install `mathjax` if you don't intend to use Hoogle.
 
 Finally, run these commands in the shell to build and install the
 application:
@@ -60,9 +64,14 @@ application:
 git clone 'https://github.com/qwfy/doc-browser.git'
 cd doc-browser
 
-# optionally, install `c2hs` if not already installed:
+# optionally, install these executables if not already installed:
 # stack install c2hs
+# stack install alex
+# stack install happy
 
+# build and install this application, this will take a while
+# if this step fails, then you probably missed some dependencies,
+# your can examine the error message to see which dependencies are missing
 stack install
 
 echo "binary installed to $(stack path --local-bin)"
