@@ -98,6 +98,8 @@ startGUI config configRoot guiDir slot = do
         fireSignal matchesKey objectContext
 
   -- TODO @incomplete: check for updates
+  -- TODO @incomplete: GC pause probably can be reduced
+  -- by moving all non-essential data to a external storage, say sqlite
   allEntries <- DevDocs.loadAll configRoot
   report ["number of entries from DevDocs:", show $ length allEntries]
 

@@ -203,53 +203,75 @@ Window {
             Layout.fillWidth: false
             Layout.preferredWidth: Logic.isHoogleMode() ? leftColumnWidthHoogle : leftColumnWidthNormal
 
-            spacing: 1
+            spacing: 0
 
-            TextInput {
-                id: searchInput
+            Rectangle {
+                id: searchInputContainer
 
-                // when the application started, this field will have focus
-                focus: true
+                border.width: 1
+                border.color: Style.inputBorder
+                radius: 3
 
                 anchors.top: parent.top
                 anchors.left: parent.left
                 anchors.right: parent.right
 
-                anchors.leftMargin: Style.ewPadding
-                anchors.rightMargin: Style.ewPadding
+                anchors.topMargin: searchInput.font.pointSize
+                anchors.leftMargin: searchInput.font.pointSize
+                anchors.rightMargin: searchInput.font.pointSize
 
-                selectByMouse: true
+                height: searchInput.height
+                clip: true
 
-                font: Style.searchFont
+                TextInput {
+                    id: searchInput
 
-                onTextChanged: {
-                    // TODO @incomplete:
-                    //
-                    // Ideally, matchContainer.selected should be set to -1 when
-                    // onMatchesChanged, to reflect the fact that the selection
-                    // is no longer correct due to the change of the matches.
-                    //
-                    // But I haven't found a way to do this, as an approximation,
-                    // do it here, which assumes that whenever the text changed,
-                    // so does the matches. This assumption is not always true,
-                    // when it is false, we suffer from a bad performance, but
-                    // the functionality is still correct.
-                    if (matchContainer.selected !== -1) matchContainer.selected = -1;
+                    anchors.verticalCenter: parent.verticalCenter
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.leftMargin: Style.ewPadding
+                    anchors.rightMargin: Style.ewPadding
 
-                    search(text);
+                    topPadding: font.pointSize * 0.6
+                    bottomPadding: font.pointSize * 0.6
+
+                    // when the application started, this field will have focus
+                    focus: true
+
+                    selectByMouse: true
+
+                    font: Style.searchFont
+
+                    onTextChanged: {
+                        // TODO @incomplete:
+                        //
+                        // Ideally, matchContainer.selected should be set to -1 when
+                        // onMatchesChanged, to reflect the fact that the selection
+                        // is no longer correct due to the change of the matches.
+                        //
+                        // But I haven't found a way to do this, as an approximation,
+                        // do it here, which assumes that whenever the text changed,
+                        // so does the matches. This assumption is not always true,
+                        // when it is false, we suffer from a bad performance, but
+                        // the functionality is still correct.
+                        if (matchContainer.selected !== -1) matchContainer.selected = -1;
+
+                        search(text);
+                    }
+
+                    onAccepted: Logic.matchSelect(0)
+
+                    Keys.onEscapePressed: focus = false
+                    Keys.onDownPressed: accepted()
                 }
-
-                onAccepted: Logic.matchSelect(0)
-
-                Keys.onEscapePressed: focus = false
-                Keys.onDownPressed: accepted()
             }
 
 
             ScrollView {
                 id: matchContainerFocusScope
 
-                anchors.top: searchInput.bottom
+                anchors.top: searchInputContainer.bottom
+                anchors.topMargin: searchInput.font.pointSize
                 anchors.left: parent.left
                 anchors.right: parent.right
                 anchors.bottom: parent.bottom
@@ -324,15 +346,18 @@ Window {
                 }
                 Rectangle{
                     id: pageSearchInputContainer
+
                     border.width: 1
                     border.color: Style.inputBorder
                     radius: 3
+
                     anchors.left: pageSearchButtonNext.right
                     anchors.right: parent.right
                     anchors.top: parent.top
                     anchors.bottom: parent.bottom
                     anchors.leftMargin: Style.ewPadding
                     anchors.rightMargin: Style.ewPadding
+
                     TextInput {
                         id: pageSearchInput
                         anchors.verticalCenter: parent.verticalCenter

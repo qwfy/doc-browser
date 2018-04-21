@@ -69,7 +69,7 @@ MatchFgColorSelected: "#fdf6e3"
 
 MatchFgColorLight: "#747f83"
 
-# Border color for the input area in Ctrl+F.
+# Border color for the input area.
 InputBorderColor: "#586e75"
 
 # vim: cc=62

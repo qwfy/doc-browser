@@ -17,8 +17,6 @@ import qualified System.FilePath as FilePath
 import qualified Match
 import qualified Doc
 
--- the choice of String is due to that Text.EditDistance only supports String
--- TODO @incomplete: use a newtype for these fields, it's quite confusing
 data T = T
   { collection :: Doc.Collection
   , version    :: Doc.Version

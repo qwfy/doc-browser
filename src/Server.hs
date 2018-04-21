@@ -243,6 +243,7 @@ fetchHoogle configRoot path = do
 replaceMathJax :: LBS.ByteString -> IO LBS.ByteString
 replaceMathJax source = do
   -- TODO @incomplete: ability to install another copy
+  -- or make this configurable
   let distDir = "/usr/share/mathjax"
   hasMathJaxDist <- Directory.doesDirectoryExist distDir
   if not hasMathJaxDist
