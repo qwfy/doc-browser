@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-stack exec doc-browser -- --print-api > http-interface.md
+tmpfile=/tmp/doc-browser.md
+stack exec doc-browser -- --print-api > $tmpfile
+pandoc -f markdown -t html $tmpfile > http-interface.html
+trash $tmpfile

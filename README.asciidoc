@@ -264,7 +264,7 @@ You can interact with this application using HTTP requests.
 
 API documentation can be found at:
 
-* https://qwfy.github.io/doc-browser/http-interface.md
+* https://qwfy.github.io/doc-browser/http-interface.html
 * or, `doc-browser --print-api`
 
 == Credits

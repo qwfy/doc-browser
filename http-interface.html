@@ -1,0 +1,54 @@
+<h2 id="http-api-for-doc-browser">HTTP API for doc-browser</h2>
+<p>You can interact with this application using HTTP requests.</p>
+<p>All URL should be prefixed with <code>http://localhost:&lt;port&gt;</code>, where <code>&lt;port&gt;</code> is 7701 if you didn't change it in your configuration.</p>
+<p>If you are using Insomnia, you can import <code>insomnia.json</code>, found at the root of this repository.</p>
+<p>APIs are listed below.</p>
+<h2 id="get-search">GET /search</h2>
+<h3 id="function">Function</h3>
+<p>Search doc-browser with the given string, and return the search result as a JSON array. Detailed documentation of the type of the element of the returned array can be found at: https://qwfy.github.io/doc-browser/doc/Match.html#t:T</p>
+<h3 id="get-parameters">GET Parameters:</h3>
+<ul>
+<li>q
+<ul>
+<li><strong>Values</strong>: <em>os.path, /pyos.path, forM/hh, etc.</em></li>
+<li><strong>Description</strong>: String to search</li>
+</ul></li>
+</ul>
+<h3 id="response">Response:</h3>
+<ul>
+<li>Status code 200</li>
+<li><p>Headers: []</p></li>
+<li><p>Supported content types are:</p>
+<ul>
+<li><code>application/json;charset=utf-8</code></li>
+<li><code>application/json</code></li>
+</ul></li>
+<li><p>Example (<code>application/json;charset=utf-8</code>, <code>application/json</code>):</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">[]</code></pre></div></li>
+<li><p>Example (<code>application/json;charset=utf-8</code>, <code>application/json</code>):</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">[<span class="op">{</span><span class="st">&quot;vendor&quot;</span><span class="op">:</span><span class="st">&quot;DevDocs&quot;</span><span class="op">,</span><span class="st">&quot;typeConstraint&quot;</span><span class="op">:</span><span class="kw">null</span><span class="op">,</span><span class="st">&quot;url&quot;</span><span class="op">:</span><span class="st">&quot;http://localhost:7701/DevDocs/Python==3.6.4/library/os.path&quot;</span><span class="op">,</span><span class="st">&quot;collection&quot;</span><span class="op">:</span><span class="st">&quot;Python&quot;</span><span class="op">,</span><span class="st">&quot;name&quot;</span><span class="op">:</span><span class="st">&quot;os.path&quot;</span><span class="op">,</span><span class="st">&quot;version&quot;</span><span class="op">:</span><span class="st">&quot;3.6.4&quot;</span><span class="op">,</span><span class="st">&quot;module&quot;</span><span class="op">:</span><span class="kw">null</span><span class="op">,</span><span class="st">&quot;package&quot;</span><span class="op">:</span><span class="kw">null</span><span class="op">}</span>]</code></pre></div></li>
+<li><p>Example (<code>application/json;charset=utf-8</code>):</p>
+<div class="sourceCode"><pre class="sourceCode javascript"><code class="sourceCode javascript">[<span class="op">{</span><span class="st">&quot;vendor&quot;</span><span class="op">:</span><span class="st">&quot;DevDocs&quot;</span><span class="op">,</span><span class="st">&quot;typeConstraint&quot;</span><span class="op">:</span><span class="kw">null</span><span class="op">,</span><span class="st">&quot;url&quot;</span><span class="op">:</span><span class="st">&quot;http://localhost:7701/DevDocs/Python==3.6.4/library/os.path&quot;</span><span class="op">,</span><span class="st">&quot;collection&quot;</span><span class="op">:</span><span class="st">&quot;Python&quot;</span><span class="op">,</span><span class="st">&quot;name&quot;</span><span class="op">:</span><span class="st">&quot;os.path&quot;</span><span class="op">,</span><span class="st">&quot;version&quot;</span><span class="op">:</span><span class="st">&quot;3.6.4&quot;</span><span class="op">,</span><span class="st">&quot;module&quot;</span><span class="op">:</span><span class="kw">null</span><span class="op">,</span><span class="st">&quot;package&quot;</span><span class="op">:</span><span class="kw">null</span><span class="op">},{</span><span class="st">&quot;vendor&quot;</span><span class="op">:</span><span class="st">&quot;DevDocs&quot;</span><span class="op">,</span><span class="st">&quot;typeConstraint&quot;</span><span class="op">:</span><span class="kw">null</span><span class="op">,</span><span class="st">&quot;url&quot;</span><span class="op">:</span><span class="st">&quot;http://localhost:7701/DevDocs/Python==3.6.4/library/os.path&quot;</span><span class="op">,</span><span class="st">&quot;collection&quot;</span><span class="op">:</span><span class="st">&quot;Python&quot;</span><span class="op">,</span><span class="st">&quot;name&quot;</span><span class="op">:</span><span class="st">&quot;os.path&quot;</span><span class="op">,</span><span class="st">&quot;version&quot;</span><span class="op">:</span><span class="st">&quot;3.6.4&quot;</span><span class="op">,</span><span class="st">&quot;module&quot;</span><span class="op">:</span><span class="kw">null</span><span class="op">,</span><span class="st">&quot;package&quot;</span><span class="op">:</span><span class="kw">null</span><span class="op">}</span>]</code></pre></div></li>
+</ul>
+<h2 id="get-summon">GET /summon</h2>
+<h3 id="function-1">Function</h3>
+<p>Bring the doc-browser GUI to front, and search it with the given string.</p>
+<h3 id="get-parameters-1">GET Parameters:</h3>
+<ul>
+<li>q
+<ul>
+<li><strong>Values</strong>: <em>os.path, /pyos.path, forM/hh, etc.</em></li>
+<li><strong>Description</strong>: String to search</li>
+</ul></li>
+</ul>
+<h3 id="response-1">Response:</h3>
+<ul>
+<li>Status code 200</li>
+<li><p>Headers: []</p></li>
+<li><p>Supported content types are:</p>
+<ul>
+<li><code>application/json;charset=utf-8</code></li>
+<li><code>application/json</code></li>
+</ul></li>
+<li><p>No response body</p></li>
+</ul>
