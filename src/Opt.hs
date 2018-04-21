@@ -18,6 +18,7 @@ data T
   | InstallHoogle String Doc.Collection
   | PrintPublicAPI
   | PrintDefaultConfig
+  | PrintPort
   deriving (Show)
 
 data Logging
@@ -44,6 +45,7 @@ optParser =
         <|> installHoogleParser
         <|> printPublicAPIParser
         <|> printDefaultConfigParser
+        <|> printPortParser
         <|> pure (StartGUI NoLog)
 
 startGUIParser :: Parser T
@@ -100,6 +102,12 @@ printDefaultConfigParser =
   flag' PrintDefaultConfig
     (  long "print-default-config"
     <> help "Print the default configuration, which has detailed documentation")
+
+printPortParser :: Parser T
+printPortParser =
+  flag' PrintPort
+    (  long "get-port"
+    <> help "Find out which port does this application use")
 
 get :: IO T
 get = execParser optParser

@@ -15,6 +15,8 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.List.Extra
 import qualified Data.ByteString.Char8 as Char8
+import qualified Data.ByteString.Lazy.Char8 as LChar8
+import Data.Aeson
 
 import System.Hclip
 import System.Environment
@@ -165,9 +167,9 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
         Just "" -> toFilePath guiDir
         Just old -> old ++ ":" ++ toFilePath guiDir
   setEnv "QML2_IMPORT_PATH" qmlPath
+
   -- This flag is required by QtWebEngine
   -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
-
   True <- setQtFlag QtShareOpenGLContexts True
 
   upgradeResult <- Upgrade.start configRoot guiDir
@@ -193,3 +195,7 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
 
         Opt.PrintDefaultConfig ->
           Char8.putStrLn Embeded.configYaml
+
+        Opt.PrintPort ->
+          LChar8.putStrLn . encode . object $
+            [("port", Number . fromIntegral . Config.port $ config)]

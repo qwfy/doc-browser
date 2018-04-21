@@ -141,7 +141,8 @@ publicApiMarkdown =
       docIntro = DocIntro "HTTP API for doc-browser" $ paragraphs
         [ [ "You can interact with this application using HTTP requests."]
         , [ "All URL should be prefixed with `http://localhost:<port>`,"
-          , "where `<port>` is 7701 if you didn't change it in your configuration."]
+          , "where `<port>` is 7701 if the user didn't change its configuration,"
+          , "generally, you can use `doc-browser --get-port` to get the port."]
         , [ "If you are using Insomnia, you can import `insomnia.json`,"
           , "found at the root of this repository."]
         , [ "APIs are listed below."]
