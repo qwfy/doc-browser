@@ -110,6 +110,7 @@ untgz bs filePath =
 -- TODO @incomplete: multithreads and proxy
 downloadMany :: ConfigRoot -> [Doc.Collection] -> IO ()
 downloadMany configRoot collections = do
+  putStrLn "=== Docsets are provided by https://devdocs.io ==="
   unpackTo <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
   report ["downloading", show $ length collections, "docsets to", toFilePath unpackTo]
 
