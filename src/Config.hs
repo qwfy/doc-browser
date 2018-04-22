@@ -20,7 +20,7 @@ import Path.IO
 import GHC.Generics
 
 import Utils
-import qualified Embeded
+import qualified Embedded
 
 
 data T = T
@@ -68,4 +68,4 @@ load configRoot = do
         if userConfigExist
           then [toFilePath userConfig]
           else []
-  loadYamlSettings configs [fromRight $ Yaml.decodeEither Embeded.configYaml] ignoreEnv
+  loadYamlSettings configs [fromRight $ Yaml.decodeEither Embedded.configYaml] ignoreEnv

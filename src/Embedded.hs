@@ -1,7 +1,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE QuasiQuotes #-}
 
-module Embeded
+module Embedded
   ( configYaml
   , extractUIDirInto
   ) where

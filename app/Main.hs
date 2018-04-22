@@ -36,7 +36,7 @@ import qualified Upgrade
 import qualified Config
 import qualified Style
 import qualified Slot
-import qualified Embeded
+import qualified Embedded
 import Utils
 
 startGUI :: Config.T -> ConfigRoot -> Path a Dir -> Slot.T -> IO ()
@@ -158,7 +158,7 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
   config <- Config.load configRoot
 
   -- GUI setup
-  Embeded.extractUIDirInto guiDir
+  Embedded.extractUIDirInto guiDir
 
   Style.createQml guiDir config
   oldQmlPath <- lookupEnv "QML2_IMPORT_PATH"
@@ -194,7 +194,7 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
           putStrLn Server.publicApiMarkdown
 
         Opt.PrintDefaultConfig ->
-          Char8.putStrLn Embeded.configYaml
+          Char8.putStrLn Embedded.configYaml
 
         Opt.PrintPort ->
           LChar8.putStrLn . encode . object $
