@@ -15,19 +15,10 @@ module DevDocsMeta
 
 import GHC.Generics (Generic)
 
-import qualified Codec.Archive.Tar as Tar
-
-import Control.Monad
-import Control.Exception
-
-import Path
-
-import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as TextIO
 import qualified Data.Aeson as Aeson
-import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Map.Strict as Map
 import qualified Data.List
 

@@ -207,12 +207,11 @@ startThread
   -> ([Match.T] -> IO ())
   -> IO ThreadId
 startThread config configRoot hooMay slot handleMatches = do
-  let dbPath = configRoot |> getConfigRoot |> toFilePath |> Text.pack
+  let dbPath = Db.dbPath configRoot |> toFilePath |> Text.pack
   forkIO $ runSqlite dbPath loop
   where
     loop :: Db.DbMonad a
     loop = do
-      -- TODO @incomplete: migrateAll
       searchables <- Entry.loadSearchables
       forever $ do
         -- TODO @incomplete: make this limit configurable

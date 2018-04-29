@@ -6,6 +6,7 @@
 module DevDocs
   ( getDocFile
   , installMany
+  , insertToDb
   ) where
 
 import GHC.Generics (Generic)
@@ -87,7 +88,7 @@ insertToDb configRoot collection version indexJson = do
         let Just (IndexList indices) = Aeson.decode' bs
         let entries = map indexToEntry indices
         insertMany_ entries
-  runSqlite (Text.pack . toFilePath . Db.dbPath $ configRoot) action
+  runSqlite (Db.dbPath configRoot |> toFilePath |> Text.pack) action
   where
     indexToEntry Index{name, path} =
       Entry.Entry { Entry.entryName = name

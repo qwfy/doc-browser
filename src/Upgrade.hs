@@ -26,8 +26,12 @@ import Path.IO
 
 import Graphics.QML
 
+import Fmt
+
 import qualified Doc
 import qualified Hoo
+import qualified Db
+import qualified DevDocs
 import Utils
 
 
@@ -36,7 +40,7 @@ type DiskFormat = Int
 
 -- This needs to be manually increased when incompatible changes are made to the disk format.
 latestDiskFormat :: DiskFormat
-latestDiskFormat = 3
+latestDiskFormat = 4
 
 -- What should the main program do when the upgrader's window is closed.
 data Continue = Continue | Abort
@@ -73,6 +77,7 @@ instance Show UpgradeError where
 instance Exception UpgradeError
 
 type LineLogger = [String] -> IO ()
+type LinesLogger = String -> IO ()
 
 
 diskFormatFile configRoot =
@@ -90,8 +95,8 @@ writeDiskFormat :: ConfigRoot -> DiskFormat -> IO ()
 writeDiskFormat configRoot diskFormat =
   writeFile (toFilePath $ diskFormatFile configRoot) (show diskFormat)
 
-upgrade :: LineLogger -> ConfigRoot -> IO ()
-upgrade logLine configRoot = do
+upgrade :: LineLogger -> LinesLogger -> ConfigRoot -> IO ()
+upgrade logLine logLines configRoot = do
   userFormat <- readDiskFormat configRoot
 
   if | userFormat == latestDiskFormat ->
@@ -114,6 +119,8 @@ upgrade logLine configRoot = do
            upgradeFrom1 logLine configRoot
          2 ->
            upgradeFrom2 logLine configRoot
+         3 ->
+           upgradeFrom3 logLine logLines configRoot
          _ ->
            throwIO $ UnRecognizedDiskFormat userFormat
 
@@ -122,7 +129,7 @@ upgrade logLine configRoot = do
                , show userFormat
                , "to"
                , show succUserFormat]
-       upgrade logLine configRoot
+       upgrade logLine logLines configRoot
 
 upgradeFrom0 :: LineLogger -> ConfigRoot -> IO ()
 upgradeFrom0 logLine configRoot = do
@@ -156,6 +163,35 @@ upgradeFrom2 logLine configRoot = do
       logLine ["Creating new Hoogle database for documentations located at:", toFilePath docDir ++ ",", "this may take a while"]
       Hoo.installFromDir docDir
       logLine ["Hoogle database generated"]
+
+upgradeFrom3 :: LineLogger -> LinesLogger -> ConfigRoot -> IO ()
+upgradeFrom3 logLine logLines configRoot = do
+  logLine ["Scanning old docsets"]
+  cvs <- scan configRoot
+  let dbPath = Db.dbPath configRoot
+  logLine ["Creating database at:", toFilePath dbPath]
+  Db.migrateAll dbPath >>= logLines . unlines
+  logLine ["Database created"]
+  unless (null cvs) $ do
+    logLine ["Loading", show $ length cvs, "old docsets"]
+    forM_ (zip [1..] cvs) (installOne $ length cvs)
+  where
+    -- scan devdocs' root, return collections and versions
+    scan :: ConfigRoot -> IO [(Doc.Collection, Doc.Version)]
+    scan configRoot = do
+      dir <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
+      (dirs, _) <- listDir dir
+      mapM Doc.breakCollectionVersion dirs
+
+    installOne :: Int -> (Int, (Doc.Collection, Doc.Version)) -> IO ()
+    installOne total (index, (collection, version)) = do
+      let padLeft = show total |> length |> (\len -> padLeftF len '0')
+      let docId = Doc.combineCollectionVersion collection version
+      logLine [""+|padLeft index|+"/"+|total|+":" :: String, docId]
+      vendorHome <- parseRelDir $ show Doc.DevDocs
+      collectionHome <- parseRelDir $ docId
+      let indexJson = getConfigRoot configRoot </> vendorHome </> collectionHome </> [relfile|index.json|]
+      DevDocs.insertToDb configRoot collection version indexJson
 
 data Log = Line String | Lines String
 
@@ -201,7 +237,7 @@ start configRoot guiDir = do
               if userFormat < latestDiskFormat
                 then do
                   let upgrade' = do
-                        upgrade (appendLog' . Line. unwords) configRoot
+                        upgrade (appendLog' . Line. unwords) (appendLog' . Lines) configRoot
                         appendLog' $ Line "Upgrade finished successfully."
                         return Continue
                   upgrade' `catch` handleExceptions
