@@ -30,7 +30,6 @@ import Database.Persist.TH
 
 import qualified Data.Text as Text
 
-import System.FilePath (FilePath)
 import Path
 
 import qualified Doc
@@ -44,8 +43,8 @@ Entry
   vendor       Doc.Vendor
   collection   Doc.Collection
   version      Doc.Version
-  path         FilePath
-  deriving     Show
+  path         String
+  deriving Show
 |]
 
 dbPath :: ConfigRoot -> Path Abs File

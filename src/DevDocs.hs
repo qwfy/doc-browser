@@ -64,6 +64,7 @@ installMany configRoot collections = do
   forM_ matches (\x -> installOne unpackTo x `catch` reportExceptions)
 
   where
+    -- TODO @incomplete: check already installed?
     installOne _ (Left e) = fail e
     installOne unpackTo (Right meta@DevDocsMeta.Meta{DevDocsMeta.metaName=collection, DevDocsMeta.metaRelease}) = do
       let url = DevDocsMeta.toDownloadUrl meta
