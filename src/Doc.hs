@@ -37,17 +37,9 @@ import Utils
 data Vendor
   = DevDocs -- ^Docset provided by devdocs.io
   | Hoogle  -- ^Docset provided by an archive, from which a Hoogle database can be generated
-  deriving (Show, Eq, Read)
+  deriving (Eq, Show, Read)
 
 derivePersistField "Vendor"
-
--- instance PersistField Vendor where
---   toPersistValue = PersistText . Text.pack . show
---   fromPersistValue (PersistText txt) = mapLeft Text.pack (readEither $ Text.unpack txt)
---   fromPersistValue x = Left . Text.pack $ "Cannot convert from: " ++ show x
---
--- instance PersistFieldSql Vendor where
---   sqlType _proxy = SqlString
 
 
 -- |Collection of the entry
@@ -113,17 +105,15 @@ collection = QuasiQuoter
 -- For 'Hoogle', this is the version of the package as specified in their cabal file.
 newtype Version =
   Version {getVersion :: String}
-  deriving (Eq, Ord, Show, Read)
+  deriving (Eq, Ord)
+
+instance Show Version where
+  show (Version x) = x
+
+instance Read Version where
+  readsPrec _ x = [(Version x, "")]
 
 derivePersistField "Version"
-
--- instance PersistField Version where
---   toPersistValue = PersistText . Text.pack . getVersion
---   fromPersistValue (PersistText txt) = Right . Version . Text.unpack $ txt
---   fromPersistValue x = Left . Text.pack $ "Cannot convert from: " ++ show x
---
--- instance PersistFieldSql Version where
---   sqlType _proxy = SqlString
 
 data InvalidCollectionVersion
   = InvalidCollectionVersion String
