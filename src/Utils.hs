@@ -8,6 +8,7 @@ module Utils
   , report
   , updateTMVar
   , unpackXzInto
+  , unpackTgzInto
   , fireAndForget
   , localTime
   , uppercaseFirst
@@ -21,6 +22,7 @@ module Utils
   , tryRemoveFile
   , extractAp
   , reportExceptions
+  , mapLeft
   ) where
 
 import Network.Wreq
@@ -44,11 +46,13 @@ import Data.Time.LocalTime
 import Data.Time.Format
 import Data.Char
 import Data.Foldable
+import Data.Either.Combinators
 
 import Path
 import Path.IO
 
 import qualified Codec.Archive.Tar as Tar
+import qualified Codec.Compression.GZip as GZip
 import qualified Codec.Compression.Lzma as Lzma
 
 infixl 0 |>
@@ -94,6 +98,14 @@ unpackXzInto archive into = do
   Lzma.decompress bs
     |> Tar.read
     |> Tar.unpack (toFilePath into)
+
+-- TODO @incomplete: exception handling
+-- TODO @incomplete: untar to a temp directory
+unpackTgzInto :: LBS.ByteString -> Path Abs Dir -> IO ()
+unpackTgzInto bs filePath =
+  let decompressed = GZip.decompress bs
+  in Tar.unpack (toFilePath filePath) (Tar.read decompressed)
+
 
 fireAndForget :: IO a -> IO ()
 fireAndForget action = void $ forkIO (void action)

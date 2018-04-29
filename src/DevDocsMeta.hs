@@ -5,14 +5,16 @@
 {-# LANGUAGE QuasiQuotes #-}
 
 module DevDocsMeta
-  ( downloadMany
-  , printTypeMap
+  ( printTypeMap
   , typeMap
+  , metaJsonUrl
+  , findRecent
+  , toDownloadUrl
+  , Meta(..)
   ) where
 
 import GHC.Generics (Generic)
 
-import qualified Codec.Compression.GZip as GZip
 import qualified Codec.Archive.Tar as Tar
 
 import Control.Monad
@@ -24,10 +26,10 @@ import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as Text
 import qualified Data.Text.IO as TextIO
-import qualified Data.List
 import qualified Data.Aeson as Aeson
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.Map.Strict as Map
+import qualified Data.List
 
 import qualified Doc
 import Utils
@@ -99,41 +101,6 @@ findRecent metas = map find
 
 toDownloadUrl Meta{metaSlug} =
   concat ["http://dl.devdocs.io/", Text.unpack metaSlug, ".tar.gz"]
-
--- TODO @incomplete: exception handling
--- TODO @incomplete: untar to a temp directory
-untgz :: LBS.ByteString -> Path Abs Dir -> IO ()
-untgz bs filePath =
-  let decompressed = GZip.decompress bs
-  in Tar.unpack (toFilePath filePath) (Tar.read decompressed)
-
--- TODO @incomplete: multithreads and proxy
-downloadMany :: ConfigRoot -> [Doc.Collection] -> IO ()
-downloadMany configRoot collections = do
-  putStrLn "=== Docsets are provided by https://devdocs.io ==="
-  unpackTo <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
-  report ["downloading", show $ length collections, "docsets to", toFilePath unpackTo]
-
-  metas <- downloadJSON metaJsonUrl
-  let matches = findRecent metas collections
-  forM_ matches (\x -> downloadOne unpackTo x `catch` reportExceptions)
-
-  where
-    downloadOne _ (Left e) = fail e
-    downloadOne unpackTo (Right meta@Meta{metaName, metaRelease}) = do
-      let url = toDownloadUrl meta
-      let docId = Data.List.intercalate "-"
-            [ show metaName
-            , maybe "<no version>" Text.unpack metaRelease]
-      report ["downloading", docId , "from", url]
-      bs <- download url
-      let collectionHome = Doc.combineCollectionVersion
-            metaName
-            (Doc.Version . Text.unpack $ fromMaybe "" metaRelease)
-      dir <- (unpackTo </>) <$> (parseRelDir collectionHome)
-      report ["unpacking", docId, "to", toFilePath dir]
-      untgz bs dir
-      report ["installed", docId]
 
 typeMap :: Map.Map Doc.Collection String
 typeMap = Map.fromList

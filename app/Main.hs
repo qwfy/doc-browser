@@ -28,7 +28,6 @@ import Path.IO
 import qualified Match
 import qualified Search
 import qualified DevDocs
-import qualified DevDocsMeta
 import qualified Server
 import qualified Opt
 import qualified Hoo
@@ -99,17 +98,10 @@ startGUI config configRoot guiDir slot = do
         atomically $ writeTVar matchesTVar matches `orElse` return ()
         fireSignal matchesKey objectContext
 
-  -- TODO @incomplete: check for updates
-  -- TODO @incomplete: GC pause probably can be reduced
-  -- by moving all non-essential data to a external storage, say sqlite
-  allEntries <- DevDocs.loadAll configRoot
-  report ["number of entries from DevDocs:", show $ length allEntries]
-
   hooMay <- Hoo.findDatabase configRoot
   _searchThreadId <- Search.startThread
     config
     configRoot
-    allEntries
     hooMay
     slot
     sendMatches
@@ -185,7 +177,7 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
           startGUI config configRoot guiDir slot
 
         Opt.InstallDevDocs collections ->
-          DevDocsMeta.downloadMany configRoot collections
+          DevDocs.installMany configRoot collections
 
         Opt.InstallHoogle url collection ->
           Hoo.install configRoot cacheRoot url collection

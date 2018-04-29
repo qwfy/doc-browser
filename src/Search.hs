@@ -17,10 +17,11 @@ import qualified Data.Char
 import qualified Data.Array
 import qualified Data.Tuple
 import qualified Data.Maybe
-import qualified Data.ByteString.Char8 as C
+import qualified Data.ByteString.Char8 as Char8
 import Data.Bits ((.|.))
 
 import Control.Monad
+import Control.Monad.IO.Class
 import Control.Concurrent
 import Control.Monad.STM
 import Control.Concurrent.STM.TMVar
@@ -33,12 +34,15 @@ import qualified System.FilePath as FilePath
 import Control.Applicative ((<|>))
 import qualified Hoogle
 
+import Database.Persist.Sqlite
+
 import qualified Entry
 import qualified Match
 import qualified Hoo
 import qualified Doc
 import qualified Config
 import qualified Slot
+import qualified Db
 import Utils
 
 data Query
@@ -104,57 +108,54 @@ queryToGoogle (G (Limited abbr str)) =
     Just collection ->
       unwords [show collection, str]
 
-filterEntry :: GeneralQuery -> [Entry.T] -> [Entry.T]
-filterEntry (Global _) es = es
-filterEntry (Limited abbr _) es =
-  case Map.lookup abbr shortcuts of
-    Nothing ->
-      []
-    Just collection ->
-      filter ((== collection) . Entry.collection) es
-
-
 getQueryTextLower query =
   let queryStr = case query of
         Global s -> s
         Limited _ s -> s
   in map Data.Char.toLower queryStr
 
+filterSearchables :: GeneralQuery -> [Entry.Searchable] -> [Entry.Searchable]
+filterSearchables (Global _) es = es
+filterSearchables (Limited abbr _) es =
+  case Map.lookup abbr shortcuts of
+    Nothing ->
+      []
+    Just collection ->
+      filter ((== collection) . Entry.saCollection) es
 
-search :: [Entry.T] -> Int -> GeneralQuery -> [Entry.T]
-search allEntries limit query =
+search :: [Entry.Searchable] -> Int -> GeneralQuery -> [Entry.Searchable]
+search allSearchables limit query =
   let queryStr = getQueryTextLower query
-      entries = filterEntry query allEntries
-  in entries
-       |> map (distance queryStr . Entry.nameLower)
-       |> flip zip entries
+      searchables = filterSearchables query allSearchables
+  in searchables
+       |> map (distance queryStr . Entry.saNameLower)
+       |> flip zip searchables
        |> filter (Data.Maybe.isJust . fst)
-       |> Data.List.sort
-       |> map snd
+       |> Data.List.sortOn (\(dist, sa) -> (dist, Entry.saNameLower sa))
        |> take limit
-
+       |> map snd
 
 -- note: this is not a proper metric
-distance :: String -> C.ByteString -> Maybe Float
+distance :: String -> Char8.ByteString -> Maybe Float
 distance query target =
-  let a = subStringDistance (C.pack query) target
+  let a = subStringDistance (Char8.pack query) target
       b = regexDistance (queryToRegex query) (length query) target
   in a <|> b
 
 
 -- TODO @incomplete: a match at the begining is better than a match at the end
-subStringDistance :: C.ByteString -> C.ByteString -> Maybe Float
+subStringDistance :: Char8.ByteString -> Char8.ByteString -> Maybe Float
 subStringDistance query target =
-  if query `C.isInfixOf` target
+  if query `Char8.isInfixOf` target
     then
       let epsilon = 0.00001
-          weight = fromIntegral (C.length target) / fromIntegral (C.length query)
+          weight = fromIntegral (Char8.length target) / fromIntegral (Char8.length query)
       in Just $ epsilon * weight
     else
       Nothing
 
 
-regexDistance :: Regex -> Int -> C.ByteString -> Maybe Float
+regexDistance :: Regex -> Int -> Char8.ByteString -> Maybe Float
 regexDistance regex queryLength target =
   case matchAll regex target of
     [] ->
@@ -167,9 +168,9 @@ regexDistance regex queryLength target =
 
           matchString = subString target matchOffset matchLength
 
-          weight = fromIntegral (C.length target) / fromIntegral queryLength
+          weight = fromIntegral (Char8.length target) / fromIntegral queryLength
 
-          d = fromIntegral (C.length matchString - queryLength) / fromIntegral queryLength
+          d = fromIntegral (Char8.length matchString - queryLength) / fromIntegral queryLength
 
       in Just $ d * weight
 
@@ -179,7 +180,7 @@ queryToRegex query =
   query
     |> map escape
     |> Data.List.intercalate ".*?"
-    |> C.pack
+    |> Char8.pack
     |> makeRegexOpts compOpts defaultExecOpt
   where
     -- https://www.pcre.org/original/doc/html/pcrepattern.html#SEC5
@@ -189,9 +190,9 @@ queryToRegex query =
     compOpts = foldl (.|.) defaultCompOpt [compCaseless]
 
 
-subString :: C.ByteString -> Int -> Int -> C.ByteString
+subString :: Char8.ByteString -> Int -> Int -> Char8.ByteString
 subString str offset length' =
-  str |> C.drop offset |> C.take length'
+  str |> Char8.drop offset |> Char8.take length'
 
 prefixHost :: Int -> String -> Text
 prefixHost port path =
@@ -201,42 +202,47 @@ prefixHost port path =
 startThread
   :: Config.T
   -> ConfigRoot
-  -> [Entry.T]
   -> Maybe (Path Abs File)
   -> Slot.T
   -> ([Match.T] -> IO ())
   -> IO ThreadId
-startThread config configRoot entries hooMay slot handleMatches =
-  forkIO loop
+startThread config configRoot hooMay slot handleMatches = do
+  let dbPath = configRoot |> getConfigRoot |> toFilePath |> Text.pack
+  forkIO $ runSqlite dbPath loop
   where
-    loop = forever $ do
-      -- TODO @incomplete: make this limit configurable
-      let limit = 27
-      let prefixHost' = prefixHost $ Config.port config
-      content <- atomically $ takeTMVar (Slot.query slot)
-      let (queryStr, matchHandler) = case content of
-            Slot.GuiQuery x ->
-              (x, handleMatches)
-            Slot.HttpQuery x httpResultSlot ->
-              (x, \ms -> atomically $ updateTMVar httpResultSlot ms)
+    loop :: Db.DbMonad a
+    loop = do
+      -- TODO @incomplete: migrateAll
+      searchables <- Entry.loadSearchables
+      forever $ do
+        -- TODO @incomplete: make this limit configurable
+        let limit = 27
+        let prefixHost' = prefixHost $ Config.port config
+        content <- liftIO . atomically $ takeTMVar (Slot.query slot)
+        let (queryStr, matchHandler) = case content of
+              Slot.GuiQuery x ->
+                (x, handleMatches)
+              Slot.HttpQuery x httpResultSlot ->
+                (x, \ms -> liftIO . atomically $ updateTMVar httpResultSlot ms)
 
-      matchHandler =<<
-        case Search.makeQuery queryStr of
-            Nothing ->
-              return []
+        (liftIO . matchHandler) =<<
+          case Search.makeQuery queryStr of
+              Nothing ->
+                return []
 
-            Just (G query) ->
-              Search.search entries limit query
-                |> map (Entry.toMatch prefixHost')
-                |> return
+              Just (G query) ->
+                Search.search searchables limit query
+                  |> Entry.toMatches prefixHost'
 
-            Just (H (Hoogle query)) ->
-              case hooMay of
-                Nothing ->
-                  -- TODO @incomplete: warn user about the lack of a hoogle database
-                  return []
-                Just dbPath -> do
-                  -- load the database on every search, instead of keeping it in memory,
-                  -- this is done deliberately - turns out that it makes the GUI more responsive
-                  collection <- Doc.parseCollection . FilePath.takeBaseName . toFilePath $ dbPath
-                  Hoogle.withDatabase (toFilePath dbPath) (\db -> return $ Hoo.search configRoot collection db limit query prefixHost')
+              Just (H (Hoogle query)) ->
+                -- TODO @incomplete: run hoogle in a separate thread (to simplify some types for one reason)?
+                case hooMay of
+                  Nothing ->
+                    -- TODO @incomplete: warn user about the lack of a hoogle database
+                    return []
+                  Just dbPath -> do
+                    -- load the database on every search, instead of keeping it in memory,
+                    -- this is done deliberately - turns out that it makes the GUI more responsive
+                    collection <- liftIO . Doc.parseCollection . FilePath.takeBaseName . toFilePath $ dbPath
+                    liftIO $ Hoogle.withDatabase (toFilePath dbPath) (\db ->
+                               return $ Hoo.search configRoot collection db limit query prefixHost')

@@ -1,5 +1,6 @@
 {-# LANGUAGE LambdaCase #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE TemplateHaskell #-}
 
 module Doc
   ( Vendor(..)
@@ -23,6 +24,9 @@ import qualified Data.Text as Text
 import qualified System.FilePath as FilePath
 import Path
 
+import Database.Persist.Sqlite
+import Database.Persist.TH
+
 import Language.Haskell.TH.Quote
 import Data.Data
 
@@ -33,7 +37,17 @@ import Utils
 data Vendor
   = DevDocs -- ^Docset provided by devdocs.io
   | Hoogle  -- ^Docset provided by an archive, from which a Hoogle database can be generated
-  deriving (Show, Eq)
+  deriving (Show, Eq, Read)
+
+derivePersistField "Vendor"
+
+-- instance PersistField Vendor where
+--   toPersistValue = PersistText . Text.pack . show
+--   fromPersistValue (PersistText txt) = mapLeft Text.pack (readEither $ Text.unpack txt)
+--   fromPersistValue x = Left . Text.pack $ "Cannot convert from: " ++ show x
+--
+-- instance PersistFieldSql Vendor where
+--   sqlType _proxy = SqlString
 
 
 -- |Collection of the entry
@@ -47,6 +61,16 @@ newtype Collection =
 
 instance Show Collection where
   show (Collection x) = x
+
+instance PersistField Collection where
+  toPersistValue = PersistText . Text.pack . getCollection
+  fromPersistValue (PersistText txt) =
+    mapLeft (Text.pack . show) . parseCollection . Text.unpack $ txt
+  fromPersistValue x =
+    Left . Text.pack $ "Cannot convert from: " ++ show x
+
+instance PersistFieldSql Collection where
+  sqlType _proxy = SqlString
 
 data InvalidCollection
   = InvalidCollection String
@@ -68,7 +92,7 @@ parseCollection :: MonadThrow m => String -> m Collection
 parseCollection str =
   if cvSep `isInfixOf` str
     then throwM $ InvalidCollection str
-    else return . Collection . replace "/" "-" $ str
+    else return . Collection . Data.List.Extra.replace "/" "-" $ str
 
 collection :: QuasiQuoter
 collection = QuasiQuoter
@@ -89,7 +113,17 @@ collection = QuasiQuoter
 -- For 'Hoogle', this is the version of the package as specified in their cabal file.
 newtype Version =
   Version {getVersion :: String}
-  deriving (Eq, Ord)
+  deriving (Eq, Ord, Show, Read)
+
+derivePersistField "Version"
+
+-- instance PersistField Version where
+--   toPersistValue = PersistText . Text.pack . getVersion
+--   fromPersistValue (PersistText txt) = Right . Version . Text.unpack $ txt
+--   fromPersistValue x = Left . Text.pack $ "Cannot convert from: " ++ show x
+--
+-- instance PersistFieldSql Version where
+--   sqlType _proxy = SqlString
 
 data InvalidCollectionVersion
   = InvalidCollectionVersion String

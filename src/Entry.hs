@@ -1,54 +1,74 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE NamedFieldPuns #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 
 -- what will be searched on
 module Entry
-  -- TODO @incomplete: expose accessor functions without exposing data constructor
-  ( T(..)
-  , toMatch
+  ( Entry(..)
+  , Searchable(..)
+  , toMatches
+  , loadSearchables
   ) where
 
 import Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Data.ByteString.Char8 as C
+import qualified Data.ByteString.Char8 as Char8
+import qualified Data.Map.Strict as Map
+import Data.Char
+import Data.Maybe
 
 import qualified System.FilePath as FilePath
 
+import Database.Persist.Sqlite
+
 import qualified Match
 import qualified Doc
+import Db
 
-data T = T
-  { collection :: Doc.Collection
-  , version    :: Doc.Version
-  , name       :: String
-  -- file path relative to vendor's root
-  -- TODO @incomplete: handle this semantic safely
-  , path       :: FilePath
-  , nameLower  :: C.ByteString
-  } deriving (Eq)
-
-instance Ord T where
-  compare a b = compare
-    (name a, version a)
-    (name b, version b)
-
-toMatch :: (String -> Text) -> T -> Match.T
-toMatch prefixHost entry = Match.T
-  { Match.name       = Text.pack $ name entry
-  , Match.collection = Text.pack . Doc.getCollection . collection $ entry
-  , Match.version    = Text.pack . Doc.getVersion . version $ entry
-  , Match.url        = prefixHost $ buildUrl entry
-  , Match.vendor     = Text.pack . show $ Doc.DevDocs
-
-  , Match.package_       = Nothing
-  , Match.module_        = Nothing
-  , Match.typeConstraint = Nothing
+data Searchable = Searchable
+  { saKey :: Key Entry
+  , saNameLower :: Char8.ByteString
+  , saCollection :: Doc.Collection
   }
 
-buildUrl :: T -> String
-buildUrl T {collection, version, Entry.path = entryPath} =
+toMatches :: (String -> Text) -> [Searchable] -> DbMonad [Match.T]
+toMatches prefixHost searchables = do
+  let keys = map saKey searchables
+  rows <- getMany keys
+  return $ map (addExtra rows) searchables
+  where
+    addExtra rows (Searchable{saKey}) =
+      let entry = fromJust $ Map.lookup saKey rows
+      in toMatch entry
+    toMatch entry =
+      Match.T
+      { Match.name       = Text.pack $ entryName entry
+      , Match.collection = Text.pack . Doc.getCollection . entryCollection $ entry
+      , Match.version    = Text.pack . Doc.getVersion . entryVersion $ entry
+      , Match.url        = prefixHost $ buildUrl entry
+      , Match.vendor     = Text.pack . show $ Doc.DevDocs
+
+      , Match.package_       = Nothing
+      , Match.module_        = Nothing
+      , Match.typeConstraint = Nothing
+      }
+
+buildUrl :: Entry -> String
+buildUrl Entry {entryCollection, entryVersion, entryPath} =
   FilePath.joinPath
     [ show Doc.DevDocs
-    , Doc.combineCollectionVersion collection version
+    , Doc.combineCollectionVersion entryCollection entryVersion
     , entryPath
     ]
+
+loadSearchables :: DbMonad [Searchable]
+loadSearchables = do
+  (rows :: [Entity Entry]) <- selectList [] []
+  return $ map toSearchable rows
+  where
+    toSearchable (Entity{entityKey, entityVal=Entry{entryName, entryCollection}}) =
+      Searchable
+        { saKey = entityKey
+        , saNameLower = Char8.pack $ map toLower entryName
+        , saCollection = entryCollection
+        }

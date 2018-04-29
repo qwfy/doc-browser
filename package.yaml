@@ -61,6 +61,14 @@ dependencies:
 - exceptions
 - file-embed
 - template-haskell
+- persistent
+- persistent-sqlite
+- persistent-template
+- mtl
+- either
+- uuid
+- conduit
+- monad-logger
 
 library:
   source-dirs: src
