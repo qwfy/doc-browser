@@ -20,6 +20,7 @@ data T
   | InstallDevDocs [Doc.Collection]
   | ListInstalledDevDocs
   | RemoveDevDocs [(Doc.Collection, Doc.Version)]
+  | InstallDash [Doc.Collection]
   | InstallHoogle String Doc.Collection
   | PrintPublicAPI
   | PrintDefaultConfig
@@ -49,6 +50,7 @@ optParser =
         <|> installDevDocsParser
         <|> listInstalledDevDocsParser
         <|> removeDevDocsParser
+        <|> installDashParser
         <|> installHoogleParser
         <|> printPublicAPIParser
         <|> printDefaultConfigParser
@@ -100,6 +102,17 @@ readCollectionVersionTuple :: ReadM (Doc.Collection, Doc.Version)
 readCollectionVersionTuple = eitherReader $ \str -> do
   cvPath <- mapLeft show $ parseRelDir str
   mapLeft show (Doc.breakCollectionVersion cvPath)
+
+installDashParser :: Parser T
+installDashParser =
+  flag' InstallDash
+    (  long "install-dash"
+    <> help "Install Dash's docset")
+  <*> some (argument readCollection
+    (  metavar "COLLECTION"
+    -- TODO @incomplete: documentation
+    <> help "Collection to install"
+    ))
 
 installHoogleParser :: Parser T
 installHoogleParser =

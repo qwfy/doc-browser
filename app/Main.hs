@@ -28,6 +28,7 @@ import Path.IO
 import qualified Match
 import qualified Search
 import qualified DevDocs
+import qualified Dash
 import qualified Server
 import qualified Opt
 import qualified Hoo
@@ -189,6 +190,9 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
 
         Opt.RemoveDevDocs cvs ->
           withConfigLock $ DevDocs.removeMany configRoot cvs
+
+        Opt.InstallDash collections ->
+          withConfigLock $ Dash.installMany configRoot collections
 
         Opt.InstallHoogle url collection ->
           withConfigAndCacheLock $ Hoo.install configRoot cacheRoot url collection

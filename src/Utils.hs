@@ -10,6 +10,7 @@ module Utils
   , updateTMVar
   , unpackXzInto
   , unpackTgzInto
+  , systemUnpackTgzInto
   , fireAndForget
   , localTime
   , uppercaseFirst
@@ -22,10 +23,13 @@ module Utils
   , CacheRoot(..)
   , tryRemoveFile
   , tryRemoveDir
+  , withTempFilePath
   , extractAp
   , reportExceptions
   , mapLeft
   , withLock
+  , (<//>)
+  , (<..>)
   ) where
 
 import Network.Wreq
@@ -44,6 +48,8 @@ import Network.HTTP.Types.Status
 
 import System.IO.Error
 import System.FileLock
+import qualified System.FilePath as FilePath
+import System.Process
 
 import Data.Aeson
 import Data.Time.LocalTime
@@ -110,6 +116,10 @@ unpackTgzInto bs filePath =
   let decompressed = GZip.decompress bs
   in Tar.unpack (toFilePath filePath) (Tar.read decompressed)
 
+systemUnpackTgzInto :: Path Abs File -> Path Abs Dir -> IO ()
+systemUnpackTgzInto tgz dest = do
+  createDirIfMissing True dest
+  callProcess "tar" ["-C", toFilePath dest, "-xzf", toFilePath tgz]
 
 fireAndForget :: IO a -> IO ()
 fireAndForget action = void $ forkIO (void action)
@@ -169,3 +179,12 @@ withLock dir action = do
       fail $ "Cannot acquire lock: " ++ lockFile
     Just a ->
       return a
+
+(<//>) = (FilePath.</>)
+(<..>) = (FilePath.<.>)
+
+withTempFilePath :: String -> (Path Abs File -> IO a) -> IO a
+withTempFilePath template f = do
+  withSystemTempDir template $ \dir ->
+    let filePath = dir </> [relfile|file|]
+    in f filePath

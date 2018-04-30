@@ -40,7 +40,7 @@ type DiskFormat = Int
 
 -- This needs to be manually increased when incompatible changes are made to the disk format.
 latestDiskFormat :: DiskFormat
-latestDiskFormat = 4
+latestDiskFormat = 5
 
 -- What should the main program do when the upgrader's window is closed.
 data Continue = Continue | Abort
@@ -121,6 +121,8 @@ upgrade logLine logLines configRoot = do
            upgradeFrom2 logLine configRoot
          3 ->
            upgradeFrom3 logLine logLines configRoot
+         4 ->
+           upgradeFrom4 logLine configRoot
          _ ->
            throwIO $ UnRecognizedDiskFormat userFormat
 
@@ -192,6 +194,12 @@ upgradeFrom3 logLine logLines configRoot = do
       collectionHome <- parseRelDir $ docId
       let indexJson = getConfigRoot configRoot </> vendorHome </> collectionHome </> [relfile|index.json|]
       DevDocs.insertToDb configRoot collection version indexJson
+
+upgradeFrom4 :: LineLogger -> ConfigRoot -> IO ()
+upgradeFrom4 logLine configRoot = do
+  targetDir <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show Doc.Dash)
+  logLine ["Ensure directory:", toFilePath targetDir]
+  createDirIfMissing True targetDir
 
 data Log = Line String | Lines String
 
