@@ -10,12 +10,16 @@ module Opt
 import Options.Applicative
 import Data.Monoid
 
+import Path
+
 import qualified Doc
+import Utils
 
 data T
   = StartGUI Logging
   | InstallDevDocs [Doc.Collection]
   | ListInstalledDevDocs
+  | RemoveDevDocs [(Doc.Collection, Doc.Version)]
   | InstallHoogle String Doc.Collection
   | PrintPublicAPI
   | PrintDefaultConfig
@@ -44,6 +48,7 @@ optParser =
       startGUIParser
         <|> installDevDocsParser
         <|> listInstalledDevDocsParser
+        <|> removeDevDocsParser
         <|> installHoogleParser
         <|> printPublicAPIParser
         <|> printDefaultConfigParser
@@ -80,6 +85,21 @@ listInstalledDevDocsParser =
   flag' ListInstalledDevDocs
     (  long "list-installed-devdocs"
     <> help "List installed DevDocs' docset")
+
+removeDevDocsParser :: Parser T
+removeDevDocsParser =
+  flag' RemoveDevDocs
+    (  long "remove-devdocs"
+    <> help "Remove DevDocs' docset")
+  <*> some (argument readCollectionVersionTuple
+    (  metavar "CV"
+    <> help "A string in the format of COLLECTION==VERSION. Intended to be used with --list-installed-devdocs"
+    ))
+
+readCollectionVersionTuple :: ReadM (Doc.Collection, Doc.Version)
+readCollectionVersionTuple = eitherReader $ \str -> do
+  cvPath <- mapLeft show $ parseRelDir str
+  mapLeft show (Doc.breakCollectionVersion cvPath)
 
 installHoogleParser :: Parser T
 installHoogleParser =

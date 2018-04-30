@@ -9,6 +9,7 @@ module DevDocs
   , installMany
   , insertToDb
   , listInstalled
+  , removeMany
   ) where
 
 import GHC.Generics (Generic)
@@ -64,6 +65,27 @@ listInstalled configRoot = do
     |> sort
     |> fmt . blockListF
     |> putStr
+
+removeMany :: ConfigRoot -> [(Doc.Collection, Doc.Version)] -> IO ()
+removeMany configRoot cvs = do
+  report ["removing", show . length $ cvs, "docsets"]
+  forM_ cvs $ \(c, v) -> do
+    vendorPart <- parseRelDir $ show Doc.DevDocs
+    collectionPart <- parseRelDir $ Doc.combineCollectionVersion c v
+
+    count <- runSqlite (Db.dbPathText configRoot) . Db.asSqlBackend $
+      deleteWhereCount
+        [ Db.EntryVendor ==. Doc.DevDocs
+        , Db.EntryCollection ==. c
+        , Db.EntryVersion ==. v]
+    report ["removed", show count, "entries from database"]
+
+    let collectionHome = getConfigRoot configRoot </> vendorPart </> collectionPart
+    report ["removing", toFilePath collectionHome]
+    tryRemoveDir collectionHome
+
+    report ["removed", Doc.combineCollectionVersion c v]
+
 
 -- TODO @incomplete: multithreads and proxy
 -- TODO @incomplete: install to a UUID dir?

@@ -21,6 +21,7 @@ module Utils
   , ConfigRoot(..)
   , CacheRoot(..)
   , tryRemoveFile
+  , tryRemoveDir
   , extractAp
   , reportExceptions
   , mapLeft
@@ -145,6 +146,10 @@ newtype CacheRoot = CacheRoot {getCacheRoot :: Path Abs Dir}
 
 tryRemoveFile :: Path a File -> IO ()
 tryRemoveFile path = System.IO.Error.catchIOError (removeFile path) $
+    \e -> unless (isDoesNotExistError e) $ ioError e
+
+tryRemoveDir :: Path a Dir -> IO ()
+tryRemoveDir path = System.IO.Error.catchIOError (removeDirRecur path) $
     \e -> unless (isDoesNotExistError e) $ ioError e
 
 extractAp :: (a -> b -> IO c) -> IO a -> b -> IO c
