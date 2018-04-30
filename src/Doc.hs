@@ -79,6 +79,9 @@ instance FromJSON Collection where
           Left e -> fail $ show e
           Right coll -> return coll
 
+instance ToJSON Collection where
+  toJSON (Collection coll) = String . Text.pack $ coll
+
 cvSep = "=="
 
 parseCollection :: MonadThrow m => String -> m Collection
@@ -101,7 +104,9 @@ collection = QuasiQuoter
 
 -- |Version of the collection
 --
--- For 'DevDocs' and 'Dash', this is the version of the language or the library, e.g. the @3.6.4@ as in @Python 3.6.4@, or the @1.13.0@ as in @NumPy 1.13.0@.
+-- For 'DevDocs', this is the version of the language or the library, e.g. the @3.6.4@ as in @Python 3.6.4@, or the @1.13.0@ as in @NumPy 1.13.0@.
+--
+-- For 'Dash', part of this is the version of the language or the library.
 --
 -- For 'Hoogle', this is the version of the package as specified in their cabal file.
 newtype Version =

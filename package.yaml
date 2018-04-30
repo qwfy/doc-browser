@@ -73,6 +73,8 @@ dependencies:
 - xml-conduit
 - xml-lens
 - base64-bytestring
+- vector
+- hashable
 
 library:
   source-dirs: src

@@ -29,6 +29,21 @@ WebEngineZoomFactor: 1.5
 Port: 7701
 
 
+# Customizable commands.
+# ============================================================
+Commands:
+  go: ["LimitToDevDocs", "Go", ""]
+  hs: ["LimitToDevDocs", "Haskell", ""]
+  mp: ["LimitToDevDocs", "Matplotlib", ""]
+  np: ["LimitToDevDocs", "NumPy", ""]
+  p2: ["LimitToDevDocs", "Python", "2"]
+  pd: ["LimitToDevDocs", "pandas", ""]
+  py: ["LimitToDevDocs", "Python", "3"]
+  tf: ["LimitToDevDocs", "TensorFlow", ""]
+  er: ["LimitToDash", "Erlang", ""]
+  hh: ["LimitToHoogle", "lts-11.4"]
+
+
 # Font for input area.
 InputFont:
   Family: "Monospace"
