@@ -13,13 +13,7 @@
 -- TH generated
 {-# OPTIONS_GHC -fno-warn-unused-top-binds #-}
 
-module Db
-  ( migrateAll
-  , DbMonad
-  , dbPath
-
-  , Entry(..)
-  ) where
+module Db where
 
 import Control.Monad.Reader (ReaderT)
 import Control.Monad.Logger (NoLoggingT)
@@ -28,6 +22,7 @@ import Conduit (ResourceT)
 import Database.Persist.Sqlite
 import Database.Persist.TH
 
+import Data.Text (Text)
 import qualified Data.Text as Text
 
 import Path
@@ -51,8 +46,15 @@ dbPath :: ConfigRoot -> Path Abs File
 dbPath configRoot =
   getConfigRoot configRoot </> [relfile|database|]
 
+dbPathText :: ConfigRoot -> Text
+dbPathText configRoot =
+  dbPath configRoot |> toFilePath |> Text.pack
+
 migrateAll :: Path Abs File -> IO [String]
 migrateAll dbPath = do
   let action :: DbMonad [String]
       action = map Text.unpack <$> runMigrationSilent migrateAll'
   runSqlite (dbPath |> toFilePath |> Text.pack) action
+
+asSqlBackend :: DbMonad a -> DbMonad a
+asSqlBackend = id

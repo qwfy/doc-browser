@@ -184,6 +184,9 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
         Opt.InstallDevDocs collections ->
           withConfigLock $ DevDocs.installMany configRoot collections
 
+        Opt.ListInstalledDevDocs ->
+          DevDocs.listInstalled configRoot
+
         Opt.InstallHoogle url collection ->
           withConfigAndCacheLock $ Hoo.install configRoot cacheRoot url collection
 

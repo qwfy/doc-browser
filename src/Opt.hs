@@ -15,6 +15,7 @@ import qualified Doc
 data T
   = StartGUI Logging
   | InstallDevDocs [Doc.Collection]
+  | ListInstalledDevDocs
   | InstallHoogle String Doc.Collection
   | PrintPublicAPI
   | PrintDefaultConfig
@@ -42,6 +43,7 @@ optParser =
     optParser' =
       startGUIParser
         <|> installDevDocsParser
+        <|> listInstalledDevDocsParser
         <|> installHoogleParser
         <|> printPublicAPIParser
         <|> printDefaultConfigParser
@@ -72,6 +74,12 @@ installDevDocsParser =
     (  metavar "DOC"
     <> help "Docset to install, like \"haskell\", \"python\""
     ))
+
+listInstalledDevDocsParser :: Parser T
+listInstalledDevDocsParser =
+  flag' ListInstalledDevDocs
+    (  long "list-installed-devdocs"
+    <> help "List installed DevDocs' docset")
 
 installHoogleParser :: Parser T
 installHoogleParser =
