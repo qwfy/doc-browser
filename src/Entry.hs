@@ -9,6 +9,7 @@ module Entry
   , toMatches
   , loadSearchables
   , listInstalled
+  , removeMany
   ) where
 
 import Data.Text (Text)
@@ -20,6 +21,8 @@ import Data.Maybe
 import Data.List
 
 import qualified System.FilePath as FilePath
+
+import Control.Monad
 
 import Database.Persist.Sqlite
 
@@ -109,3 +112,38 @@ listInstalled configRoot vendor =
         |> sort
         |> fmt . blockListF
         |> putStr
+
+removeMany :: ConfigRoot -> Doc.Vendor -> [(Doc.Collection, Doc.Version)] -> IO ()
+removeMany configRoot vendor cvs = do
+  case vendor of
+    Doc.DevDocs -> doit
+    Doc.Dash    -> doit
+    Doc.Hoogle  -> fail . unwords $ ["Vendor", show vendor, "is not supported"]
+  where
+    doit = do
+      report ["removing", show . length $ cvs, "docsets"]
+      forM_ cvs $ \(c, v) -> do
+        count <- runSqlite (dbPathText configRoot) . asSqlBackend $
+          deleteWhereCount
+            [ EntryVendor ==. vendor
+            , EntryCollection ==. c
+            , EntryVersion ==. v]
+        report ["removed", show count, "entries from database"]
+
+        vendorPart <- parseRelDir $ show vendor
+        collectionPart <- getCollectionPart vendor c v
+        let collectionHome = getConfigRoot configRoot </> vendorPart </> collectionPart
+        report ["removing", toFilePath collectionHome]
+        tryRemoveDir collectionHome
+
+        report ["removed", Doc.combineCollectionVersion c v]
+
+getCollectionPart vendor@Doc.Hoogle _c _v =
+  -- TODO @incomplete: replace fail with throwM?
+  fail . unwords $ ["Vendor", show vendor, "is not supported"]
+
+getCollectionPart Doc.DevDocs collection version =
+  parseRelDir $ Doc.combineCollectionVersion collection version
+
+getCollectionPart Doc.Dash collection version =
+  parseRelDir $ Dash.b64EncodeCV collection version

@@ -24,6 +24,7 @@ data T
 
   | InstallDash [Doc.Collection]
   | ListInstalledDash
+  | RemoveDash [(Doc.Collection, Doc.Version)]
 
   | InstallHoogle String Doc.Collection
 
@@ -58,6 +59,7 @@ optParser =
 
         <|> installDashParser
         <|> listInstalledDashParser
+        <|> removeDashParser
 
         <|> installHoogleParser
         <|> printPublicAPIParser
@@ -127,6 +129,16 @@ listInstalledDashParser =
   flag' ListInstalledDash
     (  long "list-installed-dash"
     <> help "List installed Dash's docset")
+
+removeDashParser :: Parser T
+removeDashParser =
+  flag' RemoveDash
+    (  long "remove-dash"
+    <> help "Remove Dash's docset")
+  <*> some (argument readCollectionVersionTuple
+    (  metavar "CV"
+    <> help "A string in the format of COLLECTION==VERSION. Intended to be used with --list-installed-dash"
+    ))
 
 installHoogleParser :: Parser T
 installHoogleParser =

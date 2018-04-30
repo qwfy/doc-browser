@@ -8,7 +8,6 @@ module DevDocs
   ( getDocFile
   , installMany
   , insertToDb
-  , removeMany
   ) where
 
 import GHC.Generics (Generic)
@@ -50,27 +49,6 @@ instance Aeson.FromJSON IndexList where
   parseJSON = Aeson.withObject "IndexDotJson" $ \object -> do
     indices' <- object Aeson..: "entries"
     IndexList <$> Aeson.parseJSONList indices'
-
-removeMany :: ConfigRoot -> [(Doc.Collection, Doc.Version)] -> IO ()
-removeMany configRoot cvs = do
-  report ["removing", show . length $ cvs, "docsets"]
-  forM_ cvs $ \(c, v) -> do
-    vendorPart <- parseRelDir $ show Doc.DevDocs
-    collectionPart <- parseRelDir $ Doc.combineCollectionVersion c v
-
-    count <- runSqlite (Db.dbPathText configRoot) . Db.asSqlBackend $
-      deleteWhereCount
-        [ Db.EntryVendor ==. Doc.DevDocs
-        , Db.EntryCollection ==. c
-        , Db.EntryVersion ==. v]
-    report ["removed", show count, "entries from database"]
-
-    let collectionHome = getConfigRoot configRoot </> vendorPart </> collectionPart
-    report ["removing", toFilePath collectionHome]
-    tryRemoveDir collectionHome
-
-    report ["removed", Doc.combineCollectionVersion c v]
-
 
 -- TODO @incomplete: multithreads and proxy
 -- TODO @incomplete: install to a UUID dir?
