@@ -8,6 +8,7 @@ module Entry
   , Searchable(..)
   , toMatches
   , loadSearchables
+  , listInstalled
   ) where
 
 import Data.Text (Text)
@@ -16,17 +17,20 @@ import qualified Data.ByteString.Char8 as Char8
 import qualified Data.Map.Strict as Map
 import Data.Char
 import Data.Maybe
+import Data.List
 
 import qualified System.FilePath as FilePath
 
 import Database.Persist.Sqlite
 
 import Path
+import Fmt
 
 import qualified Match
 import qualified Doc
 import qualified Dash
 import Db
+import Utils
 
 data Searchable = Searchable
   { saKey :: Key Entry
@@ -63,16 +67,16 @@ buildUrl Entry {entryVendor, entryCollection, entryVersion, entryPath} =
       FilePath.joinPath
         [ show Doc.DevDocs
         , Doc.combineCollectionVersion entryCollection entryVersion
-        , entryPath
-        ]
+        , entryPath]
+
     Doc.Dash ->
       FilePath.joinPath
         [ show Doc.Dash
         , Dash.b64EncodeCV entryCollection entryVersion
         , toFilePath Dash.extraDirs3
-        , entryPath
-        ]
-    _ ->
+        , entryPath]
+
+    Doc.Hoogle ->
       error $ "Bad vendor: " ++ show entryVendor
 
 loadSearchables :: DbMonad [Searchable]
@@ -86,3 +90,22 @@ loadSearchables = do
         , saNameLower = Char8.pack $ map toLower entryName
         , saCollection = entryCollection
         }
+
+-- TODO @incomplete: this function has bad performance - due to the limit of the persistent library
+listInstalled :: ConfigRoot -> Doc.Vendor -> IO ()
+listInstalled configRoot vendor =
+  case vendor of
+    Doc.DevDocs -> doit
+    Doc.Dash    -> doit
+    Doc.Hoogle  -> fail . unwords $ ["Vendor", show vendor, "is not supported"]
+  where
+    doit = do
+      rows <- runSqlite (dbPathText configRoot) . asSqlBackend $
+        selectList [EntryVendor ==. vendor] []
+      rows
+        |> map (\(Entity{entityVal=e}) -> (entryCollection e, entryVersion e))
+        |> nub
+        |> map (\(c, v) -> Doc.combineCollectionVersion c v)
+        |> sort
+        |> fmt . blockListF
+        |> putStr

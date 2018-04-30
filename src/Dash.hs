@@ -133,6 +133,7 @@ insertOne configRoot collection version sourceDb = do
   let insertAll = insertMany_ entries :: Db.DbMonad ()
   runSqlite (Db.dbPathText configRoot) insertAll
 
+
 data HasVersion = HasVersion | HasNoVersion
 
 -- https://github.com/Kapeli/Dash-iOS.git/Dash/DHDocsetDownloader.m

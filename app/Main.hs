@@ -37,6 +37,8 @@ import qualified Config
 import qualified Style
 import qualified Slot
 import qualified Embedded
+import qualified Entry
+import qualified Doc
 import Utils
 
 startGUI :: Config.T -> ConfigRoot -> Path a Dir -> Slot.T -> IO ()
@@ -186,13 +188,16 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
           withConfigLock $ DevDocs.installMany configRoot collections
 
         Opt.ListInstalledDevDocs ->
-          DevDocs.listInstalled configRoot
+          Entry.listInstalled configRoot Doc.DevDocs
 
         Opt.RemoveDevDocs cvs ->
           withConfigLock $ DevDocs.removeMany configRoot cvs
 
         Opt.InstallDash collections ->
           withConfigLock $ Dash.installMany configRoot collections
+
+        Opt.ListInstalledDash ->
+          Entry.listInstalled configRoot Doc.Dash
 
         Opt.InstallHoogle url collection ->
           withConfigAndCacheLock $ Hoo.install configRoot cacheRoot url collection

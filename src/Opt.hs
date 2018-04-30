@@ -17,11 +17,16 @@ import Utils
 
 data T
   = StartGUI Logging
+
   | InstallDevDocs [Doc.Collection]
   | ListInstalledDevDocs
   | RemoveDevDocs [(Doc.Collection, Doc.Version)]
+
   | InstallDash [Doc.Collection]
+  | ListInstalledDash
+
   | InstallHoogle String Doc.Collection
+
   | PrintPublicAPI
   | PrintDefaultConfig
   | PrintPort
@@ -50,7 +55,10 @@ optParser =
         <|> installDevDocsParser
         <|> listInstalledDevDocsParser
         <|> removeDevDocsParser
+
         <|> installDashParser
+        <|> listInstalledDashParser
+
         <|> installHoogleParser
         <|> printPublicAPIParser
         <|> printDefaultConfigParser
@@ -113,6 +121,12 @@ installDashParser =
     -- TODO @incomplete: documentation
     <> help "Collection to install"
     ))
+
+listInstalledDashParser :: Parser T
+listInstalledDashParser =
+  flag' ListInstalledDash
+    (  long "list-installed-dash"
+    <> help "List installed Dash's docset")
 
 installHoogleParser :: Parser T
 installHoogleParser =

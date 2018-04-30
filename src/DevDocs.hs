@@ -8,7 +8,6 @@ module DevDocs
   ( getDocFile
   , installMany
   , insertToDb
-  , listInstalled
   , removeMany
   ) where
 
@@ -29,7 +28,6 @@ import Data.List.Extra
 import Data.Maybe
 
 import Database.Persist.Sqlite
-import Fmt
 
 import qualified Entry
 import qualified Doc
@@ -52,19 +50,6 @@ instance Aeson.FromJSON IndexList where
   parseJSON = Aeson.withObject "IndexDotJson" $ \object -> do
     indices' <- object Aeson..: "entries"
     IndexList <$> Aeson.parseJSONList indices'
-
--- TODO @incomplete: this function has bad performance - due to the limit of the persistent library
-listInstalled :: ConfigRoot -> IO ()
-listInstalled configRoot = do
-  rows <- runSqlite (Db.dbPathText configRoot) . Db.asSqlBackend $ do
-    selectList [Db.EntryVendor ==. Doc.DevDocs] []
-  rows
-    |> map (\(Entity{entityVal=e}) -> (Entry.entryCollection e, Entry.entryVersion e))
-    |> nub
-    |> map (\(c, v) -> Doc.combineCollectionVersion c v)
-    |> sort
-    |> fmt . blockListF
-    |> putStr
 
 removeMany :: ConfigRoot -> [(Doc.Collection, Doc.Version)] -> IO ()
 removeMany configRoot cvs = do
