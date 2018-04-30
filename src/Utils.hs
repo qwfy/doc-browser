@@ -1,4 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Utils
   ( (|>)
@@ -23,6 +24,7 @@ module Utils
   , extractAp
   , reportExceptions
   , mapLeft
+  , withLock
   ) where
 
 import Network.Wreq
@@ -40,6 +42,7 @@ import Control.Concurrent
 import Network.HTTP.Types.Status
 
 import System.IO.Error
+import System.FileLock
 
 import Data.Aeson
 import Data.Time.LocalTime
@@ -142,7 +145,7 @@ newtype CacheRoot = CacheRoot {getCacheRoot :: Path Abs Dir}
 
 tryRemoveFile :: Path a File -> IO ()
 tryRemoveFile path = System.IO.Error.catchIOError (removeFile path) $
-    \ e -> unless (isDoesNotExistError e) $ ioError e
+    \e -> unless (isDoesNotExistError e) $ ioError e
 
 extractAp :: (a -> b -> IO c) -> IO a -> b -> IO c
 extractAp f ma b = do
@@ -151,3 +154,13 @@ extractAp f ma b = do
 
 reportExceptions :: SomeException -> IO ()
 reportExceptions e = report [show e]
+
+withLock :: Path Abs Dir -> IO a -> IO a
+withLock dir action = do
+  let lockFile = toFilePath $ dir </> [relfile|lock|]
+  hasResult <- withTryFileLock lockFile Exclusive (const action)
+  case hasResult of
+    Nothing ->
+      fail $ "Cannot acquire lock: " ++ lockFile
+    Just a ->
+      return a

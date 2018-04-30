@@ -300,8 +300,6 @@ fetchDevdocs configRoot cacheRoot collection version path = do
   return $ begin <> content <> end
 
 
--- Since we have only one web server running on the entire OS,
--- we won't run into concurrency problems.
 getCached :: CacheRoot -> LBS.ByteString -> String -> IO LBS.ByteString
 getCached cacheRoot url' ext = do
   let url = LC.unpack url'
@@ -313,7 +311,7 @@ getCached cacheRoot url' ext = do
     then
       return cachedUrl
     else do
-      dlRes <- try $ downloadFile url storage :: IO (Either SomeException ())
+      dlRes <- try (withLock (getCacheRoot cacheRoot) $ downloadFile url storage) :: IO (Either SomeException ())
       case dlRes of
         Right () -> do
           report ["cached url:", url, "to:", toFilePath storage]

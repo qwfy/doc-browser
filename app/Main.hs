@@ -164,7 +164,12 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
   -- https://doc.qt.io/qt-5/qml-qtwebengine-webengineview.html
   True <- setQtFlag QtShareOpenGLContexts True
 
-  upgradeResult <- Upgrade.start configRoot guiDir
+  let withConfigLock = withLock (getConfigRoot configRoot)
+  let withConfigAndCacheLock action =
+        let action' = withLock (getConfigRoot configRoot) action
+        in withLock (getCacheRoot cacheRoot) action'
+
+  upgradeResult <- withConfigLock $ Upgrade.start configRoot guiDir
   case upgradeResult of
     Upgrade.Abort ->
       return ()
@@ -177,10 +182,10 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
           startGUI config configRoot guiDir slot
 
         Opt.InstallDevDocs collections ->
-          DevDocs.installMany configRoot collections
+          withConfigLock $ DevDocs.installMany configRoot collections
 
         Opt.InstallHoogle url collection ->
-          Hoo.install configRoot cacheRoot url collection
+          withConfigAndCacheLock $ Hoo.install configRoot cacheRoot url collection
 
         Opt.PrintPublicAPI ->
           putStrLn Server.publicApiMarkdown
