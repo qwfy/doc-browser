@@ -199,6 +199,11 @@ rawServer configRoot cacheRoot request respond = do
         (collection, version) <- parseRelDir cv >>= Doc.breakCollectionVersion
         let path = intercalate "/" rest
         parseRelFile path >>= fetchDevdocs configRoot cacheRoot collection version
+
+      (vendor : rest) | vendor == show Doc.Dash -> do
+        let path = intercalate "/" rest
+        parseRelFile path >>= fetchDash configRoot
+
       (vendor : _) | vendor == show Doc.Hoogle ->
         let path = intercalate "/" paths
         in fetchHoogle configRoot path
@@ -220,6 +225,11 @@ rawServer configRoot cacheRoot request respond = do
   let headers = [("Content-Type", contentType')]
   respond (responseBuilder status200 headers builder)
 
+fetchDash :: ConfigRoot -> Path Rel File -> IO Builder.Builder
+fetchDash configRoot path = do
+  vendorPart <- parseRelDir $ show Doc.Dash
+  let filePath = getConfigRoot configRoot </> vendorPart </> path
+  Builder.fromLazyByteString <$> LBS.readFile (toFilePath filePath)
 
 -- TODO @incomplete: replace FilePath with Path a b?
 fetchHoogle :: ConfigRoot -> FilePath -> IO Builder.Builder

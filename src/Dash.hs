@@ -13,6 +13,8 @@
 
 module Dash
   ( installMany
+  , b64EncodeCV
+  , extraDirs3
   ) where
 
 import GHC.Generics (Generic)
@@ -40,7 +42,6 @@ import Fmt
 import Text.XML
 import Text.XML.Lens hiding ((|>))
 
-import qualified Entry
 import qualified Doc
 import qualified Db
 import Utils
@@ -61,6 +62,9 @@ data Location = Location
 
 feedsUrl = "https://kapeli.com/feeds"
 
+extraDirs2 = [reldir|Contents/Resources|]
+extraDirs3 = [reldir|Contents/Resources/Documents|]
+
 getLocation :: Doc.Collection -> IO Location
 getLocation coll = do
   let url = feedsUrl <//> Doc.getCollection coll <..> "xml"
@@ -71,11 +75,16 @@ getLocation coll = do
     , locUrl = trim. Text.unpack . fromJust $ (doc ^? root ./ el "url" . text)
     }
 
+b64EncodeCV :: Doc.Collection -> Doc.Version -> String
+b64EncodeCV collection version = do
+  -- TODO @incomplete: unify with DevDocs
+  Char8.unpack . B64.encode . Char8.pack $ show collection ++ "==" ++ show version
+
 getDocHome :: MonadThrow m => ConfigRoot -> Doc.Collection -> Doc.Version -> m (Path Abs Dir)
 getDocHome configRoot collection version = do
   vendorPart <- parseRelDir $ show Doc.Dash
   -- TODO @incomplete: unify with DevDocs
-  collPart <- parseRelDir . Char8.unpack . B64.encode . Char8.pack $ show collection ++ "==" ++ show version
+  collPart <- parseRelDir $ b64EncodeCV collection version
   return $ getConfigRoot configRoot </> vendorPart </> collPart
 
 installMany :: ConfigRoot -> [Doc.Collection] -> IO ()
@@ -97,7 +106,7 @@ installOne configRoot collection = do
     systemUnpackTgzInto archivePath tempDir
     subdir <- parseRelDir $ show collection <..> "docset"
     renameDir (tempDir </> subdir) docHome
-  let sourceDb = docHome </> [relfile|Contents/Resources/docSet.dsidx|]
+  let sourceDb = docHome </> extraDirs2 </> [relfile|docSet.dsidx|]
   insertOne configRoot collection version sourceDb
   report ["installed", show collection]
 
@@ -113,12 +122,12 @@ insertOne configRoot collection version sourceDb = do
   let entries = sources
         |> map entityVal
         |> map (\si ->
-            Entry.Entry
-              { Entry.entryName = searchIndexName si
-              , Entry.entryPath = searchIndexPath si
-              , Entry.entryVendor = Doc.Dash
-              , Entry.entryCollection = collection
-              , Entry.entryVersion = version
+            Db.Entry
+              { Db.entryName = searchIndexName si
+              , Db.entryPath = searchIndexPath si
+              , Db.entryVendor = Doc.Dash
+              , Db.entryCollection = collection
+              , Db.entryVersion = version
               })
 
   let insertAll = insertMany_ entries :: Db.DbMonad ()

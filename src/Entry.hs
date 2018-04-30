@@ -21,8 +21,11 @@ import qualified System.FilePath as FilePath
 
 import Database.Persist.Sqlite
 
+import Path
+
 import qualified Match
 import qualified Doc
+import qualified Dash
 import Db
 
 data Searchable = Searchable
@@ -54,12 +57,23 @@ toMatches prefixHost searchables = do
       }
 
 buildUrl :: Entry -> String
-buildUrl Entry {entryCollection, entryVersion, entryPath} =
-  FilePath.joinPath
-    [ show Doc.DevDocs
-    , Doc.combineCollectionVersion entryCollection entryVersion
-    , entryPath
-    ]
+buildUrl Entry {entryVendor, entryCollection, entryVersion, entryPath} =
+  case entryVendor of
+    Doc.DevDocs ->
+      FilePath.joinPath
+        [ show Doc.DevDocs
+        , Doc.combineCollectionVersion entryCollection entryVersion
+        , entryPath
+        ]
+    Doc.Dash ->
+      FilePath.joinPath
+        [ show Doc.Dash
+        , Dash.b64EncodeCV entryCollection entryVersion
+        , toFilePath Dash.extraDirs3
+        , entryPath
+        ]
+    _ ->
+      error $ "Bad vendor: " ++ show entryVendor
 
 loadSearchables :: DbMonad [Searchable]
 loadSearchables = do
