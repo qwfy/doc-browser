@@ -225,8 +225,10 @@ instance GHC.Show.Show Opt.Logging
 
 module Hoo
 search :: ConfigRoot -> Collection -> Database -> Int -> String -> (String -> Text) -> [T]
-findDatabase :: ConfigRoot -> IO (Maybe (Path Abs File))
+findLatest :: ConfigRoot -> IO (Maybe (Path Abs File))
 findDatabases :: ConfigRoot -> IO ([Path Abs File])
+findDatabasesAsMap :: ConfigRoot -> IO (Map Collection (Path Abs File))
+extractCollection :: MonadThrow m => Path Abs File -> m Collection
 install :: ConfigRoot -> CacheRoot -> String -> Collection -> IO ()
 installFromDir :: Path Abs Dir -> IO ()
 
@@ -376,19 +378,23 @@ data Command
 LimitToDevDocs :: Collection -> LowerCasePrefix -> Command
 LimitToDash :: Collection -> LowerCasePrefix -> Command
 HoogleLatest :: Command
+HoogleLimit :: Collection -> Command
 data Abbr
 makeAbbr :: Char -> Char -> Abbr
 data LowerCasePrefix
 makeLcp :: [Char] -> LowerCasePrefix
 getLcp :: LowerCasePrefix -> String
+hoogleCommands :: Commands -> [Text]
 instance GHC.Generics.Generic Config.T
 instance GHC.Show.Show Config.T
 instance GHC.Show.Show Config.Command
+instance GHC.Classes.Eq Config.Command
 instance Data.Aeson.Types.ToJSON.ToJSONKey Config.Abbr
 instance Data.Aeson.Types.FromJSON.FromJSONKey Config.Abbr
 instance Data.Hashable.Class.Hashable Config.Abbr
 instance GHC.Classes.Ord Config.Abbr
 instance GHC.Classes.Eq Config.Abbr
+instance GHC.Classes.Eq Config.LowerCasePrefix
 instance GHC.Generics.Generic Config.Font
 instance GHC.Show.Show Config.Font
 instance Data.Aeson.Types.FromJSON.FromJSON Config.T
@@ -417,7 +423,7 @@ instance Servant.Docs.Internal.ToSample Match.T
 module Search
 search :: [Searchable] -> Int -> GeneralQuery -> [Searchable]
 makeQuery :: Commands -> String -> Maybe Query
-startThread :: T -> ConfigRoot -> Maybe (Path Abs File) -> T -> ([T] -> IO ()) -> IO ThreadId
+startThread :: T -> ConfigRoot -> T -> ([T] -> IO ()) -> IO ThreadId
 queryToGoogle :: Query -> String
 instance GHC.Show.Show Search.Query
 instance GHC.Show.Show Search.GeneralQuery
