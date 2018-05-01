@@ -31,7 +31,17 @@ Port: 7701
 
 # Customizable commands.
 # ============================================================
-Commands:
+# The "py" part in the query "/pyos.path" is called a command,
+# you can use it to specify which docset you want to search.
+# It has the same format as DefaultCommands, see there for
+# the documentation and examples.
+# Commands defined here will override those in DefaultCommands.
+Commands: {}
+
+
+# Do not change this, use Commands instead.
+# ============================================================
+DefaultCommands:
   go: ["LimitToDevDocs", "Go", ""]
   hs: ["LimitToDevDocs", "Haskell", ""]
   mp: ["LimitToDevDocs", "Matplotlib", ""]

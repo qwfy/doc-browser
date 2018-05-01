@@ -26,6 +26,7 @@ import Data.Hashable (Hashable)
 import Data.Char
 
 import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
 import qualified Data.Vector as Vector
 
 import Path
@@ -57,6 +58,7 @@ data T = T
   , inputBorderColor     :: Text
 
   , commands :: Commands
+  , defaultCommands :: Commands
   } deriving (Show, Generic)
 
 type Commands = Map Abbr Command
@@ -161,4 +163,7 @@ load configRoot = do
         if userConfigExist
           then [toFilePath userConfig]
           else []
-  loadYamlSettings configs [fromRight $ Yaml.decodeEither Embedded.configYaml] ignoreEnv
+  t <- loadYamlSettings configs [fromRight $ Yaml.decodeEither Embedded.configYaml] ignoreEnv
+  return $ t{ commands = Map.union (commands t) (defaultCommands t)
+            , defaultCommands = Map.empty
+            }
