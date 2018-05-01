@@ -8,6 +8,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE QuasiQuotes #-}
+{-# LANGUAGE MultiWayIf #-}
 
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# OPTIONS_GHC -fno-warn-name-shadowing #-}
@@ -28,12 +29,14 @@ import qualified Data.Binary.Builder as Builder
 import qualified Data.Map.Strict as Map
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Lazy.Char8 as LC
+import qualified Data.ByteString.Lazy.UTF8 as LUTF8
 import qualified Data.Array
 import Data.List.Extra
 import Data.String
 import qualified Data.Hash.MD5 as MD5
 import Safe
 import Text.Regex.PCRE
+import Data.Char
 
 import System.FileLock
 import System.Posix.User
@@ -51,6 +54,8 @@ import Control.Lens ((&), (<>~))
 
 import Servant
 import Servant.Docs
+
+import qualified Text.HTML.TagSoup as Soup
 
 import Utils
 import qualified DevDocs
@@ -221,7 +226,47 @@ fetchDash :: ConfigRoot -> Path Rel File -> IO Builder.Builder
 fetchDash configRoot path = do
   vendorPart <- parseRelDir $ show Doc.Dash
   let filePath = getConfigRoot configRoot </> vendorPart </> path
-  Builder.fromLazyByteString <$> LBS.readFile (toFilePath filePath)
+  if fileExtension filePath `elem` [".html", ".htm"]
+    then Builder.fromLazyByteString . urlDecodeAnchors <$> LBS.readFile (toFilePath filePath)
+    else Builder.fromLazyByteString                    <$> LBS.readFile (toFilePath filePath)
+
+urlDecodeAnchors :: LBS.ByteString -> LBS.ByteString
+urlDecodeAnchors str =
+  Soup.parseTags str
+    |> map decodeOpen
+    |> Soup.renderTags
+  where
+    -- map <a class="dashAnchor" name="//apple_ref/func/all%2F2"></a>
+    -- to  <a class="dashAnchor" name="//apple_ref/func/all/2"></a>
+    -- because QtWebEngine have trouble handling anchor name like these
+    decodeOpen old@(Soup.TagOpen tagName attrs) =
+      case lower tagName == "a" of
+        True ->
+          case decodeAttrs attrs of
+            Nothing -> old
+            Just new -> Soup.TagOpen tagName new
+        False ->
+          old
+    decodeOpen x = x
+
+    lower :: LBS.ByteString -> String
+    lower x = LUTF8.toString x |> map toLower
+
+    urlDecode' x = LBS.toStrict x |> urlDecode False |> LBS.fromStrict
+
+    decodeAttrs attrs =
+      case foldr f ([], False, False) attrs of
+        (new, True, True) -> Just new
+        (_,   _,    _   ) -> Nothing
+      where
+        f attr@(attrName, attrValue) (processed, classFound, nameFound) =
+          if | (not classFound) && lower attrName == "class" && attrValue == "dashAnchor" ->
+               (attr:processed, True, nameFound)
+             | (not nameFound) && lower attrName == "name" ->
+               ((attrName, urlDecode' attrValue):processed, classFound, True)
+             | otherwise ->
+               (attr:processed, classFound, nameFound)
+
 
 -- TODO @incomplete: replace FilePath with Path a b?
 fetchHoogle :: ConfigRoot -> FilePath -> IO Builder.Builder

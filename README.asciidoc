@@ -350,10 +350,6 @@ Problem: (China users only) Installation of docsets hangs/open documentation sho
 
 Solution: devdocs.io or cloudflare.com is blocked by GFW, please use a VPN.
 
-Problem: Anchors in some Dash's docsets, like Erlang, don't work.
-
-Solution: None, I'm working on this. As a workaround, you can use kbd:[Ctrl+F] to do a page search.
-
 == FAQ
 Q: Why does this application display at most 27 matches?
 

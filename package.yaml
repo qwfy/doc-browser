@@ -75,6 +75,8 @@ dependencies:
 - base64-bytestring
 - vector
 - hashable
+- tagsoup
+- utf8-string
 
 library:
   source-dirs: src
