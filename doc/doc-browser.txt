@@ -7,7 +7,7 @@
 --   Please see the README on Github at
 --   <a>https://github.com/qwfy/doc-browser#readme</a>
 @package doc-browser
-@version 0.4.0
+@version 0.6.0
 
 module Match
 
@@ -16,7 +16,7 @@ module Match
 --   Note: when converted to JSON, the "_" suffix in the field name will be
 --   dropped.
 data T
-T :: Text -> Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> Maybe Text -> T
+T :: Text -> Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> Maybe Text -> Maybe Text -> T
 
 -- | The entry's main content
 [name] :: T -> Text
@@ -41,6 +41,7 @@ T :: Text -> Text -> Text -> Text -> Text -> Maybe Text -> Maybe Text -> Maybe T
 
 -- | Hoogle only. The entry's type constraint
 [typeConstraint] :: T -> Maybe Text
+[icon] :: T -> Maybe Text
 defClass :: IO (Class T)
 instance Control.DeepSeq.NFData Match.T
 instance GHC.Generics.Generic Match.T
@@ -61,16 +62,15 @@ empty :: STM T
 module Utils
 (|>) :: () => t1 -> (t1 -> t2) -> t2
 infixl 0 |>
-download :: String -> ExceptT String IO ByteString
-downloadFile :: String -> Path a File -> ExceptT String IO ()
-download' :: String -> IO ByteString
-downloadFile' :: String -> Path a File -> IO ()
+download :: String -> IO ByteString
+downloadJSON :: FromJSON a => String -> IO a
+downloadFile :: String -> Path a File -> IO ()
 report :: [String] -> IO ()
 updateTMVar :: TMVar a -> a -> STM ()
 unpackXzInto :: Path a File -> Path a Dir -> IO ()
+unpackTgzInto :: ByteString -> Path Abs Dir -> IO ()
+systemUnpackTgzInto :: Path Abs File -> Path Abs Dir -> IO ()
 fireAndForget :: IO a -> IO ()
-data DownloadError
-DownloadError :: String -> String -> DownloadError
 localTime :: IO String
 uppercaseFirst :: String -> String
 lowercaseFirst :: String -> String
@@ -85,11 +85,49 @@ newtype CacheRoot
 CacheRoot :: Path Abs Dir -> CacheRoot
 [getCacheRoot] :: CacheRoot -> Path Abs Dir
 tryRemoveFile :: Path a File -> IO ()
+tryRemoveDir :: Path a Dir -> IO ()
+withTempFilePath :: String -> (Path Abs File -> IO a) -> IO a
 extractAp :: (a -> b -> IO c) -> IO a -> b -> IO c
+reportExceptions :: SomeException -> IO ()
+
+-- | The <a>mapLeft</a> function takes a function and applies it to an
+--   Either value iff the value takes the form <tt><a>Left</a> _</tt>.
+--   
+--   Using <tt>Data.Bifunctor</tt>:
+--   
+--   <pre>
+--   <a>mapLeft</a> = first
+--   </pre>
+--   
+--   Using <tt>Control.Arrow</tt>:
+--   
+--   <pre>
+--   <a>mapLeft</a> = (<a>left</a>)
+--   </pre>
+--   
+--   Using <tt>Control.Lens</tt>:
+--   
+--   <pre>
+--   <a>mapLeft</a> = over _Left
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; mapLeft (*2) (Left 4)
+--   Left 8
+--   </pre>
+--   
+--   <pre>
+--   &gt;&gt;&gt; mapLeft (*2) (Right "hello")
+--   Right "hello"
+--   </pre>
+mapLeft :: () => (a -> c) -> Either a b -> Either c b
+withLock :: Path Abs Dir -> IO a -> IO a
+(<//>) :: FilePath -> FilePath -> FilePath
+(<..>) :: FilePath -> String -> FilePath
 instance GHC.Show.Show Utils.DownloadError
 instance GHC.Exception.Exception Utils.DownloadError
 
-module Embeded
+module Embedded
 configYaml :: ByteString
 extractUIDirInto :: Path a Dir -> IO ()
 
@@ -101,14 +139,17 @@ data Vendor
 -- | Docset provided by devdocs.io
 DevDocs :: Vendor
 
+-- | Docset provided by kapeli.com/dash
+Dash :: Vendor
+
 -- | Docset provided by an archive, from which a Hoogle database can be
 --   generated
 Hoogle :: Vendor
 
 -- | Collection of the entry
 --   
---   For <a>DevDocs</a>, this is the language or library that this entry
---   belongs to.
+--   For <a>DevDocs</a> and <a>Dash</a>, this is the language or library
+--   that this entry belongs to.
 --   
 --   For <a>Hoogle</a>, this is the <tt>COLLECTION</tt> parameter in the
 --   <tt>doc-browser --install-hoogle</tt> command.
@@ -123,6 +164,9 @@ collection :: QuasiQuoter
 --   library, e.g. the <tt>3.6.4</tt> as in <tt>Python 3.6.4</tt>, or the
 --   <tt>1.13.0</tt> as in <tt>NumPy 1.13.0</tt>.
 --   
+--   For <a>Dash</a>, part of this is the version of the language or the
+--   library.
+--   
 --   For <a>Hoogle</a>, this is the version of the package as specified in
 --   their cabal file.
 newtype Version
@@ -131,27 +175,46 @@ Version :: String -> Version
 combineCollectionVersion :: Collection -> Version -> String
 breakCollectionVersion :: MonadThrow m => Path a Dir -> m (Collection, Version)
 data InvalidCollection
+hasCVSep :: [Char] -> Bool
 instance GHC.Show.Show Doc.InvalidCollectionVersion
+instance GHC.Exception.Exception Doc.InvalidCollectionVersion
+instance Database.Persist.Class.PersistField.PersistField Doc.Version
+instance Database.Persist.Sql.Class.PersistFieldSql Doc.Version
 instance GHC.Classes.Ord Doc.Version
 instance GHC.Classes.Eq Doc.Version
 instance GHC.Show.Show Doc.InvalidCollection
 instance Data.Data.Data Doc.Collection
 instance GHC.Classes.Ord Doc.Collection
 instance GHC.Classes.Eq Doc.Collection
-instance GHC.Classes.Eq Doc.Vendor
-instance GHC.Show.Show Doc.Vendor
-instance GHC.Exception.Exception Doc.InvalidCollectionVersion
+instance GHC.Show.Show Doc.Version
+instance GHC.Read.Read Doc.Version
 instance GHC.Exception.Exception Doc.InvalidCollection
 instance GHC.Show.Show Doc.Collection
+instance Database.Persist.Class.PersistField.PersistField Doc.Collection
+instance Database.Persist.Sql.Class.PersistFieldSql Doc.Collection
 instance Data.Aeson.Types.FromJSON.FromJSON Doc.Collection
+instance Data.Aeson.Types.ToJSON.ToJSON Doc.Collection
+instance Database.Persist.Class.PersistField.PersistField Doc.Vendor
+instance Database.Persist.Sql.Class.PersistFieldSql Doc.Vendor
+instance GHC.Read.Read Doc.Vendor
+instance GHC.Show.Show Doc.Vendor
+instance GHC.Classes.Eq Doc.Vendor
 
 module Opt
 data T
 StartGUI :: Logging -> T
-InstallDevDocs :: [Collection] -> T
+InstallDevDocs :: [Either Collection (Collection, Version)] -> T
+ListInstalledDevDocs :: T
+ListRemoteDevDocs :: T
+RemoveDevDocs :: [(Collection, Version)] -> T
+InstallDash :: [Collection] -> T
+ListInstalledDash :: T
+ListRemoteDash :: T
+RemoveDash :: [(Collection, Version)] -> T
 InstallHoogle :: String -> Collection -> T
 PrintPublicAPI :: T
 PrintDefaultConfig :: T
+PrintPort :: T
 get :: IO T
 data Logging
 NoLog :: Logging
@@ -167,6 +230,115 @@ findDatabases :: ConfigRoot -> IO ([Path Abs File])
 install :: ConfigRoot -> CacheRoot -> String -> Collection -> IO ()
 installFromDir :: Path Abs Dir -> IO ()
 
+module DevDocsMeta
+printTypeMap :: IO ()
+typeMap :: Map Collection String
+metaJsonUrl :: String
+match :: [Meta] -> [Either Collection (Collection, Version)] -> [Either String Meta]
+toDownloadUrl :: Meta -> [Char]
+data Meta
+Meta :: Collection -> Text -> Text -> Maybe Text -> Maybe Text -> Integer -> Meta
+[metaName] :: Meta -> Collection
+[metaSlug] :: Meta -> Text
+[metaType] :: Meta -> Text
+[metaVersion] :: Meta -> Maybe Text
+[metaRelease] :: Meta -> Maybe Text
+[metaMtime] :: Meta -> Integer
+instance GHC.Generics.Generic DevDocsMeta.Meta
+instance GHC.Show.Show DevDocsMeta.Meta
+instance Data.Aeson.Types.FromJSON.FromJSON DevDocsMeta.Meta
+
+module Db
+type DbMonad a = ReaderT SqlBackend (NoLoggingT (ResourceT IO)) a
+data Entry
+Entry :: !String -> !Vendor -> !Collection -> !Version -> !String -> Entry
+[entryName] :: Entry -> !String
+[entryVendor] :: Entry -> !Vendor
+[entryCollection] :: Entry -> !Collection
+[entryVersion] :: Entry -> !Version
+[entryPath] :: Entry -> !String
+type EntryId = Key Entry
+migrateAll' :: Migration
+data SearchIndex
+SearchIndex :: !String -> !String -> !String -> SearchIndex
+[searchIndexName] :: SearchIndex -> !String
+[searchIndexType] :: SearchIndex -> !String
+[searchIndexPath] :: SearchIndex -> !String
+type SearchIndexId = Key SearchIndex
+dbPath :: ConfigRoot -> Path Abs File
+dbPathText :: ConfigRoot -> Text
+migrateAll :: Path Abs File -> IO [String]
+asSqlBackend :: DbMonad a -> DbMonad a
+instance GHC.Show.Show Db.SearchIndex
+instance Data.Aeson.Types.FromJSON.FromJSON (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance Data.Aeson.Types.ToJSON.ToJSON (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance Database.Persist.Sql.Class.PersistFieldSql (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance Database.Persist.Class.PersistField.PersistField (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance Web.Internal.HttpApiData.FromHttpApiData (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance Web.Internal.HttpApiData.ToHttpApiData (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance Web.PathPieces.PathPiece (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance GHC.Classes.Ord (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance GHC.Classes.Eq (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance GHC.Read.Read (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance GHC.Show.Show (Database.Persist.Class.PersistEntity.Key Db.SearchIndex)
+instance Database.Persist.Class.PersistField.PersistField Db.SearchIndex
+instance Database.Persist.Sql.Class.PersistFieldSql Db.SearchIndex
+instance Database.Persist.Class.PersistEntity.PersistEntity Db.SearchIndex
+instance Database.Persist.Class.PersistStore.ToBackendKey Database.Persist.Sql.Types.Internal.SqlBackend Db.SearchIndex
+instance GHC.Show.Show Db.Entry
+instance Data.Aeson.Types.FromJSON.FromJSON (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance Data.Aeson.Types.ToJSON.ToJSON (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance Database.Persist.Sql.Class.PersistFieldSql (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance Database.Persist.Class.PersistField.PersistField (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance Web.Internal.HttpApiData.FromHttpApiData (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance Web.Internal.HttpApiData.ToHttpApiData (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance Web.PathPieces.PathPiece (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance GHC.Classes.Ord (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance GHC.Classes.Eq (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance GHC.Read.Read (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance GHC.Show.Show (Database.Persist.Class.PersistEntity.Key Db.Entry)
+instance Database.Persist.Class.PersistField.PersistField Db.Entry
+instance Database.Persist.Sql.Class.PersistFieldSql Db.Entry
+instance Database.Persist.Class.PersistEntity.PersistEntity Db.Entry
+instance Database.Persist.Class.PersistStore.ToBackendKey Database.Persist.Sql.Types.Internal.SqlBackend Db.Entry
+
+module Dash
+installMany :: ConfigRoot -> [Collection] -> IO ()
+listRemote :: IO ()
+b64EncodeCV :: Collection -> Version -> String
+extraDirs3 :: Path Rel Dir
+allCollections :: Map Collection Text
+
+module Entry
+data Entry
+Entry :: !String -> !Vendor -> !Collection -> !Version -> !String -> Entry
+[entryName] :: Entry -> !String
+[entryVendor] :: Entry -> !Vendor
+[entryCollection] :: Entry -> !Collection
+[entryVersion] :: Entry -> !Version
+[entryPath] :: Entry -> !String
+data Searchable
+Searchable :: Key Entry -> ByteString -> Collection -> String -> Vendor -> Searchable
+[saKey] :: Searchable -> Key Entry
+[saNameLower] :: Searchable -> ByteString
+[saCollection] :: Searchable -> Collection
+[saVersionLower] :: Searchable -> String
+[saVendor] :: Searchable -> Vendor
+toMatches :: (String -> Text) -> [Searchable] -> DbMonad [T]
+loadSearchables :: DbMonad [Searchable]
+listInstalled :: ConfigRoot -> Vendor -> IO ()
+removeMany :: ConfigRoot -> Vendor -> [(Collection, Version)] -> IO ()
+
+module DevDocs
+getDocFile :: MonadThrow m => Collection -> Version -> Path Rel File -> m (Path Rel File)
+installMany :: ConfigRoot -> [Either Collection (Collection, Version)] -> IO ()
+insertToDb :: ConfigRoot -> Collection -> Version -> Path Abs File -> IO ()
+listRemote :: IO ()
+instance GHC.Generics.Generic DevDocs.Index
+instance GHC.Show.Show DevDocs.Index
+instance Data.Aeson.Types.FromJSON.FromJSON DevDocs.IndexList
+instance Data.Aeson.Types.FromJSON.FromJSON DevDocs.Index
+
 module Upgrade
 start :: ConfigRoot -> Path a Dir -> IO Continue
 data Continue
@@ -175,37 +347,9 @@ Abort :: Continue
 instance GHC.Show.Show Upgrade.UpgradeError
 instance GHC.Exception.Exception Upgrade.UpgradeError
 
-module Entry
-data T
-T :: Collection -> Version -> String -> FilePath -> ByteString -> T
-[collection] :: T -> Collection
-[version] :: T -> Version
-[name] :: T -> String
-[path] :: T -> FilePath
-[nameLower] :: T -> ByteString
-toMatch :: (String -> Text) -> T -> T
-instance GHC.Classes.Eq Entry.T
-instance GHC.Classes.Ord Entry.T
-
-module DevDocsMeta
-downloadMany :: ConfigRoot -> [Collection] -> IO ()
-printTypeMap :: IO ()
-typeMap :: Map Collection String
-instance GHC.Generics.Generic DevDocsMeta.Meta
-instance GHC.Show.Show DevDocsMeta.Meta
-instance Data.Aeson.Types.FromJSON.FromJSON DevDocsMeta.Meta
-
-module DevDocs
-loadAll :: ConfigRoot -> IO [T]
-getDocFile :: MonadThrow m => Collection -> Version -> Path Rel File -> m (Path Rel File)
-instance GHC.Generics.Generic DevDocs.Index
-instance GHC.Show.Show DevDocs.Index
-instance Data.Aeson.Types.FromJSON.FromJSON DevDocs.IndexList
-instance Data.Aeson.Types.FromJSON.FromJSON DevDocs.Index
-
 module Config
 data T
-T :: Float -> Int -> Font -> Font -> Font -> Font -> Font -> Font -> Text -> Text -> Text -> Text -> Text -> Text -> T
+T :: Float -> Int -> Font -> Font -> Font -> Font -> Font -> Font -> Text -> Text -> Text -> Text -> Text -> Text -> Commands -> Commands -> T
 [webEngineZoomFactor] :: T -> Float
 [port] :: T -> Int
 [inputFont] :: T -> Font
@@ -220,17 +364,43 @@ T :: Float -> Int -> Font -> Font -> Font -> Font -> Font -> Font -> Text -> Tex
 [matchFgColorSelected] :: T -> Text
 [matchFgColorLight] :: T -> Text
 [inputBorderColor] :: T -> Text
+[commands] :: T -> Commands
+[defaultCommands] :: T -> Commands
 data Font
 Font :: Text -> Float -> Font
 [family] :: Font -> Text
 [pointSize] :: Font -> Float
 load :: ConfigRoot -> IO T
+type Commands = Map Abbr Command
+data Command
+LimitToDevDocs :: Collection -> LowerCasePrefix -> Command
+LimitToDash :: Collection -> LowerCasePrefix -> Command
+HoogleLatest :: Command
+data Abbr
+makeAbbr :: Char -> Char -> Abbr
+data LowerCasePrefix
+makeLcp :: [Char] -> LowerCasePrefix
+getLcp :: LowerCasePrefix -> String
 instance GHC.Generics.Generic Config.T
 instance GHC.Show.Show Config.T
+instance GHC.Show.Show Config.Command
+instance Data.Aeson.Types.ToJSON.ToJSONKey Config.Abbr
+instance Data.Aeson.Types.FromJSON.FromJSONKey Config.Abbr
+instance Data.Hashable.Class.Hashable Config.Abbr
+instance GHC.Classes.Ord Config.Abbr
+instance GHC.Classes.Eq Config.Abbr
 instance GHC.Generics.Generic Config.Font
 instance GHC.Show.Show Config.Font
 instance Data.Aeson.Types.FromJSON.FromJSON Config.T
 instance Data.Aeson.Types.ToJSON.ToJSON Config.T
+instance Data.Aeson.Types.FromJSON.FromJSON Config.Command
+instance Data.Aeson.Types.ToJSON.ToJSON Config.Command
+instance GHC.Show.Show Config.Abbr
+instance Data.Aeson.Types.FromJSON.FromJSON Config.Abbr
+instance Data.Aeson.Types.ToJSON.ToJSON Config.Abbr
+instance GHC.Show.Show Config.LowerCasePrefix
+instance Data.Aeson.Types.FromJSON.FromJSON Config.LowerCasePrefix
+instance Data.Aeson.Types.ToJSON.ToJSON Config.LowerCasePrefix
 instance Data.Aeson.Types.FromJSON.FromJSON Config.Font
 instance Data.Aeson.Types.ToJSON.ToJSON Config.Font
 
@@ -245,10 +415,11 @@ instance Servant.Docs.Internal.ToSample ()
 instance Servant.Docs.Internal.ToSample Match.T
 
 module Search
-search :: [T] -> Int -> GeneralQuery -> [T]
-makeQuery :: String -> Maybe Query
-startThread :: T -> ConfigRoot -> [T] -> Maybe (Path Abs File) -> T -> ([T] -> IO ()) -> IO ThreadId
+search :: [Searchable] -> Int -> GeneralQuery -> [Searchable]
+makeQuery :: Commands -> String -> Maybe Query
+startThread :: T -> ConfigRoot -> Maybe (Path Abs File) -> T -> ([T] -> IO ()) -> IO ThreadId
 queryToGoogle :: Query -> String
 instance GHC.Show.Show Search.Query
-instance GHC.Show.Show Search.HoogleQuery
 instance GHC.Show.Show Search.GeneralQuery
+instance GHC.Show.Show Search.HoogleQuery
+instance GHC.Show.Show Search.BareQs
