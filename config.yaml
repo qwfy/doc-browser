@@ -76,10 +76,14 @@ Commands: {}
 #   query installed collection and versions.
 #
 # - ["HoogleLatest"]
-#   Search with Hoogle, use the "latest" database.
+#   Search with Hoogle, use the "latest" database, where
+#   "latest" is defined to be the last of:
 #
-#   Note: currently, "latest" is not well-defined, this will
-#   be improved in future versions.
+#   sort_with_dictionary_order_ascending(all_collections)
+#
+# - ["HoogleLimit", <collection>]
+#   Search with Hoogle, use the database specified by
+#   <collection>.
 DefaultCommands:
   go: ["LimitToDevDocs", "Go", ""]
   hs: ["LimitToDevDocs", "Haskell", ""]

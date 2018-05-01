@@ -123,13 +123,17 @@ data Command
   = LimitToDevDocs Doc.Collection LowerCasePrefix
   | LimitToDash Doc.Collection LowerCasePrefix
   | HoogleLatest
+  | HoogleLimit Doc.Collection
   deriving (Eq, Show)
 
 hoogleCommands :: Commands -> [Text]
 hoogleCommands commands =
   Map.toList commands
-    |> filter (\(_abbr, c) -> c == HoogleLatest)
+    |> filter (\(_abbr, c) -> c == HoogleLatest || isHoogleLimit c)
     |> map (getAbbr . fst)
+  where
+    isHoogleLimit (HoogleLimit _) = True
+    isHoogleLimit _ = False
 
 instance FromJSON Command where
   parseJSON = withArray "Command" $ \arr -> do
@@ -148,6 +152,10 @@ instance FromJSON Command where
       ["HoogleLatest"] -> do
         return HoogleLatest
 
+      ["HoogleLimit", coll'] -> do
+        coll <- parseJSON coll'
+        return $ HoogleLimit coll
+
       xs ->
         fail $ "Bad command: " ++ show xs
 
@@ -161,6 +169,9 @@ instance ToJSON Command where
 
   toJSON HoogleLatest = Array . Vector.fromList $
     [String "HoogleLatest"]
+
+  toJSON (HoogleLimit coll) = Array . Vector.fromList $
+    [String "HoogleLimit", toJSON coll]
 
 
 load :: ConfigRoot -> IO T

@@ -56,10 +56,10 @@ data GeneralQuery
   | LimitToDash    Doc.Collection Config.LowerCasePrefix BareQs
   deriving (Show)
 
-newtype HoogleQuery
+data HoogleQuery
   -- Search the latest hoogle database
-  -- TODO @incomplete: define latest
   = HoogleLatest BareQs
+  | HoogleLimit Doc.Collection BareQs
   deriving (Show)
 
 -- Search string without command
@@ -76,6 +76,7 @@ makeQuery commands str =
           case Map.lookup (Config.makeAbbr c1 c2) commands of
             Nothing                               -> Nothing
             Just Config.HoogleLatest              -> Just . H $ HoogleLatest (BareQs qs)
+            Just (Config.HoogleLimit coll)        -> Just . H $ HoogleLimit coll (BareQs qs)
             Just (Config.LimitToDevDocs coll lcp) -> Just . G $ LimitToDevDocs coll lcp (BareQs qs)
             Just (Config.LimitToDash coll lcp)    -> Just . G $ LimitToDash    coll lcp (BareQs qs)
 
@@ -100,6 +101,7 @@ makeQuery commands str =
 
 queryToGoogle :: Query -> String
 queryToGoogle (H (HoogleLatest qs)) = unwords ["Haskell", getBareQs qs]
+queryToGoogle (H (HoogleLimit _ qs)) = unwords ["Haskell", getBareQs qs]
 queryToGoogle (G (Global qs)) = getBareQs qs
 queryToGoogle (G (LimitToDevDocs collection _ qs)) = unwords [show collection, getBareQs qs]
 queryToGoogle (G (LimitToDash collection _ qs)) = unwords [show collection, getBareQs qs]
@@ -208,16 +210,23 @@ startThread
 startThread config configRoot slot handleMatches = do
   forkIO $ runSqlite (Db.dbPathText configRoot) loop
   where
+    -- TODO @incomplete: make this limit configurable
+    limit = 27
+
+    prefixHost' = prefixHost $ Config.port config
+
+    searchHoo dbPath collection bareQs =
+      Hoogle.withDatabase (toFilePath dbPath) (\db ->
+        return $ Hoo.search configRoot collection db limit (getBareQs bareQs) prefixHost')
+
     loop :: Db.DbMonad a
     loop = do
       searchables <- Entry.loadSearchables
 
       latestHooMay <- liftIO $ Hoo.findLatest configRoot
+      allHoos <- liftIO $ Hoo.findDatabasesAsMap configRoot
 
       forever $ do
-        -- TODO @incomplete: make this limit configurable
-        let limit = 27
-        let prefixHost' = prefixHost $ Config.port config
         content <- liftIO . atomically $ takeTMVar (Slot.query slot)
         let (queryStr, matchHandler) = case content of
               Slot.GuiQuery x ->
@@ -243,6 +252,12 @@ startThread config configRoot slot handleMatches = do
                   Just dbPath -> do
                     -- load the database on every search, instead of keeping it in memory,
                     -- this is done deliberately - turns out that it makes the GUI more responsive
-                    collection <- liftIO . Doc.parseCollection . FilePath.takeBaseName . toFilePath $ dbPath
-                    liftIO $ Hoogle.withDatabase (toFilePath dbPath) (\db ->
-                               return $ Hoo.search configRoot collection db limit (getBareQs query) prefixHost')
+                    collection <- liftIO . Hoo.extractCollection $ dbPath
+                    liftIO $ searchHoo dbPath collection query
+
+              Just (H (HoogleLimit collection query)) ->
+                case Map.lookup collection allHoos of
+                  Nothing ->
+                    return []
+                  Just dbPath -> do
+                    liftIO $ searchHoo dbPath collection query

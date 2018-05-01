@@ -4,6 +4,8 @@ module Hoo
   ( search
   , findLatest
   , findDatabases
+  , findDatabasesAsMap
+  , extractCollection
   , install
   , installFromDir
   ) where
@@ -14,10 +16,14 @@ import Data.Maybe
 import Data.Text (Text)
 import qualified Data.Text as Text
 
+import Data.Map.Strict (Map)
+import qualified Data.Map.Strict as Map
+
 import Safe
 
 import Control.Monad
 import Control.Exception
+import Control.Monad.Catch
 
 import Path
 import Path.IO
@@ -89,6 +95,12 @@ findDatabases configRoot = do
         |> return
   where
     isRecognized name = fileExtension name == ".hoo"
+
+findDatabasesAsMap :: ConfigRoot -> IO (Map Doc.Collection (Path Abs File))
+findDatabasesAsMap configRoot = do
+  dbs <- findDatabases configRoot
+  colls <- sequence $ map extractCollection dbs
+  return . Map.fromList $ zip colls dbs
 
 
 -- turn string "print :: Show a => a -> IO ()"
@@ -182,7 +194,7 @@ installFromDir unpackPath = do
 
   let tearDown = renameTxts BA
 
-  bracket setup tearDown (const runHoogle)
+  Control.Exception.bracket setup tearDown (const runHoogle)
 
   report ["Hoogle database generated"]
 
@@ -237,3 +249,7 @@ pkgVer `isPkgVerOfPkg` wantPkg =
           endWithNumber = Just True == ((`elem` numbers) <$> lastMay str)
           allGoodChars = all (`elem` goodChars) str
       in beginWithNumber && endWithNumber && allGoodChars
+
+extractCollection :: MonadThrow m => Path Abs File -> m Doc.Collection
+extractCollection path =
+  Doc.parseCollection . FilePath.takeBaseName . toFilePath $ path
