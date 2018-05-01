@@ -20,6 +20,7 @@ data T
 
   | InstallDevDocs [Doc.Collection]
   | ListInstalledDevDocs
+  | ListRemoteDevDocs
   | RemoveDevDocs [(Doc.Collection, Doc.Version)]
 
   | InstallDash [Doc.Collection]
@@ -56,6 +57,7 @@ optParser =
       startGUIParser
         <|> installDevDocsParser
         <|> listInstalledDevDocsParser
+        <|> listRemoteDevDocsParser
         <|> removeDevDocsParser
 
         <|> installDashParser
@@ -99,6 +101,12 @@ listInstalledDevDocsParser =
   flag' ListInstalledDevDocs
     (  long "list-installed-devdocs"
     <> help "List installed DevDocs' docset")
+
+listRemoteDevDocsParser :: Parser T
+listRemoteDevDocsParser =
+  flag' ListRemoteDevDocs
+    (  long "list-remote-devdocs"
+    <> help "List all available DevDocs docset")
 
 removeDevDocsParser :: Parser T
 removeDevDocsParser =

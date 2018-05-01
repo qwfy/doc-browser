@@ -190,6 +190,9 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
         Opt.ListInstalledDevDocs ->
           Entry.listInstalled configRoot Doc.DevDocs
 
+        Opt.ListRemoteDevDocs ->
+          DevDocs.listRemote
+
         Opt.RemoveDevDocs cvs ->
           withConfigLock $ Entry.removeMany configRoot Doc.DevDocs cvs
 

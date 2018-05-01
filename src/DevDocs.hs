@@ -8,6 +8,7 @@ module DevDocs
   ( getDocFile
   , installMany
   , insertToDb
+  , listRemote
   ) where
 
 import GHC.Generics (Generic)
@@ -27,6 +28,7 @@ import Data.List.Extra
 import Data.Maybe
 
 import Database.Persist.Sqlite
+import Fmt
 
 import qualified Entry
 import qualified Doc
@@ -49,6 +51,17 @@ instance Aeson.FromJSON IndexList where
   parseJSON = Aeson.withObject "IndexDotJson" $ \object -> do
     indices' <- object Aeson..: "entries"
     IndexList <$> Aeson.parseJSONList indices'
+
+listRemote :: IO ()
+listRemote = do
+  metas <- downloadJSON DevDocsMeta.metaJsonUrl
+  metas
+    |> map (\m -> Doc.combineCollectionVersion
+        (DevDocsMeta.metaName m)
+        (maybe (Doc.Version "") (Doc.Version . Text.unpack) $ DevDocsMeta.metaRelease m))
+    |> nub
+    |> blockListF
+    |> putStr . fmt
 
 -- TODO @incomplete: multithreads and proxy
 -- TODO @incomplete: install to a UUID dir?
