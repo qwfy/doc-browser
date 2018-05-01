@@ -7,6 +7,12 @@ module Config
   ( T(..)
   , Font(..)
   , load
+  , Commands
+  , Command(..)
+  , Abbr
+  , makeAbbr
+  , LowerCasePrefix
+  , makeLcp
   ) where
 
 import Data.Text (Text)
@@ -16,6 +22,7 @@ import Data.Yaml.Config
 import Data.Either.Utils
 import qualified Data.Yaml as Yaml
 import Data.Hashable (Hashable)
+import Data.Char
 
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
@@ -49,8 +56,10 @@ data T = T
   , matchFgColorLight    :: Text
   , inputBorderColor     :: Text
 
-  , commands :: Map Abbr Command
+  , commands :: Commands
   } deriving (Show, Generic)
+
+type Commands = Map Abbr Command
 
 
 instance FromJSON T where
@@ -77,10 +86,13 @@ instance Show LowerCasePrefix where
 
 instance FromJSON LowerCasePrefix where
   parseJSON = withText "LowerCasePrefix" $ \txt -> do
-    Text.toLower txt |> Text.unpack |> LowerCasePrefix |> return
+    makeLcp (Text.unpack txt) |> return
+
+makeLcp str = map toLower str |> LowerCasePrefix
 
 instance ToJSON LowerCasePrefix where
   toJSON (LowerCasePrefix str) = String . Text.pack $ str
+
 
 
 newtype Abbr = Abbr {getAbbr :: Text}
@@ -92,19 +104,21 @@ instance Show Abbr where
 instance FromJSON Abbr where
   parseJSON = withText "Abbr" $ \txt -> do
     case Text.unpack txt of
-      [_, _] ->
-        return $ Abbr txt
+      [a, b] ->
+        return $ makeAbbr a b
       str ->
         fail . unwords $ ["Cannot convert", str, "to an Abbr"]
 
 instance ToJSON Abbr where
   toJSON (Abbr txt) = String txt
 
+makeAbbr a b = Abbr . Text.pack $ [a, b]
+
 
 data Command
   = LimitToDevDocs Doc.Collection LowerCasePrefix
   | LimitToDash Doc.Collection LowerCasePrefix
-  | LimitToHoogle Doc.Collection
+  | HoogleLatest
   deriving (Show)
 
 instance FromJSON Command where
@@ -121,9 +135,8 @@ instance FromJSON Command where
         lcp <- parseJSON lcp'
         return $ LimitToDash coll lcp
 
-      ["LimitToHoogle", coll'] -> do
-        coll <- parseJSON coll'
-        return $ LimitToHoogle coll
+      ["HoogleLatest"] -> do
+        return HoogleLatest
 
       xs ->
         fail $ "Bad command: " ++ show xs
@@ -136,8 +149,8 @@ instance ToJSON Command where
   toJSON (LimitToDash coll lcp) = Array . Vector.fromList $
     [String "LimitToDash", toJSON coll, toJSON lcp]
 
-  toJSON (LimitToHoogle coll) = Array . Vector.fromList $
-    [String "LimitToDash", toJSON coll]
+  toJSON HoogleLatest = Array . Vector.fromList $
+    [String "HoogleLatest"]
 
 
 load :: ConfigRoot -> IO T

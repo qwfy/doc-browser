@@ -83,7 +83,7 @@ startGUI config configRoot guiDir slot = do
 
     , defMethod' "google"
         (\_obj txt ->
-          google . Text.unpack $ txt)
+          google (Config.commands config) . Text.unpack $ txt)
 
     , defPropertyConst' "webEngineZoomFactor"
         (\_obj ->
@@ -128,9 +128,9 @@ startGUI config configRoot guiDir slot = do
   -- > It is recommended that you call this function at the end of your program ...
   shutdownQt
 
-google :: String -> IO ()
-google str =
-  case Search.makeQuery str of
+google :: Config.Commands -> String -> IO ()
+google commands str =
+  case Search.makeQuery commands str of
     Nothing ->
       return ()
     Just query -> do

@@ -51,81 +51,77 @@ data Query
   deriving (Show)
 
 data GeneralQuery
-  = Global String
-  | Limited String String
+  = Global BareQs
+  | LimitToDevDocs Doc.Collection Config.LowerCasePrefix BareQs
+  | LimitToDash    Doc.Collection Config.LowerCasePrefix BareQs
   deriving (Show)
 
 newtype HoogleQuery
-  = Hoogle String
+  -- Search the latest hoogle database
+  -- TODO @incomplete: define latest
+  = HoogleLatest BareQs
   deriving (Show)
 
-makeQuery :: String -> Maybe Query
-makeQuery str =
-  case str of
+-- Search string without command
+newtype BareQs = BareQs {getBareQs :: String}
+  deriving (Show)
+
+makeQuery :: Config.Commands -> String -> Maybe Query
+makeQuery commands str =
+  case relocateCommand str of
+    ('/':c1:c2:qs) ->
+      if null qs
+        then Nothing
+        else
+          case Map.lookup (Config.makeAbbr c1 c2) commands of
+            Nothing                               -> Nothing
+            Just Config.HoogleLatest              -> Just . H $ HoogleLatest (BareQs qs)
+            Just (Config.LimitToDevDocs coll lcp) -> Just . G $ LimitToDevDocs coll lcp (BareQs qs)
+            Just (Config.LimitToDash coll lcp)    -> Just . G $ LimitToDash    coll lcp (BareQs qs)
+
     [] ->
       Nothing
 
-    ('/':'h':'h':c:t) ->
-      Just . H . Hoogle $ (c:t)
+    xs ->
+      Just . G . Global $ BareQs xs
 
-    ('/':c1:c2:c3:t) ->
-      -- limit using prefix, like this: /tfsigmoid
-      Just . G $ Limited [c1, c2] (c3:t)
-
-    ('/':_) ->
-      -- cannot start a search with /
-      Nothing
-
-    _ ->
-      case reverse str of
-        ('h':'h':'/':c:t) ->
-          Just . H . Hoogle . reverse $ (c:t)
-        (c1:c2:'/':c3:t) ->
-          -- limit using suffix, like this: sigmoid/tf
-          Just . G $ Limited [c2, c1] (reverse (c3:t))
+  where
+    relocateCommand xs =
+      case xs of
+        ('/':_:_:_) ->
+          -- if it starts with a command, then don't consider the tail,
+          -- i.e. we prefer prefixed command
+          xs
         _ ->
-          Just . G . Global $ str
+          case reverse xs of
+            (c1:c2:'/':t) -> '/':c2:c1:reverse t
+            _ -> xs
 
-
-shortcuts = Map.fromList
-  [ ("hs", [Doc.collection|Haskell|])
-  , ("py", [Doc.collection|Python|])
-  , ("tf", [Doc.collection|TensorFlow|])
-  , ("np", [Doc.collection|NumPy|])
-  , ("pd", [Doc.collection|pandas|])
-  , ("er", [Doc.collection|Erlang|])
-  , ("mp", [Doc.collection|Matplotlib|])
-  , ("go", [Doc.collection|Go|])
-  ]
 
 queryToGoogle :: Query -> String
-queryToGoogle (H (Hoogle str)) = unwords ["Haskell", str]
-queryToGoogle (G (Global str)) = str
-queryToGoogle (G (Limited abbr str)) =
-  case Map.lookup abbr shortcuts of
-    Nothing ->
-      str
-    Just collection ->
-      unwords [show collection, str]
+queryToGoogle (H (HoogleLatest qs)) = unwords ["Haskell", getBareQs qs]
+queryToGoogle (G (Global qs)) = getBareQs qs
+queryToGoogle (G (LimitToDevDocs collection _ qs)) = unwords [show collection, getBareQs qs]
+queryToGoogle (G (LimitToDash collection _ qs)) = unwords [show collection, getBareQs qs]
 
-getQueryTextLower query =
-  let queryStr = case query of
-        Global s -> s
-        Limited _ s -> s
-  in map Data.Char.toLower queryStr
+getBareQsFromGeneralQuery query =
+  case query of
+    Global qs             -> qs
+    LimitToDevDocs _ _ qs -> qs
+    LimitToDash _ _ qs    -> qs
 
 filterSearchables :: GeneralQuery -> [Entry.Searchable] -> [Entry.Searchable]
 filterSearchables (Global _) es = es
-filterSearchables (Limited abbr _) es =
-  case Map.lookup abbr shortcuts of
-    Nothing ->
-      []
-    Just collection ->
-      filter ((== collection) . Entry.saCollection) es
+filterSearchables (LimitToDevDocs collection versionLcp _) es =
+  -- TODO @incomplete: handle versionLcp
+  -- TODO @incomplete: handle vendor
+  filter (\e -> Entry.saCollection e == collection) es
+filterSearchables (LimitToDash collection versionLcp _) es =
+  filter (\e -> Entry.saCollection e == collection) es
 
 search :: [Entry.Searchable] -> Int -> GeneralQuery -> [Entry.Searchable]
 search allSearchables limit query =
-  let queryStr = getQueryTextLower query
+  let queryStr = getBareQsFromGeneralQuery query |> getBareQs |> map Data.Char.toLower
       searchables = filterSearchables query allSearchables
   in searchables
        |> map (distance queryStr . Entry.saNameLower)
@@ -207,8 +203,7 @@ startThread
   -> ([Match.T] -> IO ())
   -> IO ThreadId
 startThread config configRoot hooMay slot handleMatches = do
-  let dbPath = Db.dbPath configRoot |> toFilePath |> Text.pack
-  forkIO $ runSqlite dbPath loop
+  forkIO $ runSqlite (Db.dbPathText configRoot) loop
   where
     loop :: Db.DbMonad a
     loop = do
@@ -225,7 +220,7 @@ startThread config configRoot hooMay slot handleMatches = do
                 (x, \ms -> liftIO . atomically $ updateTMVar httpResultSlot ms)
 
         (liftIO . matchHandler) =<<
-          case Search.makeQuery queryStr of
+          case Search.makeQuery (Config.commands config) queryStr of
               Nothing ->
                 return []
 
@@ -233,7 +228,7 @@ startThread config configRoot hooMay slot handleMatches = do
                 Search.search searchables limit query
                   |> Entry.toMatches prefixHost'
 
-              Just (H (Hoogle query)) ->
+              Just (H (HoogleLatest query)) ->
                 -- TODO @incomplete: run hoogle in a separate thread (to simplify some types for one reason)?
                 case hooMay of
                   Nothing ->
@@ -244,4 +239,4 @@ startThread config configRoot hooMay slot handleMatches = do
                     -- this is done deliberately - turns out that it makes the GUI more responsive
                     collection <- liftIO . Doc.parseCollection . FilePath.takeBaseName . toFilePath $ dbPath
                     liftIO $ Hoogle.withDatabase (toFilePath dbPath) (\db ->
-                               return $ Hoo.search configRoot collection db limit query prefixHost')
+                               return $ Hoo.search configRoot collection db limit (getBareQs query) prefixHost')

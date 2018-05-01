@@ -41,7 +41,7 @@ Commands:
   py: ["LimitToDevDocs", "Python", "3"]
   tf: ["LimitToDevDocs", "TensorFlow", ""]
   er: ["LimitToDash", "Erlang", ""]
-  hh: ["LimitToHoogle", "lts-11.4"]
+  hh: ["HoogleLatest"]
 
 
 # Font for input area.
