@@ -11,7 +11,7 @@ module Search
 
 import Data.Text (Text)
 import qualified Data.Text as Text
-import qualified Data.List
+import Data.List.Extra
 import qualified Data.Map.Strict as Map
 import qualified Data.Char
 import qualified Data.Array
@@ -113,11 +113,15 @@ getBareQsFromGeneralQuery query =
 filterSearchables :: GeneralQuery -> [Entry.Searchable] -> [Entry.Searchable]
 filterSearchables (Global _) es = es
 filterSearchables (LimitToDevDocs collection versionLcp _) es =
-  -- TODO @incomplete: handle versionLcp
-  -- TODO @incomplete: handle vendor
-  filter (\e -> Entry.saCollection e == collection) es
+  flip filter es $ \e ->
+    (  Entry.saVendor e == Doc.DevDocs
+    && Entry.saCollection e == collection
+    && Config.getLcp versionLcp `isPrefixOf` Entry.saVersionLower e)
 filterSearchables (LimitToDash collection versionLcp _) es =
-  filter (\e -> Entry.saCollection e == collection) es
+  flip filter es $ \e ->
+    (  Entry.saVendor e == Doc.Dash
+    && Entry.saCollection e == collection
+    && Config.getLcp versionLcp `isPrefixOf` Entry.saVersionLower e)
 
 search :: [Entry.Searchable] -> Int -> GeneralQuery -> [Entry.Searchable]
 search allSearchables limit query =
@@ -127,7 +131,7 @@ search allSearchables limit query =
        |> map (distance queryStr . Entry.saNameLower)
        |> flip zip searchables
        |> filter (Data.Maybe.isJust . fst)
-       |> Data.List.sortOn (\(dist, sa) -> (dist, Entry.saNameLower sa))
+       |> sortOn (\(dist, sa) -> (dist, Entry.saNameLower sa))
        |> take limit
        |> map snd
 
@@ -159,7 +163,7 @@ regexDistance regex queryLength target =
     matchesArray ->
       let (matchOffset, matchLength) = matchesArray
             |> map (Data.Array.! 0)
-            |> Data.List.sortBy (\a b -> compare (Data.Tuple.swap a) (Data.Tuple.swap b))
+            |> sortBy (\a b -> compare (Data.Tuple.swap a) (Data.Tuple.swap b))
             |> head
 
           matchString = subString target matchOffset matchLength
@@ -175,7 +179,7 @@ queryToRegex :: String -> Regex
 queryToRegex query =
   query
     |> map escape
-    |> Data.List.intercalate ".*?"
+    |> intercalate ".*?"
     |> Char8.pack
     |> makeRegexOpts compOpts defaultExecOpt
   where

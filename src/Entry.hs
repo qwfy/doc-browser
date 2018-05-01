@@ -39,6 +39,8 @@ data Searchable = Searchable
   { saKey :: Key Entry
   , saNameLower :: Char8.ByteString
   , saCollection :: Doc.Collection
+  , saVersionLower :: String
+  , saVendor :: Doc.Vendor
   }
 
 toMatches :: (String -> Text) -> [Searchable] -> DbMonad [Match.T]
@@ -87,11 +89,13 @@ loadSearchables = do
   (rows :: [Entity Entry]) <- selectList [] []
   return $ map toSearchable rows
   where
-    toSearchable (Entity{entityKey, entityVal=Entry{entryName, entryCollection}}) =
+    toSearchable (Entity{entityKey, entityVal=Entry{entryName, entryCollection, entryVersion, entryVendor}}) =
       Searchable
         { saKey = entityKey
         , saNameLower = Char8.pack $ map toLower entryName
         , saCollection = entryCollection
+        , saVersionLower = map toLower $ show entryVersion
+        , saVendor = entryVendor
         }
 
 -- TODO @incomplete: this function has bad performance - due to the limit of the persistent library

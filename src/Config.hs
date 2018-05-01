@@ -13,6 +13,7 @@ module Config
   , makeAbbr
   , LowerCasePrefix
   , makeLcp
+  , getLcp
   ) where
 
 import Data.Text (Text)
@@ -25,7 +26,6 @@ import Data.Hashable (Hashable)
 import Data.Char
 
 import Data.Map.Strict (Map)
-import qualified Data.Map.Strict as Map
 import qualified Data.Vector as Vector
 
 import Path
@@ -95,7 +95,7 @@ instance ToJSON LowerCasePrefix where
 
 
 
-newtype Abbr = Abbr {getAbbr :: Text}
+newtype Abbr = Abbr Text
   deriving (Eq, Ord, Hashable, FromJSONKey, ToJSONKey)
 
 instance Show Abbr where
