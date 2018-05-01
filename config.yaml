@@ -44,7 +44,17 @@ Commands: {}
 
 # Do not change this, use Commands instead.
 # ============================================================
-# Commands comes in these formats:
+# Commands are represented with YAML map, in this syntax:
+#
+#   <command string> : <command>
+#        |                 |
+#       \/                \/
+# e.g.  py : ["LimitToDevDocs", "Python", "3"]
+#
+# <command string> must be two characters long, and cannot
+# contain '/'.
+#
+# These <command>s are available:
 #
 # - ["LimitToDevDocs", "<collection>", "<version prefix>"]
 #   This command limit the search scope to the docsets that
@@ -52,7 +62,7 @@ Commands: {}
 #
 #   - it is provided by DevDocs
 #   - its collection is <collection>
-#   - <version prefix> is a case-insenstive prefix of the
+#   - <version prefix> is a case-insensitive prefix of the
 #     docset's version
 #
 #   You can use `doc-browser --list-installed-devdocs` to

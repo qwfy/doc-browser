@@ -1,7 +1,7 @@
 :toc: macro
 :experimental:
 
-Doc Browser is an API documentation browser with support for DevDocs and Hoogle, written in Haskell and QML.
+Doc Browser is an API documentation browser with support for DevDocs, Dash and Hoogle, written in Haskell and QML.
 
 The GUI looks like this:
 
@@ -17,8 +17,9 @@ toc::[]
 * Works offline
 * Near real-time fuzzy search
 * Easy-to-type shortcuts
+* Supports both DevDocs and Dash docset
 * Hoogle integration
-* Customizable (in progress)
+* Customizable
 * link:#http-interface[HTTP interfaces]
 * link:https://github.com/qwfy/doc-browser-nvim[Neovim integration]. Editor integration is just a HTTP request away
 
@@ -97,12 +98,39 @@ To install DevDocs' docset, invoke:
 
 [source,bash]
 ----
-doc-browser --install-devdocs DOC1 DOC2
-# e.g. doc-browser --install-devdocs python haskell
+doc-browser --install-devdocs DOC COLLECTION==VERSION ..
+
+# e.g.
+#   doc-browser --install-devdocs python Python==2.7.13
+# will install both the latest of Python (3.x) and Python 2.7.13
+
+# use
+#   doc-browser --list-remote-devdocs
+# to query available docset and versions
 ----
 
 This will download docsets from devdocs.io, and unpack them to
 `XDG_CONFIG/doc-browser/DevDocs`.
+
+=== Install Dash's Docset
+
+To install Dash's docset, invoke:
+
+[source,bash]
+----
+doc-browser --install-dash COLLECTION ..
+
+# e.g.
+#   doc-browser --install-dash Erlang
+# will install the Erlang docset
+
+# use
+#   doc-browser --list-remote-dash
+# to query available docset
+----
+
+This will download docsets from kapeli.com, and unpack them to
+`XDG_CONFIG/doc-browser/Dash`.
 
 === Enable Hoogle Support
 
@@ -183,6 +211,8 @@ To make DevDocs' docsets work fully offline:
 * When the tab is opened and the documentation is correctly displayed,
 all necessary files are cached, DevDocs' docsets work offline now
 
+Dash's docset works offline out of the box.
+
 If a MathJax distribution is found at `/usr/share/mathjax`, then the
 Hoogle documentations will work offline. (If you installed from AUR, you
 already have it.)
@@ -200,17 +230,21 @@ left-most one.
 
 === Commands
 
+These commands are provided by default, you can customize them by following
+the instructions in link:#configuration[Configuration] section.
+
 [cols=",",options="header",]
 |===
 | Command | Effect
-| hs      | Limit search to Haskell
-| py      | Limit search to Python
-| tf      | Limit search to TensorFlow
-| np      | Limit search to NumPy
-| pd      | Limit search to pandas
-| er      | Limit search to Erlang
-| mp      | Limit search to Matplotlib
-| go      | Limit search to Go
+| hs      | Limit search to DevDocs' Haskell
+| py      | Limit search to DevDocs' Python 3.x
+| p2      | Limit search to DevDocs' Python 2.x
+| tf      | Limit search to DevDocs' TensorFlow
+| np      | Limit search to DevDocs' NumPy
+| pd      | Limit search to DevDocs' pandas
+| mp      | Limit search to DevDocs' Matplotlib
+| go      | Limit search to DevDocs' Go
+| er      | Limit search to Dash's Erlang
 | hh      | Perform search with Hoogle
 |===
 
@@ -289,8 +323,7 @@ the modified code is licensed under the BSD license.
 For Hoogle support, this application guides user to download
 documentation archive from https://www.stackage.org[Stackage].
 
-
-== FAQ and Troubleshooting
+== Known Problems and Solution
 
 Problem: On KDE, kbd:[Ctrl+/] is taking too long to open the browser.
 
@@ -311,6 +344,11 @@ Problem: (China users only) Installation of docsets hangs/open documentation sho
 
 Solution: devdocs.io or cloudflare.com is blocked by GFW, please use a VPN.
 
+Problem: Anchors in some Dash's docsets, like Erlang, don't work.
+
+Solution: None, I'm working on this. As a workaround, you can use kbd:[Ctrl+F] to do a page search.
+
+== FAQ
 Q: Why does this application display at most 27 matches?
 
 A: If your desired match is not in the top 27 matches, then there is
