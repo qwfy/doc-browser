@@ -202,16 +202,18 @@ prefixHost port path =
 startThread
   :: Config.T
   -> ConfigRoot
-  -> Maybe (Path Abs File)
   -> Slot.T
   -> ([Match.T] -> IO ())
   -> IO ThreadId
-startThread config configRoot hooMay slot handleMatches = do
+startThread config configRoot slot handleMatches = do
   forkIO $ runSqlite (Db.dbPathText configRoot) loop
   where
     loop :: Db.DbMonad a
     loop = do
       searchables <- Entry.loadSearchables
+
+      latestHooMay <- liftIO $ Hoo.findLatest configRoot
+
       forever $ do
         -- TODO @incomplete: make this limit configurable
         let limit = 27
@@ -234,7 +236,7 @@ startThread config configRoot hooMay slot handleMatches = do
 
               Just (H (HoogleLatest query)) ->
                 -- TODO @incomplete: run hoogle in a separate thread (to simplify some types for one reason)?
-                case hooMay of
+                case latestHooMay of
                   Nothing ->
                     -- TODO @incomplete: warn user about the lack of a hoogle database
                     return []

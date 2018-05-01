@@ -105,11 +105,9 @@ startGUI config configRoot guiDir slot = do
         atomically $ writeTVar matchesTVar matches `orElse` return ()
         fireSignal matchesKey objectContext
 
-  hooMay <- Hoo.findDatabase configRoot
   _searchThreadId <- Search.startThread
     config
     configRoot
-    hooMay
     slot
     sendMatches
 

@@ -2,7 +2,7 @@
 
 module Hoo
   ( search
-  , findDatabase
+  , findLatest
   , findDatabases
   , install
   , installFromDir
@@ -69,11 +69,10 @@ getPackageVersion configRoot target collection = do
     _ ->
       Nothing
 
-findDatabase :: ConfigRoot -> IO (Maybe (Path Abs File))
-findDatabase configRoot = do
+findLatest :: ConfigRoot -> IO (Maybe (Path Abs File))
+findLatest configRoot = do
   databaseFiles <- findDatabases configRoot
   databaseFiles
-    -- currently, only load the latest
     |> sort
     |> lastMay
     |> return
