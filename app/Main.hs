@@ -89,6 +89,10 @@ startGUI config configRoot guiDir slot = do
         (\_obj ->
           return . Text.pack . show . Config.webEngineZoomFactor $ config)
 
+    , defPropertyConst' "hoogleCommands"
+        (\_obj ->
+          return . Config.hoogleCommands $ (Config.commands config))
+
     , defPropertyRO' "controller"
         (\_obj ->
           return objectController)

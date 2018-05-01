@@ -120,5 +120,24 @@ function searchCurrentPage(txt, opt) {
 // Left column
 // =====================================================================
 function isHoogleMode() {
-    return searchInput.text.startsWith("/hh") || searchInput.text.endsWith("/hh");
+    var b = searchInput.text.substr(0, 3);
+    var e = searchInput.text.substr(-3);
+    if (b.startsWith("/")) {
+        var s = b.substr(1);
+    }
+    else if (e.startsWith("/")) {
+        var s = e.substr(1);
+    }
+    else {
+        return false;
+    }
+
+    if (s.length === 2) {
+        for (var i=0; i<hoogleCommands.length; i++) {
+            if (hoogleCommands[i] === s) {
+                return true;
+            }
+        }
+    }
+    return false;
 }

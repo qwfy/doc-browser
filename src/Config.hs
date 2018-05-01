@@ -14,6 +14,7 @@ module Config
   , LowerCasePrefix
   , makeLcp
   , getLcp
+  , hoogleCommands
   ) where
 
 import Data.Text (Text)
@@ -82,6 +83,7 @@ instance FromJSON Font where
 instance ToJSON Font
 
 newtype LowerCasePrefix = LowerCasePrefix {getLcp :: String}
+  deriving (Eq)
 
 instance Show LowerCasePrefix where
   show (LowerCasePrefix str) = str
@@ -97,7 +99,7 @@ instance ToJSON LowerCasePrefix where
 
 
 
-newtype Abbr = Abbr Text
+newtype Abbr = Abbr {getAbbr :: Text}
   deriving (Eq, Ord, Hashable, FromJSONKey, ToJSONKey)
 
 instance Show Abbr where
@@ -121,7 +123,13 @@ data Command
   = LimitToDevDocs Doc.Collection LowerCasePrefix
   | LimitToDash Doc.Collection LowerCasePrefix
   | HoogleLatest
-  deriving (Show)
+  deriving (Eq, Show)
+
+hoogleCommands :: Commands -> [Text]
+hoogleCommands commands =
+  Map.toList commands
+    |> filter (\(_abbr, c) -> c == HoogleLatest)
+    |> map (getAbbr . fst)
 
 instance FromJSON Command where
   parseJSON = withArray "Command" $ \arr -> do
