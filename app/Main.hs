@@ -199,6 +199,9 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
         Opt.ListInstalledDash ->
           Entry.listInstalled configRoot Doc.Dash
 
+        Opt.ListRemoteDash ->
+          Dash.listRemote
+
         Opt.RemoveDash cvs ->
           withConfigLock $ Entry.removeMany configRoot Doc.Dash cvs
 

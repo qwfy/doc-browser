@@ -24,6 +24,7 @@ data T
 
   | InstallDash [Doc.Collection]
   | ListInstalledDash
+  | ListRemoteDash
   | RemoveDash [(Doc.Collection, Doc.Version)]
 
   | InstallHoogle String Doc.Collection
@@ -59,6 +60,7 @@ optParser =
 
         <|> installDashParser
         <|> listInstalledDashParser
+        <|> listRemoteDashParser
         <|> removeDashParser
 
         <|> installHoogleParser
@@ -129,6 +131,12 @@ listInstalledDashParser =
   flag' ListInstalledDash
     (  long "list-installed-dash"
     <> help "List installed Dash's docset")
+
+listRemoteDashParser :: Parser T
+listRemoteDashParser =
+  flag' ListRemoteDash
+    (  long "list-remote-dash"
+    <> help "List all available Dash docset")
 
 removeDashParser :: Parser T
 removeDashParser =
