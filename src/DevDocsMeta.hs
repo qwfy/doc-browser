@@ -8,7 +8,7 @@ module DevDocsMeta
   ( printTypeMap
   , typeMap
   , metaJsonUrl
-  , findRecent
+  , match
   , toDownloadUrl
   , Meta(..)
   ) where
@@ -69,26 +69,36 @@ printTypeMap = do
   mapM_ TextIO.putStrLn (Data.List.nub $ map showMeta metas)
   TextIO.putStrLn "  ]"
 
-findRecent :: [Meta] -> [Doc.Collection] -> [Either String Meta]
-findRecent metas = map find
+match :: [Meta] -> [Either Doc.Collection (Doc.Collection, Doc.Version)] -> [Either String Meta]
+match allMetas ccvs = map find ccvs
   where
-    metaSortKey Meta{metaRelease, metaVersion, metaMtime} =
-      (metaRelease, metaVersion, metaMtime)
-    compareMeta m1 m2 =
-      compare (metaSortKey m1) (metaSortKey m2)
-    mostRecent = metas
+    find want@(Left c) =
+      case Data.List.find (isMatch want) latestMetas of
+        Nothing   -> Left $ unwords ["docset", show c, "is not found"]
+        Just meta -> Right meta
+
+    find want@(Right (c, v)) =
+      case Data.List.find (isMatch want) allMetas of
+        Nothing   -> Left $ unwords ["docset", Doc.combineCollectionVersion c v, "is not found"]
+        Just meta -> Right meta
+
+    isMatch (Left c) Meta{metaName} =
+      toStr c == toStr metaName
+      where toStr x = show x |> Text.pack |> Text.toLower
+
+    isMatch (Right (c, v)) Meta{metaName, metaRelease} =
+      c == metaName && show v == maybe "" Text.unpack metaRelease
+
+    latestMetas = allMetas
       |> Data.List.groupBy (\m1 m2 -> metaName m1 == metaName m2)
       |> map (Data.List.sortBy compareMeta)
       |> map last
-    isWanted want Meta{metaName} =
-      toStr want == toStr metaName
-      where toStr x = show x |> Text.pack |> Text.toLower
-    find want =
-      case Data.List.find (isWanted want) mostRecent of
-        Nothing ->
-          Left $ unwords ["docset", show want, "is not found"]
-        Just meta ->
-          Right meta
+
+    metaSortKey Meta{metaRelease, metaVersion, metaMtime} =
+      (metaRelease, metaVersion, metaMtime)
+
+    compareMeta m1 m2 =
+      compare (metaSortKey m1) (metaSortKey m2)
 
 toDownloadUrl Meta{metaSlug} =
   concat ["http://dl.devdocs.io/", Text.unpack metaSlug, ".tar.gz"]

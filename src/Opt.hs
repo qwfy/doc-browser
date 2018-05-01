@@ -18,7 +18,7 @@ import Utils
 data T
   = StartGUI Logging
 
-  | InstallDevDocs [Doc.Collection]
+  | InstallDevDocs [Either Doc.Collection (Doc.Collection, Doc.Version)]
   | ListInstalledDevDocs
   | ListRemoteDevDocs
   | RemoveDevDocs [(Doc.Collection, Doc.Version)]
@@ -80,27 +80,40 @@ startGUIParser =
     (  long "debug"
     <> help "Write some debug information to stdout, I'm sorry if you need this")
 
-readCollection :: ReadM Doc.Collection
-readCollection = eitherReader $ \str' ->
-  case Doc.parseCollection str' of
-    Left e -> Left $ show e
-    Right x -> Right x
+readCCV :: ReadM (Either Doc.Collection (Doc.Collection, Doc.Version))
+readCCV = eitherReader $ \str ->
+  if Doc.hasCVSep str
+    then do
+      cv <- mapLeft show $ parseRelDir str
+      cvTuple <- mapLeft show $ Doc.breakCollectionVersion cv
+      return (Right cvTuple)
+    else do
+      c <- mapLeft show $ Doc.parseCollection str
+      return (Left c)
 
 installDevDocsParser :: Parser T
 installDevDocsParser =
   flag' InstallDevDocs
     (  long "install-devdocs"
-    <> help "Install DevDocs' docset")
-  <*> some (argument readCollection
+    <> help "Install DevDocs docset")
+  <*> some (argument readCCV
     (  metavar "DOC"
-    <> help "Docset to install, like \"haskell\", \"python\""
-    ))
+    <> (help . unwords $
+        [ "Docset to install. It can either be fuzzy"
+        , "(e.g. \"haskell\", \"python\"),"
+        , "which will install the latest version of a matching docset,"
+        , "or exact (e.g. \"Python==2.7.13\"),"
+        , "which is a string in the format of COLLECTION==VERSION,"
+        , "to install the exact docset."
+        , "--list-remote-devdocs"
+        , "will list all available docset in the exact format"
+        ])))
 
 listInstalledDevDocsParser :: Parser T
 listInstalledDevDocsParser =
   flag' ListInstalledDevDocs
     (  long "list-installed-devdocs"
-    <> help "List installed DevDocs' docset")
+    <> help "List installed DevDocs docset")
 
 listRemoteDevDocsParser :: Parser T
 listRemoteDevDocsParser =
@@ -112,7 +125,7 @@ removeDevDocsParser :: Parser T
 removeDevDocsParser =
   flag' RemoveDevDocs
     (  long "remove-devdocs"
-    <> help "Remove DevDocs' docset")
+    <> help "Remove DevDocs docset")
   <*> some (argument readCollectionVersionTuple
     (  metavar "CV"
     <> help "A string in the format of COLLECTION==VERSION. Intended to be used with --list-installed-devdocs"
@@ -123,22 +136,27 @@ readCollectionVersionTuple = eitherReader $ \str -> do
   cvPath <- mapLeft show $ parseRelDir str
   mapLeft show (Doc.breakCollectionVersion cvPath)
 
+readCollection :: ReadM Doc.Collection
+readCollection = eitherReader $ \str' ->
+  case Doc.parseCollection str' of
+    Left e -> Left $ show e
+    Right x -> Right x
+
 installDashParser :: Parser T
 installDashParser =
   flag' InstallDash
     (  long "install-dash"
-    <> help "Install Dash's docset")
+    <> help "Install Dash docset")
   <*> some (argument readCollection
     (  metavar "COLLECTION"
-    -- TODO @incomplete: documentation
-    <> help "Collection to install"
+    <> help "Collection to install. --list-remote-dash will list available collections"
     ))
 
 listInstalledDashParser :: Parser T
 listInstalledDashParser =
   flag' ListInstalledDash
     (  long "list-installed-dash"
-    <> help "List installed Dash's docset")
+    <> help "List installed Dash docset")
 
 listRemoteDashParser :: Parser T
 listRemoteDashParser =
@@ -150,7 +168,7 @@ removeDashParser :: Parser T
 removeDashParser =
   flag' RemoveDash
     (  long "remove-dash"
-    <> help "Remove Dash's docset")
+    <> help "Remove Dash docset")
   <*> some (argument readCollectionVersionTuple
     (  metavar "CV"
     <> help "A string in the format of COLLECTION==VERSION. Intended to be used with --list-installed-dash"

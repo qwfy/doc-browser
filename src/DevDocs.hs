@@ -65,15 +65,15 @@ listRemote = do
 
 -- TODO @incomplete: multithreads and proxy
 -- TODO @incomplete: install to a UUID dir?
-installMany :: ConfigRoot -> [Doc.Collection] -> IO ()
-installMany configRoot collections = do
+installMany :: ConfigRoot -> [Either Doc.Collection (Doc.Collection, Doc.Version)] -> IO ()
+installMany configRoot ccvs = do
   putStrLn "=== Docsets are provided by https://devdocs.io ==="
 
   unpackTo <- (getConfigRoot configRoot </>) <$> (parseRelDir $ show Doc.DevDocs)
-  report ["downloading", show $ length collections, "docsets to", toFilePath unpackTo]
+  report ["downloading", show $ length ccvs, "docsets to", toFilePath unpackTo]
 
   metas <- downloadJSON DevDocsMeta.metaJsonUrl
-  let matches = DevDocsMeta.findRecent metas collections
+  let matches = DevDocsMeta.match metas ccvs
   forM_ matches (\x -> installOne unpackTo x `catch` reportExceptions)
 
   where

@@ -184,8 +184,8 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
           _ <- forkIO $ Server.start logging config configRoot cacheRoot slot
           startGUI config configRoot guiDir slot
 
-        Opt.InstallDevDocs collections ->
-          withConfigLock $ DevDocs.installMany configRoot collections
+        Opt.InstallDevDocs ccvs ->
+          withConfigLock $ DevDocs.installMany configRoot ccvs
 
         Opt.ListInstalledDevDocs ->
           Entry.listInstalled configRoot Doc.DevDocs

@@ -12,6 +12,7 @@ module Doc
   , combineCollectionVersion
   , breakCollectionVersion
   , InvalidCollection
+  , hasCVSep
   ) where
 
 import Control.Exception
@@ -84,9 +85,11 @@ instance ToJSON Collection where
 
 cvSep = "=="
 
+hasCVSep str = cvSep `isInfixOf` str
+
 parseCollection :: MonadThrow m => String -> m Collection
 parseCollection str =
-  if cvSep `isInfixOf` str
+  if hasCVSep str
     then throwM $ InvalidCollection str
     else return . Collection . Data.List.Extra.replace "/" "-" $ str
 
@@ -140,4 +143,6 @@ breakCollectionVersion cv =
     |> \case
           Nothing -> throwM $ InvalidCollectionVersion (toFilePath cv)
           Just ("", _) -> throwM $ InvalidCollectionVersion (toFilePath cv)
-          Just (c, v) -> return (Collection c, Version v)
+          Just (c', v) -> do
+            c <- parseCollection c'
+            return (c, Version v)
