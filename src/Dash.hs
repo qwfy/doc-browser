@@ -16,6 +16,7 @@ module Dash
   , listRemote
   , b64EncodeCV
   , extraDirs3
+  , allCollections
   ) where
 
 import Control.Monad
@@ -24,11 +25,13 @@ import Control.Monad.Catch
 import Path
 import Path.IO
 
+import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.List.Extra
 import Data.Maybe
 import qualified Data.ByteString.Base64.URL as B64
 import qualified Data.ByteString.Char8 as Char8
+import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
 
 import Database.Persist.Sqlite
@@ -127,6 +130,7 @@ listRemote =
 
 
 -- https://github.com/Kapeli/Dash-iOS.git/Dash/DHDocsetDownloader.m
+allCollections :: Map Doc.Collection Text
 allCollections = Map.fromList
   [ ([Doc.collection|NET_Framework|]         , "net"           )
   , ([Doc.collection|ActionScript|]          , "actionscript"  )

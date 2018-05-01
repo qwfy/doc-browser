@@ -113,16 +113,8 @@ instance ToSample Match.T where
         , Match.url            = "http://localhost:7701/DevDocs/Python==3.6.4/library/os.path"
         , Match.package_       = Nothing
         , Match.module_        = Nothing
-        , Match.typeConstraint = Nothing}
-    -- , Match.T
-    --     { Match.vendor         = "DevDocs"
-    --     , Match.name           = "os.PathLike"
-    --     , Match.collection     = "Python"
-    --     , Match.version        = "3.6.4"
-    --     , Match.url            = "http://localhost:7701/DevDocs/Python==3.6.4/library/os#os.PathLike"
-    --     , Match.package_       = Nothing
-    --     , Match.module_        = Nothing
-    --     , Match.typeConstraint = Nothing}
+        , Match.typeConstraint = Nothing
+        , Match.icon           = Just "Python"}
     ]
 
 type SearchAPI = "search" :> Q :> Get '[JSON] [Match.T]

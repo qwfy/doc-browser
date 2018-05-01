@@ -49,6 +49,7 @@ toMatch prefixHost configRoot collection target =
              , Match.package_ = Text.pack . fst <$> Hoogle.targetPackage target
              , Match.module_ = Text.pack . fst <$> Hoogle.targetModule target
              , Match.typeConstraint = Text.pack <$> typeConstraint
+             , Match.icon = Just "Haskell"
              }
 
 removeProtocolAndLeading :: ConfigRoot -> String -> String

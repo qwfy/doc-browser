@@ -69,7 +69,7 @@ Rectangle {
             anchors.left: shortcut.right
             anchors.leftMargin: Style.ewPadding
             anchors.verticalCenter: parent.verticalCenter
-            source: MatchJs.icon(modelData.vendor, modelData.collection)
+            source: MatchJs.icon(modelData.vendor, modelData.icon)
         }
 
         Column {

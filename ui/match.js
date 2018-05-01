@@ -38,18 +38,18 @@ function shortcutColor(index) {
 }
 
 
-
-function icon(vendor, collection) {
-    if (vendor === "DevDocs") {
-        var l = collection.toLowerCase();
+function icon(vendor, icon) {
+    if (vendor === "DevDocs"
+        || vendor === "Hoogle") {
+        var l = icon.toLowerCase();
         l = l.replace(/-/g, '_');
         l = l.replace(/ /g, '_');
         if (l === "c++") l = "cpp";
         if (l === "nginx_lua_module") l = "nginx";
         if (l === "löve") l = "love";
-        return "icon/" + l + "/16@2x.png";
-    } else if (vendor === "Hoogle") {
-        return "icon/" + "haskell" + "/16@2x.png";
+        return ["icon-devdocs/", l, "/16@2x.png"].join('');
+    } else if (vendor === "Dash") {
+        return ["icon-dash/", icon, ".imageset/", icon, "@2x.png"].join('');
     } else {
         return null;
     }

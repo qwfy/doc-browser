@@ -58,11 +58,20 @@ toMatches prefixHost searchables = do
       , Match.collection = Text.pack . Doc.getCollection . entryCollection $ entry
       , Match.version    = Text.pack . Doc.getVersion . entryVersion $ entry
       , Match.url        = prefixHost $ buildUrl entry
-      , Match.vendor     = Text.pack . show $ Doc.DevDocs
+      , Match.vendor     = Text.pack . show . entryVendor $ entry
 
       , Match.package_       = Nothing
       , Match.module_        = Nothing
       , Match.typeConstraint = Nothing
+
+      , Match.icon =
+          case entryVendor entry of
+            Doc.DevDocs ->
+              Just . Text.pack . Doc.getCollection . entryCollection $ entry
+            Doc.Dash ->
+              Map.lookup (entryCollection entry) Dash.allCollections
+            Doc.Hoogle ->
+              Just "Haskell"
       }
 
 buildUrl :: Entry -> String

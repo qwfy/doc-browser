@@ -31,6 +31,8 @@ data T = T
   , package_       :: Maybe Text -- ^Hoogle only. The entry's package, without package version
   , module_        :: Maybe Text -- ^Hoogle only. The entry's module
   , typeConstraint :: Maybe Text -- ^Hoogle only. The entry's type constraint
+
+  , icon :: Maybe Text
   } deriving (Eq, Show, Typeable, Generic, NFData)
 
 instance ToJSON T where
@@ -63,4 +65,7 @@ defClass =
 
     , defPropertyConst' "typeConstraint"
         (\obj -> return (typeConstraint $ fromObjRef obj))
+
+    , defPropertyConst' "icon"
+        (\obj -> return (icon $ fromObjRef obj))
     ]
