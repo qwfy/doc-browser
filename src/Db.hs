@@ -42,6 +42,15 @@ Entry
   deriving Show
 |]
 
+share [mkPersist sqlSettings] [persistLowerCase|
+SearchIndex
+  name String
+  type String
+  path String
+  deriving Show
+|]
+
+
 dbPath :: ConfigRoot -> Path Abs File
 dbPath configRoot =
   getConfigRoot configRoot </> [relfile|database|]

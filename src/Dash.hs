@@ -32,24 +32,15 @@ import qualified Data.ByteString.Char8 as Char8
 import qualified Data.Map.Strict as Map
 
 import Database.Persist.Sqlite
-import Database.Persist.TH
 import Fmt
 
 import Text.XML
 import Text.XML.Lens hiding ((|>))
 
 import qualified Doc
-import qualified Db
+import Db
 import Utils
 
-
-share [mkPersist sqlSettings] [persistLowerCase|
-SearchIndex
-  name String
-  type String
-  path String
-  deriving Show
-|]
 
 data Location = Location
   { locVersion :: Doc.Version
@@ -108,26 +99,26 @@ installOne configRoot collection = do
 
 insertOne :: ConfigRoot -> Doc.Collection -> Doc.Version -> Path Abs File -> IO ()
 insertOne configRoot collection version sourceDb = do
-  sources <- runSqlite (toFilePath sourceDb |> Text.pack) . Db.asSqlBackend $ do
+  sources <- runSqlite (toFilePath sourceDb |> Text.pack) . asSqlBackend $ do
     -- TODO @incomplete: the [Single Bool] type annotation is wrong, but I don't care
-    _ <- rawSql "alter table searchIndex rename to search_index" [] :: Db.DbMonad [Single Bool]
-    rows <- selectList [] [] :: Db.DbMonad [Entity SearchIndex]
-    _ <- rawSql "alter table search_index rename to searchIndex" [] :: Db.DbMonad [Single Bool]
+    _ <- rawSql "alter table searchIndex rename to search_index" [] :: DbMonad [Single Bool]
+    rows <- selectList [] [] :: DbMonad [Entity SearchIndex]
+    _ <- rawSql "alter table search_index rename to searchIndex" [] :: DbMonad [Single Bool]
     return rows
 
   let entries = sources
         |> map entityVal
         |> map (\si ->
-            Db.Entry
-              { Db.entryName = searchIndexName si
-              , Db.entryPath = searchIndexPath si
-              , Db.entryVendor = Doc.Dash
-              , Db.entryCollection = collection
-              , Db.entryVersion = version
+            Entry
+              { entryName = searchIndexName si
+              , entryPath = searchIndexPath si
+              , entryVendor = Doc.Dash
+              , entryCollection = collection
+              , entryVersion = version
               })
 
-  let insertAll = insertMany_ entries :: Db.DbMonad ()
-  runSqlite (Db.dbPathText configRoot) insertAll
+  let insertAll = insertMany_ entries :: DbMonad ()
+  runSqlite (dbPathText configRoot) insertAll
 
 listRemote :: IO ()
 listRemote =
