@@ -33,14 +33,43 @@ Port: 7701
 # ============================================================
 # The "py" part in the query "/pyos.path" is called a command,
 # you can use it to specify which docset you want to search.
+#
 # It has the same format as DefaultCommands, see there for
 # the documentation and examples.
-# Commands defined here will override those in DefaultCommands.
+#
+# Commands defined here will override those in
+# DefaultCommands.
 Commands: {}
 
 
 # Do not change this, use Commands instead.
 # ============================================================
+# Commands comes in these formats:
+#
+# - ["LimitToDevDocs", "<collection>", "<version prefix>"]
+#   This command limit the search scope to the docsets that
+#   satisfies these conditions:
+#
+#   - it is provided by DevDocs
+#   - its collection is <collection>
+#   - <version prefix> is a case-insenstive prefix of the
+#     docset's version
+#
+#   You can use `doc-browser --list-installed-devdocs` to
+#   query installed collection and versions.
+#
+# - ["LimitToDash", "<collection>", "<version prefix>"]
+#   Similar to "LimitToDevDocs", but this command search
+#   docsets provided by Dash.
+#
+#   You can use `doc-browser --list-installed-dash` to
+#   query installed collection and versions.
+#
+# - ["HoogleLatest"]
+#   Search with Hoogle, use the "latest" database.
+#
+#   Note: currently, "latest" is not well-defined, this will
+#   be improved in future versions.
 DefaultCommands:
   go: ["LimitToDevDocs", "Go", ""]
   hs: ["LimitToDevDocs", "Haskell", ""]
