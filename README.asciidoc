@@ -102,14 +102,14 @@ doc-browser --install-devdocs DOC COLLECTION==VERSION ..
 
 # e.g.
 #   doc-browser --install-devdocs python Python==2.7.13
-# will install both the latest of Python (3.x) and Python 2.7.13
+# will install both the latest version of Python 3.x and Python 2.7.13
 
 # use
 #   doc-browser --list-remote-devdocs
-# to query available docset and versions
+# to query available docsets and versions
 ----
 
-This will download docsets from devdocs.io, and unpack them to
+This will download docsets from devdocs.io, and install them to
 `XDG_CONFIG/doc-browser/DevDocs`.
 
 === Install Dash's Docset
@@ -126,10 +126,10 @@ doc-browser --install-dash COLLECTION ..
 
 # use
 #   doc-browser --list-remote-dash
-# to query available docset
+# to query available docsets
 ----
 
-This will download docsets from kapeli.com, and unpack them to
+This will download docsets from kapeli.com, and install them to
 `XDG_CONFIG/doc-browser/Dash`.
 
 === Enable Hoogle Support
@@ -231,12 +231,11 @@ left-most one.
 === Commands
 
 These commands are provided by default, you can customize them by following
-the instructions in link:#configuration[Configuration] section.
+the instructions in the link:#configuration[Configuration] section.
 
 [cols=",",options="header",]
 |===
 | Command | Effect
-| hs      | Limit search to DevDocs' Haskell
 | py      | Limit search to DevDocs' Python 3.x
 | p2      | Limit search to DevDocs' Python 2.x
 | tf      | Limit search to DevDocs' TensorFlow
@@ -244,6 +243,7 @@ the instructions in link:#configuration[Configuration] section.
 | pd      | Limit search to DevDocs' pandas
 | mp      | Limit search to DevDocs' Matplotlib
 | go      | Limit search to DevDocs' Go
+| hs      | Limit search to DevDocs' Haskell
 | er      | Limit search to Dash's Erlang
 | hh      | Perform search with Hoogle
 |===
@@ -323,7 +323,13 @@ the modified code is licensed under the BSD license.
 For Hoogle support, this application guides user to download
 documentation archive from https://www.stackage.org[Stackage].
 
-== Known Problems and Solution
+Many thanks to https://github.com/Kapeli/Dash-iOS[Bogdan Popescu]
+to allow me to use Dash's docset. This application also ships with icons
+from the Dash-iOS project. If you are using Mac, please consider
+https://kapeli.com/dash[Dash].
+
+
+== Known Problems and Solutions
 
 Problem: On KDE, kbd:[Ctrl+/] is taking too long to open the browser.
 
