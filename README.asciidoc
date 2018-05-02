@@ -78,20 +78,6 @@ stack install
 echo "binary installed to $(stack path --local-bin)"
 ----
 
-Optionally, generate a completion script for your shell with:
-
-[source,bash]
-----
-doc-browser --bash-completion-script `which doc-browser` > /etc/bash_completion.d/doc-browser.bash
-
-# or source them manually:
-source <(doc-browser --bash-completion-script `which doc-browser`)
-
-# for Zsh and Fish, there is:
-# --zsh-completion-script
-# --fish-completion-script
-----
-
 If you have trouble building this application, you can:
 
 * Is it a dependency problem?
@@ -105,6 +91,21 @@ Optionally, install the executable `xsel` or `xclip` for the kbd:[Y] shortcut
 Optionally, install the executable `xdg-open` (provided by package
 `xdg-utils` on Arch Linux) for the kbd:[Ctrl+/] shortcut (send query to
 Google) to work.
+
+Optionally, generate a completion script for your shell with:
+
+[source,bash]
+----
+# completion will be available in a new shell
+doc-browser --bash-completion-script `which doc-browser` > /etc/bash_completion.d/doc-browser.bash
+
+# or source them manually:
+source <(doc-browser --bash-completion-script `which doc-browser`)
+
+# for Zsh and Fish, there is:
+# --zsh-completion-script
+# --fish-completion-script
+----
 
 === Install DevDocs' Docset
 
