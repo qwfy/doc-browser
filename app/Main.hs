@@ -85,10 +85,6 @@ startGUI config configRoot guiDir slot = do
         (\_obj txt ->
           google (Config.commands config) . Text.unpack $ txt)
 
-    , defPropertyConst' "webEngineZoomFactor"
-        (\_obj ->
-          return . Text.pack . show . Config.webEngineZoomFactor $ config)
-
     , defPropertyConst' "hoogleCommands"
         (\_obj ->
           return . Config.hoogleCommands $ (Config.commands config))

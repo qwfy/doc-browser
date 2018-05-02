@@ -88,4 +88,6 @@ QtObject {
 
     readonly property real leftColumnWidth: {{ leftColumnWidth }}
     readonly property real leftColumnWidthHoogle: {{ leftColumnWidthHoogle }}
+
+    readonly property real webEngineZoomFactor: {{ webEngineZoomFactor }}
 }|]
