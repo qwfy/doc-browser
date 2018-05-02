@@ -15,8 +15,8 @@ import Data.Text (Text)
 import qualified Data.Text as Text
 import Data.List.Extra
 import qualified Data.ByteString.Char8 as Char8
-import qualified Data.ByteString.Lazy.Char8 as LChar8
 import Data.Aeson
+import qualified Data.Yaml as Yaml
 
 import System.Hclip
 import System.Environment
@@ -214,11 +214,11 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
           withConfigAndCacheLock $ Hoo.install configRoot cacheRoot url collection
 
         Opt.PrintPublicAPI ->
-          putStrLn Server.publicApiMarkdown
+          putStr Server.publicApiMarkdown
 
         Opt.PrintDefaultConfig ->
-          Char8.putStrLn Embedded.configYaml
+          Char8.putStr Embedded.configYaml
 
         Opt.PrintPort ->
-          LChar8.putStrLn . encode . object $
+          Char8.putStr . Yaml.encode . object $
             [("port", Number . fromIntegral . Config.port $ config)]

@@ -47,8 +47,7 @@ Commands: {}
 # Commands are represented with YAML map, in this syntax:
 #
 #   <command string> : <command>
-#        |                 |
-#       \/                \/
+#        ↓                ↓
 # e.g.  py : ["LimitToDevDocs", "Python", "3"]
 #
 # <command string> must be two characters long, and cannot
