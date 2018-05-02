@@ -58,9 +58,13 @@ data T = T
   , matchFgColorLight    :: Text
   , inputBorderColor     :: Text
 
-  , commands :: Commands
+  , commands        :: Commands
   , defaultCommands :: Commands
+
+  , leftColumnWidth       :: Float
+  , leftColumnWidthHoogle :: Float
   } deriving (Show, Generic)
+
 
 type Commands = Map Abbr Command
 

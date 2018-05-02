@@ -85,4 +85,7 @@ QtObject {
 
     readonly property int ewPadding: 8
     readonly property int nsPadding: 4
+
+    readonly property real leftColumnWidth: {{ leftColumnWidth }}
+    readonly property real leftColumnWidthHoogle: {{ leftColumnWidthHoogle }}
 }|]

@@ -132,9 +132,6 @@ Window {
         }
     }
 
-    readonly property real leftColumnWidthNormal: 430
-    readonly property real leftColumnWidthHoogle: 700
-
     // =====================================================================
     // Shortcuts for navigating matches
     // TODO @incomplete: is this insane?
@@ -201,7 +198,7 @@ Window {
             anchors.left: parent.left
             anchors.bottom: parent.bottom
             Layout.fillWidth: false
-            Layout.preferredWidth: Logic.isHoogleMode() ? leftColumnWidthHoogle : leftColumnWidthNormal
+            Layout.preferredWidth: Logic.isHoogleMode() ? Style.leftColumnWidthHoogle : Style.leftColumnWidth
 
             spacing: 0
 

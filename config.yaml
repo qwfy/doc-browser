@@ -1,6 +1,6 @@
 # To configure this application, create the file
 #   XDG_CONFIG/doc-browser/config.yaml
-# which is usually
+# which usually is
 #   /home/<your user name>/.config/doc-browser/config.yaml
 # and then edit the interested configurations there, you don't
 # have to copy all keys to that file, just copy the keys you
@@ -19,6 +19,14 @@
 # - if you don't have HiDPI, try 1
 # - otherwise, try 1.5 or 2, or other values
 WebEngineZoomFactor: 1.5
+
+
+# Widths of the left column.
+# ============================================================
+# Width when displaying results from DevDocs and Dash
+LeftColumnWidth: 430
+# Width when displaying results from Hoogle
+LeftColumnWidthHoogle: 700
 
 
 # Serve the documentation using this port.
@@ -80,7 +88,7 @@ Commands: {}
 #
 #   sort_with_dictionary_order_ascending(all_collections)
 #
-# - ["HoogleLimit", <collection>]
+# - ["HoogleLimit", "<collection>"]
 #   Search with Hoogle, use the database specified by
 #   <collection>.
 DefaultCommands:
