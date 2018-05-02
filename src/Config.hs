@@ -40,8 +40,6 @@ import qualified Embedded
 import qualified Doc
 
 
--- NOTE: if fields are removed/renamed, also change Style.hs
--- TODO @incomplete: type-safe this
 data T = T
   { webEngineZoomFactor :: Float
   , port :: Int

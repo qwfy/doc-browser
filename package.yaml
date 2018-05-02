@@ -50,7 +50,6 @@ dependencies:
 - process
 - time
 - yaml
-- stache
 - filelock
 - unix
 - servant-server
@@ -77,6 +76,7 @@ dependencies:
 - hashable
 - tagsoup
 - utf8-string
+- shakespeare
 
 library:
   source-dirs: src
