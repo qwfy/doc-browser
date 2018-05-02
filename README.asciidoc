@@ -78,6 +78,20 @@ stack install
 echo "binary installed to $(stack path --local-bin)"
 ----
 
+Optionally, generate a completion script for your shell with:
+
+[source,bash]
+----
+doc-browser --bash-completion-script `which doc-browser` > /etc/bash_completion.d/doc-browser.bash
+
+# or source them manually:
+source <(doc-browser --bash-completion-script `which doc-browser`)
+
+# for Zsh and Fish, there is:
+# --zsh-completion-script
+# --fish-completion-script
+----
+
 If you have trouble building this application, you can:
 
 * Is it a dependency problem?
