@@ -25,18 +25,18 @@ import Network.Wai.Middleware.RequestLogger
 
 import Data.Monoid
 import qualified Data.Text as Text
+import qualified Data.Text.Lazy as LT
+import qualified Data.Text.Lazy.Encoding as LTE
 import qualified Data.Binary.Builder as Builder
 import qualified Data.Map.Strict as Map
 import qualified Data.ByteString.Lazy as LBS
 import qualified Data.ByteString.Lazy.Char8 as LC
-import qualified Data.ByteString.Lazy.UTF8 as LUTF8
 import qualified Data.Array
 import Data.List.Extra
 import Data.String
 import qualified Data.Hash.MD5 as MD5
 import Safe
 import Text.Regex.PCRE
-import Data.Char
 
 import System.FileLock
 import System.Posix.User
@@ -187,27 +187,6 @@ rawServer :: ConfigRoot -> CacheRoot -> Application
 rawServer configRoot cacheRoot request respond = do
   let paths = pathInfo request |> map Text.unpack
 
-  let badRequest =
-        return $ Builder.fromByteString $ "Unhandled URL: " <> rawPathInfo request
-
-  builder <-
-    case paths of
-      (vendor : cv : rest) | vendor == show Doc.DevDocs -> do
-        (collection, version) <- parseRelDir cv >>= Doc.breakCollectionVersion
-        let path = intercalate "/" rest
-        parseRelFile path >>= fetchDevdocs configRoot cacheRoot collection version
-
-      (vendor : rest) | vendor == show Doc.Dash -> do
-        let path = intercalate "/" rest
-        parseRelFile path >>= fetchDash configRoot
-
-      (vendor : _) | vendor == show Doc.Hoogle ->
-        let path = intercalate "/" paths
-        in fetchHoogle configRoot path
-
-      _ ->
-        badRequest
-
   -- TODO @incomplete: send css and js files directly to socket instead of reading and then sending
   let mime ext
         | ext == ".css" = "text/css; charset=utf-8"
@@ -220,17 +199,36 @@ rawServer configRoot cacheRoot request respond = do
         (lastMay paths)
 
   let headers = [("Content-Type", contentType')]
-  respond (responseBuilder status200 headers builder)
 
-fetchDash :: ConfigRoot -> Path Rel File -> IO Builder.Builder
+  case paths of
+    (vendor : cv : rest) | vendor == show Doc.DevDocs -> do
+      (collection, version) <- parseRelDir cv >>= Doc.breakCollectionVersion
+      path <- parseRelFile $ intercalate "/" rest
+      builder <- fetchDevdocs configRoot cacheRoot collection version path
+      respond (responseBuilder status200 headers builder)
+
+    (vendor : rest) | vendor == show Doc.Dash -> do
+      path <- parseRelFile $ intercalate "/" rest
+      resp <- fetchDash configRoot path
+      respond (responseLBS status200 headers resp)
+
+    (vendor : _) | vendor == show Doc.Hoogle -> do
+      let path = intercalate "/" paths
+      resp <- fetchHoogle configRoot path
+      respond (responseLBS status200 headers resp)
+
+    _ -> do
+      let resp = "Unhandled URL: " <> (LBS.fromStrict $ rawPathInfo request)
+      respond (responseLBS status400 headers resp)
+
+fetchDash :: ConfigRoot -> Path Rel File -> IO LBS.ByteString
 fetchDash configRoot path = do
   vendorPart <- parseRelDir $ show Doc.Dash
   let filePath = getConfigRoot configRoot </> vendorPart </> path
   if fileExtension filePath `elem` [".html", ".htm"]
-    then Builder.fromLazyByteString . urlDecodeAnchors <$> LBS.readFile (toFilePath filePath)
-    else Builder.fromLazyByteString                    <$> LBS.readFile (toFilePath filePath)
+    then LTE.encodeUtf8 . urlDecodeAnchors . LTE.decodeUtf8 <$> LBS.readFile (toFilePath filePath)
+    else LBS.readFile (toFilePath filePath)
 
-urlDecodeAnchors :: LBS.ByteString -> LBS.ByteString
 urlDecodeAnchors str =
   Soup.parseTags str
     |> map decodeOpen
@@ -249,10 +247,9 @@ urlDecodeAnchors str =
           old
     decodeOpen x = x
 
-    lower :: LBS.ByteString -> String
-    lower x = LUTF8.toString x |> map toLower
+    lower = LT.toLower
 
-    urlDecode' x = LBS.toStrict x |> urlDecode False |> LBS.fromStrict
+    urlDecode' x = LTE.encodeUtf8 x |> LBS.toStrict |> urlDecode False |> LBS.fromStrict |> LTE.decodeUtf8
 
     decodeAttrs attrs =
       case foldr f ([], False, False) attrs of
@@ -269,7 +266,7 @@ urlDecodeAnchors str =
 
 
 -- TODO @incomplete: replace FilePath with Path a b?
-fetchHoogle :: ConfigRoot -> FilePath -> IO Builder.Builder
+fetchHoogle :: ConfigRoot -> FilePath -> IO LBS.ByteString
 fetchHoogle configRoot path = do
   let filePath = FilePath.joinPath [toFilePath $ getConfigRoot configRoot, path]
   fileToRead <- do
@@ -284,9 +281,7 @@ fetchHoogle configRoot path = do
           -- TODO @incomplete: Add this file
           else return "404.html"
 
-  LBS.readFile fileToRead >>=
-    replaceMathJax >>=
-      return . Builder.fromLazyByteString
+  LBS.readFile fileToRead >>= replaceMathJax
 
 replaceMathJax :: LBS.ByteString -> IO LBS.ByteString
 replaceMathJax source = do
