@@ -192,7 +192,9 @@ doc-browser --install-hoogle URL COLLECTION
 ----
 
 3.  Prefix or suffix a search with "/hh" to query Hoogle, like this:
-`/hh[a]->Int->[a]`.
+`/hh[a]->Int->[a]`. Multiple databases are also supported, you need to
+add a command to specify which database you want to access to, see the
+link#configuration[Configuration] section for instructions.
 
 === Start the Application
 
@@ -209,16 +211,20 @@ If you installed from source, start it with:
 [source,bash]
 ----
 doc-browser
+
+# if you see any errors, it's probably due to the missing of dependencies
 ----
 
 == Offline Support
 
 The documentation files themselves are downloaded to your disk when
-`doc-browser --install-devdocs` or `doc-browser --install-hoogle` is
-invoked, however, to display the documentation, some additional
-Cascading Style Sh*t or JavaScript files are needed, some of these are
-not packaged with the documentation files.
+`doc-browser --install-devdocs`, `doc-browser --install-dash`
+or `doc-browser --install-hoogle` is invoked, however, to display
+the documentation, some additional Cascading Style Sh*t or
+JavaScript files are needed, some of these are not packaged with
+the documentation files.
 
+=== DevDocs
 To make DevDocs' docsets work fully offline:
 
 * Start the application after `doc-browser --install-devdocs`
@@ -226,8 +232,10 @@ To make DevDocs' docsets work fully offline:
 * When the tab is opened and the documentation is correctly displayed,
 all necessary files are cached, DevDocs' docsets work offline now
 
+=== Dash
 Dash's docset works offline out of the box.
 
+=== Hoogle
 If a MathJax distribution is found at `/usr/share/mathjax`, then the
 Hoogle documentations will work offline. (If you installed from AUR, you
 already have it.)
@@ -292,6 +300,8 @@ the instructions in the link:#configuration[Configuration] section.
 | kbd:[Alt+p]                                                            | find previous in page search                                 |
 | kbd:[Esc]                                                              | close page search                                            | when in search box
 |===
+
+Depending on your platform, kbd:[Ctrl+U] can be used to clear the input box, just like in readline.
 
 == Configuration
 
