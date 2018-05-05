@@ -1,1 +1,90 @@
-<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns:sketch="http://www.bohemiancoding.com/sketch/ns" viewBox="0 0 61 100" version="1.1" x="0px" y="0px"><title>Delta</title><desc>Created with Sketch.</desc><g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" sketch:type="MSPage"><g sketch:type="MSArtboardGroup" transform="translate(-2095.000000, -668.000000)" fill="#000000"><g sketch:type="MSLayerGroup" transform="translate(2095.000000, 668.000000)"><path d="M31.9935344,0.181943622 C31.9935344,0.181943622 51.1100665,20.2065291 60.0916222,74.7733152 C43.8924823,23.9026957 31.9935344,0.181943622 31.9935344,0.181943622 Z" sketch:type="MSShapeGroup"></path><path d="M39.1937386,62.9299412 C39.1937386,62.9299412 15.5023288,62.1013502 0.054251454,99.8274333 C21.2249373,70.5122042 39.1937386,62.9299412 39.1937386,62.9299412 Z" sketch:type="MSShapeGroup"></path><path d="M22.9277241,14.721466 C22.9277241,14.721466 4.24140815,45.0029967 0.435389758,90.521064 C12.2773665,48.0769517 22.9277241,14.721466 22.9277241,14.721466 Z" sketch:type="MSShapeGroup"></path></g></g></g></svg>
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:sketch="http://www.bohemiancoding.com/sketch/ns"
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   viewBox="0 0 100 100"
+   version="1.1"
+   x="0px"
+   y="0px"
+   id="svg18"
+   sodipodi:docname="icon.svg"
+   width="100"
+   height="100"
+   inkscape:version="0.92.2 2405546, 2018-03-11">
+  <metadata
+     id="metadata24">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title>Delta</dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs22" />
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1005"
+     id="namedview20"
+     showgrid="false"
+     inkscape:zoom="2.36"
+     inkscape:cx="24.779661"
+     inkscape:cy="50"
+     inkscape:window-x="0"
+     inkscape:window-y="34"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg18" />
+  <title
+     id="title2">Delta</title>
+  <desc
+     id="desc4">Created with Sketch.</desc>
+  <g
+     sketch:type="MSPage"
+     id="g16"
+     style="fill:none;fill-rule:evenodd;stroke:none;stroke-width:1"
+     transform="translate(19.927063,-0.00468831)">
+    <g
+       sketch:type="MSArtboardGroup"
+       transform="translate(-2095,-668)"
+       id="g14"
+       style="fill:#000000">
+      <g
+         sketch:type="MSLayerGroup"
+         transform="translate(2095,668)"
+         id="g12">
+        <path
+           d="m 31.993534,0.18194362 c 0,0 19.116533,20.02458538 28.098088,74.59137138 C 43.892482,23.902696 31.993534,0.18194362 31.993534,0.18194362 Z"
+           sketch:type="MSShapeGroup"
+           id="path6"
+           inkscape:connector-curvature="0" />
+        <path
+           d="m 39.193739,62.929941 c 0,0 -23.69141,-0.828591 -39.13948755,36.897492 C 21.224937,70.512204 39.193739,62.929941 39.193739,62.929941 Z"
+           sketch:type="MSShapeGroup"
+           id="path8"
+           inkscape:connector-curvature="0" />
+        <path
+           d="m 22.927724,14.721466 c 0,0 -18.6863159,30.281531 -22.49233424,75.799598 C 12.277366,48.076952 22.927724,14.721466 22.927724,14.721466 Z"
+           sketch:type="MSShapeGroup"
+           id="path10"
+           inkscape:connector-curvature="0" />
+      </g>
+    </g>
+  </g>
+</svg>
