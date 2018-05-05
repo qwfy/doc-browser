@@ -17,7 +17,8 @@ toc::[]
 * Works offline
 * Near real-time fuzzy search
 * Easy-to-type shortcuts
-* Supports both DevDocs and Dash docset
+* DevDocs support
+* Dash support (incomplete)
 * Hoogle integration
 * Customizable
 * link:#http-interface[HTTP interfaces]
@@ -268,6 +269,7 @@ the instructions in the link:#configuration[Configuration] section.
 | go      | Limit search to DevDocs' Go
 | hs      | Limit search to DevDocs' Haskell
 | er      | Limit search to Dash's Erlang
+| sp      | Limit search to Dash's SciPy
 | hh      | Perform search with Hoogle
 |===
 

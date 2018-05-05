@@ -101,6 +101,7 @@ DefaultCommands:
   p2: ["LimitToDevDocs", "Python", "2"]
   tf: ["LimitToDevDocs", "TensorFlow", ""]
   er: ["LimitToDash", "Erlang", ""]
+  sp: ["LimitToDash", "SciPy", ""]
   hh: ["HoogleLatest"]
 
 
