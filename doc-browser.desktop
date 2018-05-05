@@ -3,3 +3,4 @@ Type=Application
 Name=Doc Browser
 Exec=doc-browser
 Categories=Utility
+Icon=doc-browser

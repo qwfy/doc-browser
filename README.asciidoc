@@ -18,7 +18,7 @@ toc::[]
 * Near real-time fuzzy search
 * Easy-to-type shortcuts
 * DevDocs support
-* Dash support (incomplete)
+* Dash support (usable, but incomplete)
 * Hoogle integration
 * Customizable
 * link:#http-interface[HTTP interfaces]
@@ -324,9 +324,11 @@ API documentation can be found at:
 * https://qwfy.github.io/doc-browser/http-interface.html
 * or, `doc-browser --print-api`
 
-== Credits
+== Credits and License
 
-This application is written by incomplete@aixon.co.
+This application is written by incomplete@aixon.co, and licensed under MPL-2.0.
+
+You can not use the `icon.svg` in the root of this repository for other purposes.
 
 Many thanks to https://github.com/Thibaut[Thibaut Courouble] and
 https://github.com/Thibaut/devdocs/graphs/contributors[other
