@@ -295,9 +295,9 @@ the instructions in the link:#configuration[Configuration] section.
 | kbd:[M]                                                                | copy the module of the selected match to clipboard           | only for Hoogle. need executable `xsel` or `xclip`
 | kbd:[P]                                                                | copy the package of the selected match to clipboard          | only for Hoogle. need executable `xsel` or `xclip`
 | kbd:[Ctrl+/]                                                           | send query to Google                                         | e.g. kbd:[Ctrl+/] on "/pyfoo" will search Google for "Python foo"; need executable `xdg-open`
-| kbd:[Ctrl+f]                                                           | toggle page search                                           |
-| kbd:[Alt+n]                                                            | find next in page search                                     |
-| kbd:[Alt+p]                                                            | find previous in page search                                 |
+| kbd:[Ctrl+F]                                                           | toggle page search                                           |
+| kbd:[Alt+N]                                                            | find next in page search                                     |
+| kbd:[Alt+P]                                                            | find previous in page search                                 |
 | kbd:[Esc]                                                              | close page search                                            | when in search box
 |===
 
@@ -312,10 +312,6 @@ found at:
 
 * `doc-browser --print-default-config`
 * or `config.yaml` in the root of the source repository
-
-The screenshot uses the font http://input.fontbureau.com/[Input Mono],
-it is free for personal use, you can install and config doc browser to
-use it.
 
 == HTTP Interface
 
