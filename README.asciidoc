@@ -328,8 +328,6 @@ API documentation can be found at:
 
 This application is written by incomplete@aixon.co, and licensed under MPL-2.0.
 
-You can not use the `icon.svg` in the root of this repository for other purposes.
-
 Many thanks to https://github.com/Thibaut[Thibaut Courouble] and
 https://github.com/Thibaut/devdocs/graphs/contributors[other
 contributors] of https://github.com/Thibaut/devdocs[DevDocs], without
