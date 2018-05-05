@@ -13,7 +13,7 @@ import "util.js" as UtilJs
 
 Window {
     id: rootWindow
-    title: "Doc Browser"
+    title: Logic.windowTitle()
     visible: true
     visibility: Window.Maximized
 

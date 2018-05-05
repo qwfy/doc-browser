@@ -106,13 +106,24 @@ function clearPageSearch() {
 function searchCurrentPage(txt, opt) {
     var index = tabContainer.currentIndex;
     var opt = opt !== null ? opt : 0;
-    if (index >= 0) {
+    if (index >= 0 && tabContainer.count > 0) {
         var targetTab = tabContainer.getTab(index);
         targetTab.item.findText(txt, opt,
             function(found) {
                 if (txt !== "" && !found) pageSearchInputContainer.color = "red";
             });
     }
+}
+
+function windowTitle() {
+    var db = "Doc Browser"
+    if (tabContainer.count > 0) {
+        var targetTab = tabContainer.getTab(tabContainer.currentIndex);
+        if (targetTab) {
+            return targetTab.item.selectedName + " - " + db;
+        }
+    }
+    return db;
 }
 
 // =====================================================================
