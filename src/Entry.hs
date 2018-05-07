@@ -88,7 +88,7 @@ buildUrl Entry {entryVendor, entryCollection, entryVersion, entryPath} =
         [ show Doc.Dash
         , Dash.b64EncodeCV entryCollection entryVersion
         , toFilePath Dash.extraDirs3
-        , entryPath]
+        , Dash.removeDashEntryPrefixFromPath entryPath]
 
     Doc.Hoogle ->
       error $ "Bad vendor: " ++ show entryVendor

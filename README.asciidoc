@@ -18,7 +18,7 @@ toc::[]
 * Near real-time fuzzy search
 * Easy-to-type shortcuts
 * DevDocs support
-* Dash support (usable, but incomplete)
+* Dash support
 * Hoogle integration
 * Customizable
 * link:#http-interface[HTTP interfaces]
@@ -215,6 +215,10 @@ doc-browser
 
 # if you see any errors, it's probably due to the missing of dependencies
 ----
+
+You can also start it with `doc-browser.desktop`, found in the root
+of this repository. Icon is available if you copy `icon.svg` to a location
+such as `/usr/share/icons/doc-browser.svg`.
 
 == Offline Support
 

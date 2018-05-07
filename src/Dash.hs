@@ -17,6 +17,7 @@ module Dash
   , b64EncodeCV
   , extraDirs3
   , allCollections
+  , removeDashEntryPrefixFromPath
   ) where
 
 import Control.Monad
@@ -39,6 +40,8 @@ import Fmt
 
 import Text.XML
 import Text.XML.Lens hiding ((|>))
+import Text.Regex.PCRE
+import qualified Data.Array as Array
 
 import qualified Doc
 import Db
@@ -127,6 +130,18 @@ listRemote :: IO ()
 listRemote =
   let cs = Map.keys allCollections
   in putStr . fmt $ blockListF (map show cs)
+
+
+-- turn: <dash_entry_menuDescription=tutorial/stats><dash_entry_name=Statistics%20(scipy.stats)>doc/tutorial/stats.html
+-- into: doc/tutorial/stats.html
+removeDashEntryPrefixFromPath :: String -> String
+removeDashEntryPrefixFromPath old =
+  let p = "^(<dash_entry_[^>]+>)+" :: String
+      regex = makeRegex p :: Regex
+  in case Array.elems <$> matchOnce regex old of
+       Nothing -> old
+       Just ((_offset@0, length):_) | length > 0 -> drop length old
+       Just _ -> old
 
 
 -- https://github.com/Kapeli/Dash-iOS.git/Dash/DHDocsetDownloader.m
