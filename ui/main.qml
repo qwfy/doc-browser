@@ -102,7 +102,13 @@ Window {
 
     Shortcut {
         sequence: "Ctrl+f"
-        onActivated: togglePageSearch()
+        onActivated: {
+            if (pageSearch.visible) {
+                pageSearchInput.focus = true;
+            } else {
+                togglePageSearch();
+            }
+        }
     }
 
     Shortcut {

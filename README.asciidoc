@@ -26,9 +26,10 @@ toc::[]
 
 == Current Status
 
-It's in early stage, the main interface is in shape and usable, but
-other aspects, like installing docsets, lack polishing.
-That being said, I use this application every day and happy with it.
+* The main GUI is suitable for daily use
+* Docset management is usable, but needs polishing
+* Packaging for OSes other than Arch Linux need to be added
+* I use this application every day and happy with it
 
 == Installation
 
@@ -301,7 +302,7 @@ the instructions in the link:#configuration[Configuration] section.
 | kbd:[M]                                                                | copy the module of the selected match to clipboard           | only for Hoogle. need executable `xsel` or `xclip`
 | kbd:[P]                                                                | copy the package of the selected match to clipboard          | only for Hoogle. need executable `xsel` or `xclip`
 | kbd:[Ctrl+/]                                                           | send query to Google                                         | e.g. kbd:[Ctrl+/] on "/pyfoo" will search Google for "Python foo"; need executable `xdg-open`
-| kbd:[Ctrl+F]                                                           | toggle page search                                           |
+| kbd:[Ctrl+F]                                                           | open or focus page search                                           |
 | kbd:[Alt+N]                                                            | find next in page search                                     |
 | kbd:[Alt+P]                                                            | find previous in page search                                 |
 | kbd:[Esc]                                                              | close page search                                            | when in search box
@@ -331,6 +332,9 @@ API documentation can be found at:
 == Credits and License
 
 This application is written by incomplete@aixon.co, and licensed under MPL-2.0.
+
+You can use the `icon.svg` in the root of this repository as the icon of this application.
+Permission is needed if you plan to use it for other purposes.
 
 Many thanks to https://github.com/Thibaut[Thibaut Courouble] and
 https://github.com/Thibaut/devdocs/graphs/contributors[other
@@ -389,3 +393,7 @@ A: If too many tabs are displayed, the tab title would be hard to see on
 many monitors. Instead of wanting more tabs, try open another instance
 of this application. The number of maximum tabs will be configurable in
 future versions, so you can benefit from a large monitor.
+
+== Tips
+- Typically, you can omit characters such as '_' (those require you holding kbd:[Shift] to type)
+  from your query string, your pinky may thank you for that.
