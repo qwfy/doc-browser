@@ -37,6 +37,27 @@ LeftColumnWidthHoogle: 700
 Port: 7701
 
 
+# Directory that contains the MathJax distribution.
+# ============================================================
+# Hoogle documentation relies on MathJax to display, this
+# option specifies where to look for such a distribution.
+#
+# This directory is used for offline displaying, so even if
+# you specified the wrong directory, the Hoogle documentation
+# will still work - as long as you have a internet connection.
+#
+# The directory contents should look something like this:
+#
+# $ ls /usr/share/mathjax/
+# bower.json       extensions  localization
+# composer.json    fonts       MathJax.js
+# config           jax         package.json
+# CONTRIBUTING.md  latest.js   README.md
+#
+# This directory should be absolute.
+MathJaxDirectory: "/usr/share/mathjax"
+
+
 # Customizable commands.
 # ============================================================
 # The "py" part in the query "/pyos.path" is called a command,

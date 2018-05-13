@@ -242,9 +242,9 @@ all necessary files are cached, DevDocs' docsets work offline now
 Dash's docset works offline out of the box.
 
 === Hoogle
-If a MathJax distribution is found at `/usr/share/mathjax`, then the
-Hoogle documentations will work offline. (If you installed from AUR, you
-already have it.)
+If a MathJax distribution is found at `/usr/share/mathjax` (configurable),
+then the Hoogle documentations will work offline.
+(If you installed from AUR, you already have it.)
 
 == GUI
 
@@ -396,4 +396,4 @@ future versions, so you can benefit from a large monitor.
 
 == Tips
 - Typically, you can omit characters such as '_' (those require you holding kbd:[Shift] to type)
-  from your query string, your pinky may thank you for that.
+  from your query string, your pinky might thank you for that.

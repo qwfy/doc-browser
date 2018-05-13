@@ -81,18 +81,18 @@ start logging config configRoot cacheRoot slot = do
     let middleware = case logging of
           Opt.NoLog -> id
           Opt.Log -> logStdout
-    run (Config.port config) (middleware $ app configRoot cacheRoot slot)
+    run (Config.port config) (middleware $ app config configRoot cacheRoot slot)
 
 type API = PublicAPI :<|> PrivateAPI
 
 api :: Proxy Server.API
 api = Proxy
 
-app :: ConfigRoot -> CacheRoot -> Slot.T -> Application
-app configRoot cacheRoot slot =
+app :: Config.T -> ConfigRoot -> CacheRoot -> Slot.T -> Application
+app config configRoot cacheRoot slot =
   serve api
     (publicServer slot
-     :<|> privateServer configRoot cacheRoot)
+     :<|> privateServer config configRoot cacheRoot)
 
 
 type Q = QueryParam' '[Required] "q" String
@@ -173,18 +173,18 @@ type PrivateAPI
   :<|> "abspath" :> Raw
   :<|> Raw
 
-privateServer :: ConfigRoot -> CacheRoot -> Server PrivateAPI
-privateServer configRoot cacheRoot =
+privateServer :: Config.T -> ConfigRoot -> CacheRoot -> Server PrivateAPI
+privateServer config configRoot cacheRoot =
   serveCache
   :<|> serveAbspath
-  :<|> Tagged (rawServer configRoot cacheRoot)
+  :<|> Tagged (rawServer config configRoot cacheRoot)
   where
     serveCache = serveDirectoryWebApp (toFilePath $ getCacheRoot cacheRoot)
     serveAbspath = serveDirectoryWebApp "/"
 
 
-rawServer :: ConfigRoot -> CacheRoot -> Application
-rawServer configRoot cacheRoot request respond = do
+rawServer :: Config.T -> ConfigRoot -> CacheRoot -> Application
+rawServer config configRoot cacheRoot request respond = do
   let paths = pathInfo request |> map Text.unpack
 
   -- TODO @incomplete: send css and js files directly to socket instead of reading and then sending
@@ -214,7 +214,7 @@ rawServer configRoot cacheRoot request respond = do
 
     (vendor : _) | vendor == show Doc.Hoogle -> do
       let path = intercalate "/" paths
-      resp <- fetchHoogle configRoot path
+      resp <- fetchHoogle config configRoot path
       respond (responseLBS status200 headers resp)
 
     _ -> do
@@ -266,8 +266,8 @@ urlDecodeAnchors str =
 
 
 -- TODO @incomplete: replace FilePath with Path a b?
-fetchHoogle :: ConfigRoot -> FilePath -> IO LBS.ByteString
-fetchHoogle configRoot path = do
+fetchHoogle :: Config.T -> ConfigRoot -> FilePath -> IO LBS.ByteString
+fetchHoogle config configRoot path = do
   let filePath = FilePath.joinPath [toFilePath $ getConfigRoot configRoot, path]
   fileToRead <- do
     isFile <- Directory.doesFileExist filePath
@@ -281,13 +281,13 @@ fetchHoogle configRoot path = do
           -- TODO @incomplete: Add this file
           else return "404.html"
 
-  LBS.readFile fileToRead >>= replaceMathJax
+  LBS.readFile fileToRead >>= replaceMathJax (Config.mathJaxDirectory config)
 
-replaceMathJax :: LBS.ByteString -> IO LBS.ByteString
-replaceMathJax source = do
+replaceMathJax :: Config.MathJaxDirectory -> LBS.ByteString -> IO LBS.ByteString
+replaceMathJax (Config.MathJaxDirectory mathJaxDir) source = do
   -- TODO @incomplete: ability to install another copy
   -- or make this configurable
-  let distDir = "/usr/share/mathjax"
+  let distDir = toFilePath mathJaxDir
   hasMathJaxDist <- Directory.doesDirectoryExist distDir
   if not hasMathJaxDist
     then return source

@@ -14,6 +14,7 @@ module Config
   , LowerCasePrefix
   , makeLcp
   , getLcp
+  , MathJaxDirectory(..)
   , hoogleCommands
   ) where
 
@@ -63,6 +64,8 @@ data T = T
 
   , leftColumnWidth       :: Float
   , leftColumnWidthHoogle :: Float
+
+  , mathJaxDirectory :: MathJaxDirectory
   } deriving (Show, Generic)
 
 
@@ -85,6 +88,20 @@ instance FromJSON Font where
     {fieldLabelModifier = uppercaseFirst}
 
 instance ToJSON Font
+
+newtype MathJaxDirectory = MathJaxDirectory (Path Abs Dir)
+
+instance Show MathJaxDirectory where
+  show (MathJaxDirectory dir) = toFilePath dir
+
+instance FromJSON MathJaxDirectory where
+  parseJSON = withText "MathJaxDirectory" $ \txt ->
+    case parseAbsDir . Text.unpack $ txt of
+      Left e -> fail . show $ e
+      Right x -> return . MathJaxDirectory $ x
+
+instance ToJSON MathJaxDirectory where
+  toJSON (MathJaxDirectory dir) = String . Text.pack . toFilePath $ dir
 
 newtype LowerCasePrefix = LowerCasePrefix {getLcp :: String}
   deriving (Eq)
