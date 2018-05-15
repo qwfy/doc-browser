@@ -5,6 +5,7 @@ module Opt
   ( T(..)
   , get
   , Logging(..)
+  , DownloadMethod(..)
   ) where
 
 import Options.Applicative
@@ -23,7 +24,7 @@ data T
   | ListRemoteDevDocs
   | RemoveDevDocs [(Doc.Collection, Doc.Version)]
 
-  | InstallDash [Doc.Collection]
+  | InstallDash [Doc.Collection] DownloadMethod
   | ListInstalledDash
   | ListRemoteDash
   | RemoveDash [(Doc.Collection, Doc.Version)]
@@ -40,9 +41,9 @@ data Logging
   | Log
   deriving(Show)
 
-data IsStartedOK
-  = StartedOK
-  | StartedNotOK
+data DownloadMethod
+  = UseBuiltinDownloader
+  | DownloadManually
   deriving (Show)
 
 
@@ -151,6 +152,9 @@ installDashParser =
     (  metavar "COLLECTION"
     <> help "Collection to install. --list-remote-dash will list available collections"
     ))
+  <*> flag UseBuiltinDownloader DownloadManually
+    (  long "download-manually"
+    <> help "Print the URL of this docset to stdin, you download it manually to a path, and then paste that path into this program. Wondering why this option exist? Congratulations! You live in a free country")
 
 listInstalledDashParser :: Parser T
 listInstalledDashParser =

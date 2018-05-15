@@ -8,16 +8,16 @@
 
 
 # NOTE:
-# Currently, unless otherwise stated,
-# all configuration changes require a restart to take effect.
-# Sorry for the trouble :(
+# Currently, unless otherwise stated, all configuration
+# changes require a restart of this application to take
+# effect. Sorry for the trouble :(
 
 
 # Zoom factor for QtWebEngine.
 # ============================================================
 # If the font is too big or too small in the tab, tweak this:
 # - if you don't have HiDPI, try 1
-# - otherwise, try 1.5 or 2, or other values
+# - otherwise, try 1.5, 2, or other values
 WebEngineZoomFactor: 1.5
 
 
@@ -31,9 +31,7 @@ LeftColumnWidthHoogle: 700
 
 # Serve the documentation using this port.
 # ============================================================
-# Restart all instances of this application after changing,
-# instances that are not restarted will continue to use the
-# old port.
+# Restart all instances of this application after changing.
 Port: 7701
 
 

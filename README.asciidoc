@@ -196,7 +196,7 @@ doc-browser --install-hoogle URL COLLECTION
 3.  Prefix or suffix a search with "/hh" to query Hoogle, like this:
 `/hh[a]->Int->[a]`. Multiple databases are also supported, you need to
 add a command to specify which database you want to access to, see the
-link#configuration[Configuration] section for instructions.
+link:#configuration[Configuration] section for instructions.
 
 === Start the Application
 
@@ -355,7 +355,7 @@ For Hoogle support, this application guides user to download
 documentation archive from https://www.stackage.org[Stackage].
 
 Many thanks to https://github.com/Kapeli/Dash-iOS[Bogdan Popescu]
-to allow me to use Dash's docset. This application also ships with icons
+for allowing me to use Dash's docset. This application also ships with icons
 from the Dash-iOS project. If you are using Mac, please consider
 https://kapeli.com/dash[Dash].
 

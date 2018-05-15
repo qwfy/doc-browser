@@ -44,6 +44,7 @@ import Text.Regex.PCRE
 import qualified Data.Array as Array
 
 import qualified Doc
+import qualified Opt
 import Db
 import Utils
 
@@ -80,21 +81,40 @@ getDocHome configRoot collection version = do
   collPart <- parseRelDir $ b64EncodeCV collection version
   return $ getConfigRoot configRoot </> vendorPart </> collPart
 
-installMany :: ConfigRoot -> [Doc.Collection] -> IO ()
-installMany configRoot collections = do
+installMany :: ConfigRoot -> [Doc.Collection] -> Opt.DownloadMethod -> IO ()
+installMany configRoot collections downloadMethod = do
   putStrLn "=== Docsets are provided by https://kapeli.com/dash ==="
   report ["downloading", show $ length collections, "docsets"]
-  forM_ collections (installOne configRoot)
+  forM_ collections (\coll -> installOne configRoot coll downloadMethod)
 
-installOne :: ConfigRoot -> Doc.Collection -> IO ()
-installOne configRoot collection = do
+installOne :: ConfigRoot -> Doc.Collection -> Opt.DownloadMethod -> IO ()
+installOne configRoot collection downloadMethod = do
   report ["fetching information about", show collection]
   Location{locVersion=version, locUrl} <- getLocation collection
   docHome <- getDocHome configRoot collection version
   withTempDir (getConfigRoot configRoot) "temp-dash-" $ \tempDir -> do
-    let archivePath = tempDir </> [relfile|archive|]
-    report ["downloading", locUrl, "to", toFilePath archivePath]
-    downloadFile locUrl archivePath
+    archivePath <-
+      case downloadMethod of
+        Opt.UseBuiltinDownloader -> do
+          let tempPath = tempDir </> [relfile|archive|]
+          report ["downloading", locUrl, "to", toFilePath tempPath]
+          downloadFile locUrl tempPath
+          return tempPath
+        Opt.DownloadManually -> do
+          report [ "please download"
+                 , locUrl
+                 , "to your disk,"
+                 , "and when the download is finished, input the absolute path of the downloaded file below and hit Enter:"
+                 ]
+          let getPath = do
+                mdp <- getLine
+                case parseAbsFile mdp of
+                  Left e -> do
+                    report ["Error:", show e]
+                    getPath
+                  Right p ->
+                    return p
+          getPath
     report ["unpacking to", toFilePath tempDir]
     systemUnpackTgzInto archivePath tempDir
     subdir <- parseRelDir $ show collection <..> "docset"

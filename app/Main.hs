@@ -194,8 +194,8 @@ main = withSystemTempDir "doc-browser-gui-" $ \guiDir -> do
         Opt.RemoveDevDocs cvs ->
           withConfigLock $ Entry.removeMany configRoot Doc.DevDocs cvs
 
-        Opt.InstallDash collections ->
-          withConfigLock $ Dash.installMany configRoot collections
+        Opt.InstallDash collections downloadMethod ->
+          withConfigLock $ Dash.installMany configRoot collections downloadMethod
 
         Opt.ListInstalledDash ->
           Entry.listInstalled configRoot Doc.Dash
