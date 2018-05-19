@@ -18,7 +18,7 @@ toc::[]
 * Near real-time fuzzy search
 * Easy-to-type shortcuts
 * DevDocs support
-* Dash support
+* Dash support (incomplete)
 * Hoogle integration
 * Customizable
 * link:#http-interface[HTTP interfaces]
