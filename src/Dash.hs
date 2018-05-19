@@ -117,11 +117,28 @@ installOne configRoot collection downloadMethod = do
           getPath
     report ["unpacking to", toFilePath tempDir]
     systemUnpackTgzInto archivePath tempDir
-    subdir <- parseRelDir $ show collection <..> "docset"
-    renameDir (tempDir </> subdir) docHome
+    subdir <- findDocsetDir tempDir
+    renameDir subdir docHome
   let sourceDb = docHome </> extraDirs2 </> [relfile|docSet.dsidx|]
   insertOne configRoot collection version sourceDb
   report ["installed", show collection]
+
+-- Qt_5.tgz uses Qt.doctset/, not Qt_5.docset/
+-- TODO @incomplete: Maybe this is related to the field called "has major version"
+findDocsetDir :: Path b Dir -> IO (Path Abs Dir)
+findDocsetDir root = do
+  (dirs, _files) <- listDir root
+  docsetDirs <- forM dirs $ \dir ->
+    if ".docset/" `isSuffixOf` toFilePath dir
+      then return . Just $ dir
+      else return Nothing
+  case filter isJust docsetDirs of
+    [Just x]  -> return x
+    -- GHC won't catch this
+    [Nothing] -> error "Cannot find docset directory"
+    []        -> error "Cannot find docset directory"
+    (_:_)     -> error "Multiple docset directories"
+
 
 insertOne :: ConfigRoot -> Doc.Collection -> Doc.Version -> Path Abs File -> IO ()
 insertOne configRoot collection version sourceDb = do
