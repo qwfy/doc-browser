@@ -90,6 +90,7 @@ Window {
         } else {
             tabContainer.anchors.top = rightColumn.top;
             tabContainer.anchors.topMargin = 0;
+            pageSearchInput.text = "";
         }
     }
 
