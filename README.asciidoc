@@ -381,6 +381,10 @@ Problem: (China users only) Installation of docsets hangs/open documentation sho
 
 Solution: devdocs.io or cloudflare.com is blocked by GFW, please use a VPN.
 
+Problem: Install/uninstall some Dash docsets reports error.
+
+Solution: If a docset has `/` in its name or version, (many Dash docsets do), the installation or uninstallation may not work. This problem is known from the begining, it's just that I haven't got time to fix it properly (without introducing un-upgradable changes). Solution: wait for me to fix it :(
+
 == FAQ
 Q: Why does this application display at most 27 matches?
 
