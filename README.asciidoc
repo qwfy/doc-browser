@@ -31,6 +31,19 @@ toc::[]
 * Packaging for OSes other than Arch Linux need to be added
 * I use this application every day and happy with it
 
+== Contributions Are Welcome
+
+Several other features are planned but I haven't got the time to implement or improve them, including: (in no particular order)
+
+1. Packaging for various Linux distributions
+2. Add "Back" and "Forward" navigation button to the GUI (preferably to the tab bar), like the ones in the web browsers
+3. Better support for Dash docsets (the current support is incomplete and hacky)
+4. Better support for Haskell docs (eg. support for individual package)
+5. Add a GUI to manage the docsets (including the ability to auto update the installed docsets)
+6. Integration with diigo, or send the selection to a note service, like cherrytree or Evernote
+
+If you wish to contribute to feature 3, 4 and 5, please do contact me via Github issue before doing it.
+
 == Installation
 
 === Arch Linux
