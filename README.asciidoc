@@ -15,7 +15,7 @@ toc::[]
 
 * Native desktop application
 * Works offline
-* Near real-time fuzzy search
+* link:#speed[Near real-time] fuzzy search
 * Easy-to-type shortcuts
 * DevDocs support
 * Dash support (incomplete)
@@ -343,6 +343,13 @@ API documentation can be found at:
 
 * https://qwfy.github.io/doc-browser/http-interface.html
 * or, `doc-browser --print-api`
+
+== Speed
+
+As can be seen from the below (slighly outdated) benchmark, it takes less than 50ms to search through 39,499 entries.
+
+image:prof/compare of speed of several implementations - no edit distance.png[Prof]
+
 
 == Credits and License
 
