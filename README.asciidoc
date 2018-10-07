@@ -286,6 +286,8 @@ the instructions in the link:#configuration[Configuration] section.
 | mp      | Limit search to DevDocs' Matplotlib
 | go      | Limit search to DevDocs' Go
 | hs      | Limit search to DevDocs' Haskell
+| pg      | Limit search to DevDocs' PostgreSQL
+| sl      | Limit search to DevDocs' SQLite
 | er      | Limit search to Dash's Erlang
 | sp      | Limit search to Dash's SciPy
 | hh      | Perform search with Hoogle

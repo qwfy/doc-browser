@@ -119,6 +119,8 @@ DefaultCommands:
   py: ["LimitToDevDocs", "Python", "3"]
   p2: ["LimitToDevDocs", "Python", "2"]
   tf: ["LimitToDevDocs", "TensorFlow", ""]
+  pg: ["LimitToDevDocs", "PostgreSQL", ""]
+  sl: ["LimitToDevDocs", "SQLite", ""]
   er: ["LimitToDash", "Erlang", ""]
   sp: ["LimitToDash", "SciPy", ""]
   hh: ["HoogleLatest"]
