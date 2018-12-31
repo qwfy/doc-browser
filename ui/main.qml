@@ -87,6 +87,7 @@ Window {
             tabContainer.anchors.top = pageSearch.bottom;
             tabContainer.anchors.topMargin = Style.nsPadding;
             pageSearchInput.focus = true;
+            pageSearchInput.selectAll();
         } else {
             tabContainer.anchors.top = rightColumn.top;
             tabContainer.anchors.topMargin = 0;
@@ -106,6 +107,7 @@ Window {
         onActivated: {
             if (pageSearch.visible) {
                 pageSearchInput.focus = true;
+                pageSearchInput.selectAll();
             } else {
                 togglePageSearch();
             }
