@@ -174,7 +174,9 @@ https://s3.amazonaws.com/haddock.stackage.org/lts-10.8/bundle.tar.xz[this
 one], which can be found at: https://www.stackage.org/lts-10.8. You can
 use other archives as well, as long as the unpacked archive can be read
 by `hoogle generate --local=dir_to_unpacked_archive`, but this is
-untested.
+untested. **NOTE** that stackage no longer provides download links for these
+kinds of archives, (see https://github.com/commercialhaskell/stackage/issues/4098),
+so you have to generate the archive yourself.
 2.  Invoke the following installation command, this will unpack the
 archive to `XDG_CONFIG/doc-browser/Hoogle/COLLECTION`, and creates a Hoogle
 database `XDG_CONFIG/doc-browser/Hoogle/COLLECTION.hoo` for it, (doc-browser's
@@ -372,9 +374,6 @@ great https://github.com/ndmitchell/hoogle[Hoogle]. The Hoogle support
 receives https://github.com/qwfy/doc-browser/issues/2[helps] from him.
 This application also ships with a little code from the Hoogle project,
 the modified code is licensed under the BSD license.
-
-For Hoogle support, this application guides user to download
-documentation archive from https://www.stackage.org[Stackage].
 
 Many thanks to https://github.com/Kapeli/Dash-iOS[Bogdan Popescu]
 for allowing me to use Dash's docset. This application also ships with icons
