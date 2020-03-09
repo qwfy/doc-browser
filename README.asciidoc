@@ -9,6 +9,8 @@ image:asset/interface-annotated.png[Main Interface]
 
 link:asset/interface-hoogle.png[This one] is the interface for Hoogle.
 
+link:asset/interface-torch.png[This one] is the interface for PyTorch.
+
 toc::[]
 
 == Features
