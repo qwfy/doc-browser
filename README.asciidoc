@@ -158,6 +158,7 @@ doc-browser --install-dash COLLECTION ..
 #   doc-browser --list-remote-dash
 # to query available docsets
 
+# This will download docsets from kapeli.com, and install them to `XDG_CONFIG/doc-browser/Dash`.
 
 # to install from a locally built archive,
 # or those in https://github.com/Kapeli/Dash-User-Contributions,
@@ -172,8 +173,6 @@ doc-browser --install-dash COLLECTION --local-archive ABSOLUTE_PATH_TO_DOCSET_TG
 # https://github.com/Kapeli/Dash-User-Contributions
 ----
 
-This will download docsets from kapeli.com, and install them to
-`XDG_CONFIG/doc-browser/Dash`.
 
 === Enable Hoogle Support
 
