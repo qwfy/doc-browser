@@ -123,6 +123,7 @@ DefaultCommands:
   sl: ["LimitToDevDocs", "SQLite", ""]
   er: ["LimitToDash", "Erlang", ""]
   sp: ["LimitToDash", "SciPy", ""]
+  th: ["LimitToDash", "PyTorch", ""]
   hh: ["HoogleLatest"]
 
 

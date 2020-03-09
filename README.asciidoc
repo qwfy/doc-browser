@@ -157,6 +157,19 @@ doc-browser --install-dash COLLECTION ..
 # use
 #   doc-browser --list-remote-dash
 # to query available docsets
+
+
+# to install from a locally built archive,
+# or those in https://github.com/Kapeli/Dash-User-Contributions,
+# use:
+
+doc-browser --install-dash COLLECTION --local-archive ABSOLUTE_PATH_TO_DOCSET_TGZ --version VERSION
+
+# e.g.
+#   doc-browser --install-dash PyTorch --local-archive $(pwd)/PyTorch.tgz --version 1.4.0
+# will install the docset for PyTorch, version 1.4.0
+# where PyTorch.tgz is generated according to:
+# https://github.com/Kapeli/Dash-User-Contributions
 ----
 
 This will download docsets from kapeli.com, and install them to
