@@ -304,6 +304,7 @@ the instructions in the link:#configuration[Configuration] section.
 | hs      | Limit search to DevDocs' Haskell
 | pg      | Limit search to DevDocs' PostgreSQL
 | sl      | Limit search to DevDocs' SQLite
+| th      | Limit search to Dash' PyTorch
 | er      | Limit search to Dash's Erlang
 | sp      | Limit search to Dash's SciPy
 | hh      | Perform search with Hoogle
