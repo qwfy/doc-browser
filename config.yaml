@@ -124,6 +124,7 @@ DefaultCommands:
   er: ["LimitToDash", "Erlang", ""]
   sp: ["LimitToDash", "SciPy", ""]
   th: ["LimitToDash", "PyTorch", ""]
+  rs: ["LimitToDash", "Rust", ""]
   hh: ["HoogleLatest"]
 
 
