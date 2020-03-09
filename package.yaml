@@ -1,8 +1,8 @@
 name:           doc-browser
-version:        0.6.2
+version:        0.6.3
 author:         Incomplete
 maintainer:     incomplete@aixon.co
-copyright:      Incomplete 2018
+copyright:      Incomplete 2018-2020
 license:        MPL-2.0
 github:         qwfy/doc-browser
 synopsis:       A documentation browser

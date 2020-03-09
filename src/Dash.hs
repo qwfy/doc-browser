@@ -89,8 +89,16 @@ installMany configRoot collections downloadMethod = do
 
 installOne :: ConfigRoot -> Doc.Collection -> Opt.DownloadMethod -> IO ()
 installOne configRoot collection downloadMethod = do
-  report ["fetching information about", show collection]
-  Location{locVersion=version, locUrl} <- getLocation collection
+  report ["collecting information about", show collection]
+  (version, locUrl) <- case downloadMethod of
+        Opt.UseBuiltinDownloader -> do
+          Location{locVersion=version, locUrl} <- getLocation collection
+          return (version, locUrl)
+        Opt.DownloadManually -> do
+          Location{locVersion=version, locUrl} <- getLocation collection
+          return (version, locUrl)
+        Opt.UseLocalArchive localPath version ->
+          return (version, localPath)
   docHome <- getDocHome configRoot collection version
   withTempDir (getConfigRoot configRoot) "temp-dash-" $ \tempDir -> do
     archivePath <-
@@ -115,6 +123,9 @@ installOne configRoot collection downloadMethod = do
                   Right p ->
                     return p
           getPath
+        Opt.UseLocalArchive localPath _ -> do
+          parseAbsFile localPath
+
     report ["unpacking to", toFilePath tempDir]
     systemUnpackTgzInto archivePath tempDir
     subdir <- findDocsetDir tempDir

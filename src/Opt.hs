@@ -44,6 +44,7 @@ data Logging
 data DownloadMethod
   = UseBuiltinDownloader
   | DownloadManually
+  | UseLocalArchive String Doc.Version
   deriving (Show)
 
 
@@ -152,9 +153,19 @@ installDashParser =
     (  metavar "COLLECTION"
     <> help "Collection to install. --list-remote-dash will list available collections"
     ))
-  <*> flag UseBuiltinDownloader DownloadManually
-    (  long "download-manually"
-    <> help "Print the URL of this docset to stdin, you download it manually to a path, and then paste that path into this program. Wondering why this option exist? Congratulations! You live in a free country")
+  <*> (
+    flag UseBuiltinDownloader DownloadManually
+            (  long "download-manually"
+            <> help "Print the URL of this docset to stdin, you download it manually to a path, and then paste that path into this program. Wondering why this option exist? Congratulations! You live in a free country")
+    <|> ( UseLocalArchive <$>
+      strOption
+        (  long "local-archive"
+        <> metavar "ABSOLUTE-PATH")
+      <*> option auto
+        (  long "version"
+        <> metavar "DOCSET-VERSION")
+        )
+    )
 
 listInstalledDashParser :: Parser T
 listInstalledDashParser =
