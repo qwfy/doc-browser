@@ -9,6 +9,9 @@ synopsis:       A documentation browser
 category:       Application
 description:    Please see the README on Github at <https://github.com/qwfy/doc-browser#readme>
 
+build-tools:
+- c2hs >= 0.28.8
+
 extra-source-files:
 - README.asciidoc
 
