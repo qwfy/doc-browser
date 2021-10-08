@@ -315,11 +315,16 @@ fetchDevdocs configRoot cacheRoot collection version path = do
   content <- Builder.fromLazyByteString <$> LBS.readFile (toFilePath filePath)
 
   cssUrl <- getCached cacheRoot "https://devdocs.io/application.css" "css"
+  jsUrl <- getCached cacheRoot "https://raw.githubusercontent.com/freeCodeCamp/devdocs/main/assets/javascripts/vendor/prism.js" "js"
   let css = "<link rel='stylesheet' href='" <> cssUrl <> "'>"
+  let js  = "<script src='" <> jsUrl <> "'></script>" <> "\
+    \ <script>document.querySelectorAll('pre[data-language]').forEach(\
+    \   function(node) { node.classList.add('language-' + node.getAttribute('data-language')); Prism.highlightElement(node);}\
+    \ )</script>"
 
   -- TODO @incomplete: handle the concatenation properly
   let begin' =
-        "<html>\
+        "<html class='_theme-default'>\
         \<head>\
         \  <meta charset='utf-8'>\
         \ " <> css <> "\
@@ -334,9 +339,10 @@ fetchDevdocs configRoot cacheRoot collection version path = do
             Data.String.fromString $ "<div class='_page _" ++ t ++ "'>"
       begin = Builder.fromLazyByteString $ begin' <> pageDiv
 
-  let end = Builder.fromLazyByteString
+  let end = Builder.fromLazyByteString $
         "    </div>\
         \  </main>\
+        \ " <> js <> "\
         \</body>\
         \</html>"
 
