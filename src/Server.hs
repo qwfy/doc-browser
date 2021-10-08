@@ -20,7 +20,7 @@ module Server
 
 import Network.Wai
 import Network.HTTP.Types
-import Network.Wai.Handler.Warp (run)
+import Network.Wai.Handler.Warp (runSettings, setPort, setHost, defaultSettings)
 import Network.Wai.Middleware.RequestLogger
 
 import Data.Monoid
@@ -81,7 +81,8 @@ start logging config configRoot cacheRoot slot = do
     let middleware = case logging of
           Opt.NoLog -> id
           Opt.Log -> logStdout
-    run (Config.port config) (middleware $ app config configRoot cacheRoot slot)
+    let settings = setPort (Config.port config) $ setHost "127.0.0.1" defaultSettings
+    runSettings settings (middleware $ app config configRoot cacheRoot slot)
 
 type API = PublicAPI :<|> PrivateAPI
 
