@@ -30,9 +30,13 @@ Window {
 
                 // TODO @incomplete: handle this properly
                 rootWindow.visible = true;
-                rootWindow.visibility = Window.Maximized
-                rootWindow.raise();
-                rootWindow.requestActivate();
+                rootWindow.visibility = Window.Maximized;
+                if (focusOnSummon) {
+                    rootWindow.raise();
+                    rootWindow.requestActivate();
+                } else {
+                    alert(5000);
+                }
             }
         }
     }

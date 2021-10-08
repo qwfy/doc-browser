@@ -92,6 +92,10 @@ startGUI config configRoot guiDir slot = do
     , defPropertyRO' "controller"
         (\_obj ->
           return objectController)
+
+    , defPropertyConst' "focusOnSummon"
+        (\_obj ->
+          return $ Config.focusOnSummon config)
     ]
 
   objectContext <- newObject classContext ()

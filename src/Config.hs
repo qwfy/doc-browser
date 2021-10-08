@@ -45,6 +45,8 @@ data T = T
   { webEngineZoomFactor :: Float
   , port :: Int
 
+  , focusOnSummon :: Bool
+
   , inputFont           :: Font
   , matchFontMain       :: Font
   , matchFontMainHoogle :: Font
