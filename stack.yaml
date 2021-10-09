@@ -5,3 +5,5 @@ packages:
 
 extra-deps:
 - hsqml-0.3.5.1
+- c2hs-0.28.8
+- language-c-0.9.0.1

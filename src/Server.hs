@@ -20,7 +20,7 @@ module Server
 
 import Network.Wai
 import Network.HTTP.Types
-import Network.Wai.Handler.Warp (run)
+import Network.Wai.Handler.Warp (runSettings, setPort, setHost, defaultSettings)
 import Network.Wai.Middleware.RequestLogger
 
 import Data.Monoid
@@ -81,7 +81,8 @@ start logging config configRoot cacheRoot slot = do
     let middleware = case logging of
           Opt.NoLog -> id
           Opt.Log -> logStdout
-    run (Config.port config) (middleware $ app config configRoot cacheRoot slot)
+    let settings = setPort (Config.port config) $ setHost "127.0.0.1" defaultSettings
+    runSettings settings (middleware $ app config configRoot cacheRoot slot)
 
 type API = PublicAPI :<|> PrivateAPI
 
@@ -314,11 +315,16 @@ fetchDevdocs configRoot cacheRoot collection version path = do
   content <- Builder.fromLazyByteString <$> LBS.readFile (toFilePath filePath)
 
   cssUrl <- getCached cacheRoot "https://devdocs.io/application.css" "css"
+  jsUrl <- getCached cacheRoot "https://raw.githubusercontent.com/freeCodeCamp/devdocs/main/assets/javascripts/vendor/prism.js" "js"
   let css = "<link rel='stylesheet' href='" <> cssUrl <> "'>"
+  let js  = "<script src='" <> jsUrl <> "'></script>" <> "\
+    \ <script>document.querySelectorAll('pre[data-language]').forEach(\
+    \   function(node) { node.classList.add('language-' + node.getAttribute('data-language')); Prism.highlightElement(node);}\
+    \ )</script>"
 
   -- TODO @incomplete: handle the concatenation properly
   let begin' =
-        "<html>\
+        "<html class='_theme-default'>\
         \<head>\
         \  <meta charset='utf-8'>\
         \ " <> css <> "\
@@ -333,9 +339,10 @@ fetchDevdocs configRoot cacheRoot collection version path = do
             Data.String.fromString $ "<div class='_page _" ++ t ++ "'>"
       begin = Builder.fromLazyByteString $ begin' <> pageDiv
 
-  let end = Builder.fromLazyByteString
+  let end = Builder.fromLazyByteString $
         "    </div>\
         \  </main>\
+        \ " <> js <> "\
         \</body>\
         \</html>"
 

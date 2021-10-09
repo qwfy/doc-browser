@@ -34,6 +34,14 @@ LeftColumnWidthHoogle: 700
 # Restart all instances of this application after changing.
 Port: 7701
 
+# Whether the Window should capture focus on remote summons.
+# ============================================================
+# If set, the doc-browser-window will be raised and receive
+# keyboard forcus. Otherwise, the window will be merely alerted.
+# This might be desireable if you usually have the window
+# opened on a second output and usually find what you are
+# searching for in the first match
+FocusOnSummon: True
 
 # Directory that contains the MathJax distribution.
 # ============================================================

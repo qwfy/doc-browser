@@ -101,7 +101,7 @@ match allMetas ccvs = map find ccvs
       compare (metaSortKey m1) (metaSortKey m2)
 
 toDownloadUrl Meta{metaSlug} =
-  concat ["http://dl.devdocs.io/", Text.unpack metaSlug, ".tar.gz"]
+  concat ["https://downloads.devdocs.io/", Text.unpack metaSlug, ".tar.gz"]
 
 typeMap :: Map.Map Doc.Collection String
 typeMap = Map.fromList
